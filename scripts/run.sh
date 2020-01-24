@@ -9,6 +9,8 @@ SOURCE="$(realpath main.asm)"
 BINARY="${BUILD_DIR:?}/main"
 DISK="$(realpath ../disk.vmdk)"
 
+mkdir -p BUILD_DIR
+
 cd "${SCRIPTS_DIR}"
 bash build.sh "${SOURCE}" "${BINARY}"
 bash burn.sh "${BINARY}" "${DISK}"
