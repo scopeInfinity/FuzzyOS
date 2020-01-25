@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-source common.sh
+source "$(dirname $0)/common.sh"
 
 BINARY=${1?"path to binary is missing: \$1"}
 DISK=${2?"path for disk to burn is missing: \$2"}
