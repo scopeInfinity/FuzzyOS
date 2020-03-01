@@ -1,6 +1,7 @@
 # FuzzyOS
 Experimental OS
 
+- Not yet ready.
 - It's experimental. So it's safe to assume that the burn operation can be destructive.
 - Use it at your own risk. 
 
