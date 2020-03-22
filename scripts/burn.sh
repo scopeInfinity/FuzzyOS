@@ -1,11 +1,9 @@
 #!/bin/bash
 set -e
-source "$(dirname $0)/common.sh"
 
-BINARY=${1?"path to binary is missing: \$1"}
-DISK=${2?"path for disk to burn is missing: \$2"}
+IMAGE=${1?"path to image is missing: \$1"}
+DISK=${2?"path for disk for burning is missing: \$2"}
 
 echo "[Burn] Starting..."
-dd bs=512 if=${BINARY:?} of=${DISK:?}
-echo -ne "\x55\xaa" | dd seek=510 bs=1 of=${DISK:?}
+dd bs=512 if=${IMAGE:?} of=${DISK:?}
 echo "[Burn] Done."

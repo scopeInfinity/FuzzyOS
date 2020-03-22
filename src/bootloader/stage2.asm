@@ -1,6 +1,5 @@
 %include "constants.asm"
-;;%include "io.asm___
-"
+
 %macro  print_string 4
         ; Args: (str, len, x, y)
         ; check es, bx
@@ -30,5 +29,5 @@ global _low_print
         ret
 
 [SECTION .data]
-    bl_welcome             db      "TESTTT"
+    bl_welcome             db      "Bootloader Stage 2"
     bl_welcome_len         equ       ($-bl_welcome)
