@@ -1,0 +1,14 @@
+language: c
+
+compiler:
+  - clang
+  - gcc
+
+addons:
+  apt:
+    update: true
+
+before_install:
+  - sudo apt-get -y install nasm
+
+install: make
