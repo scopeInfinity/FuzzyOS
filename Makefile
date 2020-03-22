@@ -20,4 +20,4 @@ $(bt_stage1): $(BL_SRC_DIR)/stage1.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)
 	nasm -o $@ -f bin -i $(BL_SRC_DIR)/ $<
 
 clean:
-	rm $(BUILD_DIR)/*
+	rm -f $(image_vmdk) $(bt_stage1)

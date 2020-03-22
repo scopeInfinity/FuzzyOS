@@ -11,4 +11,4 @@ addons:
 before_install:
   - sudo apt-get -y install nasm
 
-install: make
+script: make
