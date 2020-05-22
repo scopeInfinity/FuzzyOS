@@ -35,6 +35,44 @@
         int 0x16
 %endmacro
 
+%macro  set_cursor_xy 3
+        ; Args: (x, y, page)
+        mov ah, 0x02                 ; (set custor position)
+        mov bh, 0x%3                 ; (page number)
+        mov dx, 0x%2%1               ; (pos_y, pos_x)
+        int 0x10
+%endmacro
+
+%macro  print_hex_string_ext 4
+        ; Args: (str, len, fg_color, page)
+        mov si, %1                   ; (str)
+        mov dx, %2                   ; (len)
+        mov bx, 0x%4%3               ; (page, text color)
+        mov ah, 0x0e                 ; (write tty)
+        mov cx, 1                    ; (count)
+label_marker:
+        push bx
+        mov bl, [si]
+        and bx, 0x00F0
+        shr bx, 4
+        add bx, digit_to_hex
+        mov al, [bx]
+        pop bx
+        int 0x10
+
+        push bx
+        mov bl, [si]
+        and bx, 0x000F
+        add bx, digit_to_hex
+        mov al, [bx]
+        pop bx
+        int 0x10
+
+        inc si
+        sub dx, 1
+        jnc label_marker
+%endmacro
+
 %macro  set_blinking 1
         ; Args: (should_blink)
         ; check es

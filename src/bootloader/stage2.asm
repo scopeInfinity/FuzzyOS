@@ -1,33 +1,32 @@
+; Fuzzy Bootloader Stage 2
 %include "constants.asm"
+%include "io.asm"
 
-%macro  print_string 4
-        ; Args: (str, len, x, y)
-        ; check es, bx
-        mov ax, 0x1301              ; (print string, update cursor)
-        mov bp, %1                  ; (es:bp string pointer)
-        mov cx, %2                  ; (string length)
-        mov dx, 0x%4%3              ; (pos_y, pos_x)
-        int 0x10
-%endmacro
+[ORG 0x8000]
+[BITS 16]
 
-%macro  print_string_ext 7
-        ; Args: (str, len, x, y, fg_color, bg_color, page)
-        ; check es
-        mov bx, 0x%7%6%5            ; (pagenumber, attribute)
-        print_string %1, %2, %3, %4
-%endmacro
 
-global _low_print
 [SECTION .text]
 
+        MOV ax, 0x0000
+        MOV es, ax                  ; es := 0
+
+        set_blinking 0
+        print_string_ext bl_stage_2, bl_stage_2_len, 05, 04, C_WHITE, C_BLACK, 0
+
+        JMP label_exit
+
     _low_print:
-        push rbp
-        mov rbp, rsp
-        print_string_ext bl_welcome, bl_welcome_len, 02, 02, C_BLACK, C_WHITE, 0
-        mov rax, 15
+        push bp
+        mov bp, sp
+        print_string_ext bl_stage_2, bl_stage_2_len, 02, 02, C_BLACK, C_WHITE, 0
+        mov ax, 0
         leave
         ret
 
+label_exit:
+        HLT
+
 [SECTION .data]
-    bl_welcome             db      "Bootloader Stage 2"
-    bl_welcome_len         equ       ($-bl_welcome)
+    bl_stage_2             db      "We are at Bootloader: Stage 2"
+    bl_stage_2_len         equ       ($-bl_stage_2)
