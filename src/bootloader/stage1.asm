@@ -19,6 +19,7 @@
         MOV es, ax                  ; es := 0
 
         set_blinking 0
+        clear_screen C_WHITE, C_BLACK
         print_string_ext bl_welcome, bl_welcome_len, 02, 02, C_MAGENTA, C_WHITE, 0
         print_string_ext bls1, bls1_len, 04, 04, C_WHITE, C_BLACK, 0
 
@@ -30,10 +31,8 @@
         JMP label_exit
 
 label_bts2_loaded:
-        set_cursor_xy 06, 07, 00
+        move_xy 06, 07, 00
         print_hex_string_ext 0x8000, 10, C_WHITE, 0
-        print_string_ext bls2_loaded, bls2_loaded_len, 06, 06, C_WHITE, C_BLACK, 0
-
         JMP 0x8000
         JMP label_exit
 

@@ -35,7 +35,7 @@
         int 0x16
 %endmacro
 
-%macro  set_cursor_xy 3
+%macro  move_xy 3
         ; Args: (x, y, page)
         mov ah, 0x02                 ; (set custor position)
         mov bh, 0x%3                 ; (page number)
@@ -78,7 +78,16 @@ label_marker:
         ; check es
         mov ax, 0x1003
         mov bx, 0x000%1
-        int 10h
+        int 0x10
+%endmacro
+
+%macro  clear_screen 2
+        ; Output: (fg_color, bg_color)
+        mov ax, 0x0600                ; (scroll 0 lines)
+        mov bh, 0x%2%1                ; (attribute)
+        mov cx, 0x0000                ; (window top-left RC)
+        mov dx, 0x184F                ; (window bottom-right RC)
+        int 0x10
 %endmacro
 
 [SECTION .data]
