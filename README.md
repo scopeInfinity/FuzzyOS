@@ -8,6 +8,10 @@ Experimental OS
   - `make`
 
 ##### Boot image on a VM
+###### QEMU
+  - `make qemu`
+
+###### VMware
   - Create *Virtual Machine Disk* with fixed size of *4MB*.
   - Burn `build/image.vmdk` to `new-disk-flat.vmdk`
     - `bash scripts/burn.sh build/image.vmdk /path/to/build/new-disk-flat.vmdk`
