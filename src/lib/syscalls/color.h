@@ -1,3 +1,6 @@
+#ifndef __LIB_SYSCALLS_COLOR
+#define __LIB_SYSCALLS_COLOR
+
 #define    C_BLACK               0x0
 #define    C_BLUE                0x1
 #define    C_GREEN               0x2
@@ -16,3 +19,23 @@
 #define    C_WHITE               0xF
 
 #define make_color(fg, bg) ((unsigned char)((fg) + ((bg)<<4)))
+
+unsigned char IO_CURRENT_FG = 0;
+unsigned char IO_CURRENT_BG = 0;
+unsigned char IO_CURRENT_COLOR = 0;
+
+void _compute_color() {
+    IO_CURRENT_COLOR = make_color(IO_CURRENT_FG, IO_CURRENT_BG);
+}
+
+void set_color_fg(unsigned char color) {
+    IO_CURRENT_FG = color;
+    _compute_color();
+}
+
+void set_color_bg(unsigned char color) {
+    IO_CURRENT_BG = color;
+    _compute_color();
+}
+
+#endif
