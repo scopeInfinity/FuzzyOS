@@ -3,6 +3,7 @@
 %include "io.asm"
 %include "io_syscall.asm"
 %include "time_syscall.asm"
+%include "disk_syscall.asm"
 
 [BITS 16]
 
@@ -24,6 +25,8 @@ label_exit:
 
         PLUGIN_SYSCALLS_IO
         PLUGIN_SYSCALLS_TIME
+        PLUGIN_SYSCALLS_DISK
+
 
 [SECTION .data]
     bl_stage_2             db      "Bootloader: Stage 2"

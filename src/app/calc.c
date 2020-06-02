@@ -103,7 +103,15 @@ int handle_expression(char str[]) {
     return 1;
 }
 
-int calc_main(int argc,char **argv) {
+void console_init() {
+    set_color_bg(C_BLACK);
+    set_color_fg(C_WHITE);
+    print_rectangle(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    move_xy(0,0);
+}
+
+int main(int argc,char *argv[]) {
+    console_init();
     print_line("Simple Calculator\n");
     print_line("-----------------\n");
     print_line("\n");

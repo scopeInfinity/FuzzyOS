@@ -1,5 +1,6 @@
 BL_SRC_DIR = src/bootloader
 SYSCALLS_SRC_DIR = src/lib/syscalls
+LIB_SRC_DIR = src/lib
 UTIL_SRC_DIR = src/lib/util
 BUILD_DIR = build
 APP_DIR = src/app
@@ -12,6 +13,7 @@ bt_stage2_c_o = $(BUILD_DIR)/bt_stage2_c.o
 bt_stage2_asm_o = $(BUILD_DIR)/bt_stage2_asm.o
 bt_stage2 = $(BUILD_DIR)/bt_stage2
 image_vmdk = $(BUILD_DIR)/image.vmdk
+app_entry_o = $(BUILD_DIR)/app_entry.o
 
 # Apps
 app_calc = $(BUILD_DIR)/calc
@@ -26,31 +28,43 @@ all: images binaries
 
 images: $(image_vmdk)
 
-binaries: $(bt_stage1) $(bt_stage2)
+binaries: $(bt_stage1) $(bt_stage2) $(app_calc)
 
-$(image_vmdk): $(bt_stage1) $(bt_stage2)
+$(image_vmdk): $(bt_stage1) $(bt_stage2) $(app_calc)
 	dd bs=512 count=2 if=$(bt_stage1) of=$@
 	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
-	dd seek=1 bs=512 if=$(bt_stage2) of=$@
-	truncate --size=%512 $@
+	cat $(bt_stage2) >> $@
+	cat $(app_calc)  >> $@
 	@echo "Stage 1 Size     : " $$(stat -c %s $(bt_stage1))
 	@echo "Stage 2 Size     : " $$(stat -c %s $(bt_stage2))
-	@echo "Stage 2 LoadSize : " $$(( $$(printf "%d\n" "0x"$(BT_STAGE2_SECTOR_COUNT)) * 512 ))
+	@echo "App Calc Size    : " $$(stat -c %s $(app_calc))
 	@echo "Image Size       : " $$(stat -c %s $@)
-	@echo "Want BT_STAGE2_SECTOR_COUNT : 0x"$$(printf "%x\n" $$(( $$(stat -c %s $@) / 512 - 1)) )
+	@echo "Want BT_STAGE2_SECTOR_COUNT : 0x"$$(printf "%x\n" $$(( $$(stat -c %s $(bt_stage2)) / 512)) )
 	@echo "Got BT_STAGE2_SECTOR_COUNT  : 0x"$(BT_STAGE2_SECTOR_COUNT)
+	@echo "AppSector Sector Count : "$$(( $$(stat -c %s $(app_calc)) / 512))
+	@echo "AppSector Sector Start : "$$(( 1 + $$(stat -c %s $(bt_stage1)) / 512 + $$(stat -c %s $(bt_stage2)) / 512))
 
 $(bt_stage1): $(BL_SRC_DIR)/stage1.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(BL_SRC_DIR)/disk.asm
 	nasm -o $@ -f bin -i $(BL_SRC_DIR)/ -D BT_STAGE2_SECTOR_COUNT=$(BT_STAGE2_SECTOR_COUNT) $<
+	truncate --size=%512 $@
 
 $(bt_stage2): $(bt_stage2_asm_o) $(bt_stage2_c_o)
 	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $^
+	truncate --size=%512 $@
 
-$(bt_stage2_c_o): $(BL_SRC_DIR)/stage2.c $(SYSCALLS_SRC_DIR)/basic.h $(SYSCALLS_SRC_DIR)/io.h $(SYSCALLS_SRC_DIR)/time.h $(SYSCALLS_SRC_DIR)/color.h $(UTIL_SRC_DIR)/string.h $(APP_DIR)/dashboard.c $(APP_DIR)/calc.c
+$(bt_stage2_c_o): $(BL_SRC_DIR)/stage2.c $(SYSCALLS_SRC_DIR)/basic.h $(SYSCALLS_SRC_DIR)/io.h $(SYSCALLS_SRC_DIR)/time.h $(SYSCALLS_SRC_DIR)/color.h $(UTIL_SRC_DIR)/string.h $(APP_DIR)/dashboard.c
 	gcc -m16 -fno-pie -c -Isrc -o $@ $<
 
-$(bt_stage2_asm_o): $(BL_SRC_DIR)/stage2.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_syscall.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm $(bt_stage2_o)
+$(bt_stage2_asm_o): $(BL_SRC_DIR)/stage2.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_syscall.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm $(bt_stage2_o) $(SYSCALLS_SRC_DIR)/disk_syscall.asm
 	nasm -o $@ -f elf32 -i $(BL_SRC_DIR)/ -i$(SYSCALLS_SRC_DIR)/ $<
+
+$(app_entry_o): $(LIB_SRC_DIR)/app/entry.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_syscall.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm
+	nasm -o $@ -f elf32 -i $(BL_SRC_DIR)/ -i$(SYSCALLS_SRC_DIR)/ $<
+
+$(app_calc): $(app_entry_o) $(APP_DIR)/calc.c $(SYSCALLS_SRC_DIR)/basic.h $(SYSCALLS_SRC_DIR)/io.h $(SYSCALLS_SRC_DIR)/time.h $(SYSCALLS_SRC_DIR)/color.h $(UTIL_SRC_DIR)/string.h $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_syscall.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DIR)/calc.o $(APP_DIR)/calc.c
+	ld --oformat binary -m elf_i386 -Ttext 0xC000 --strip-all -o $@ $(app_entry_o) $(BUILD_DIR)/calc.o
+	truncate --size=%512 $@
 
 debug_stage1: $(bt_stage1)
 	objdump -b binary -mi386 -Maddr16,data16 -D $<

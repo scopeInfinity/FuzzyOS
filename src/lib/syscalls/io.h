@@ -80,11 +80,29 @@ void print_char(char c) {
             move_xy_diff(1, 0);
     }
 }
+char digit_to_hex[] = "0123456789ABCDEF";
+
+void print_hex_nibble(unsigned char x) {
+    print_char(digit_to_hex[x]);
+}
+
+void print_hex_byte(unsigned char x) {
+    print_hex_nibble(x>>4);
+    print_hex_nibble(x&0xF);
+}
 
 void print_line(char *str) {
     while((*str)!='\0') {
         print_char(*str);
         str++;
+    }
+}
+
+void print_memory_hex(unsigned char *str,unsigned short count) {
+    while(count) {
+        print_hex_byte(*str);
+        str++;
+        count--;
     }
 }
 

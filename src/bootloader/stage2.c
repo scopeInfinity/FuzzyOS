@@ -14,7 +14,7 @@ void entry_stage() {
     set_color_fg(C_WHITE);
     move_xy(6, 13);
     print_line(message_dashboard);
-    sleep(1000);
+    sleep(100);
     run_dashboard(0,0);
     while(1);
 }
