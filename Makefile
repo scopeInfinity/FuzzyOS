@@ -17,6 +17,7 @@ app_entry_o = $(BUILD_DIR)/app_entry.o
 
 # Apps
 app_calc = $(BUILD_DIR)/calc
+app_ttt = $(BUILD_DIR)/ttt
 app_dashboard = $(BUILD_DIR)/dashboard
 
 # Parameters
@@ -28,21 +29,25 @@ all: images binaries
 
 images: $(image_vmdk)
 
-binaries: $(bt_stage1) $(bt_stage2) $(app_calc)
+binaries: $(bt_stage1) $(bt_stage2)
 
-$(image_vmdk): $(bt_stage1) $(bt_stage2) $(app_calc)
+$(image_vmdk): $(bt_stage1) $(bt_stage2)  $(app_calc) $(app_ttt)
 	dd bs=512 count=2 if=$(bt_stage1) of=$@
 	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
 	cat $(bt_stage2) >> $@
 	cat $(app_calc)  >> $@
+	cat $(app_ttt)  >> $@
 	@echo "Stage 1 Size     : " $$(stat -c %s $(bt_stage1))
 	@echo "Stage 2 Size     : " $$(stat -c %s $(bt_stage2))
 	@echo "App Calc Size    : " $$(stat -c %s $(app_calc))
+	@echo "App TTT Size    : " $$(stat -c %s $(app_ttt))
 	@echo "Image Size       : " $$(stat -c %s $@)
 	@echo "Want BT_STAGE2_SECTOR_COUNT : 0x"$$(printf "%x\n" $$(( $$(stat -c %s $(bt_stage2)) / 512)) )
 	@echo "Got BT_STAGE2_SECTOR_COUNT  : 0x"$(BT_STAGE2_SECTOR_COUNT)
-	@echo "AppSector Sector Count : "$$(( $$(stat -c %s $(app_calc)) / 512))
-	@echo "AppSector Sector Start : "$$(( 1 + $$(stat -c %s $(bt_stage1)) / 512 + $$(stat -c %s $(bt_stage2)) / 512))
+	@echo "AppCalc Sector Count : "$$(( $$(stat -c %s $(app_calc)) / 512))
+	@echo "AppCalc Sector Start : "$$(( 1 + $$(stat -c %s $(bt_stage1)) / 512 + $$(stat -c %s $(bt_stage2)) / 512))
+	@echo "AppTTT Sector Count : "$$(( $$(stat -c %s $(app_ttt)) / 512))
+	@echo "AppTTT Sector Start : "$$(( 1 + $$(stat -c %s $(bt_stage1)) / 512 + $$(stat -c %s $(bt_stage2)) / 512 + $$(stat -c %s $(app_calc)) / 512))
 
 $(bt_stage1): $(BL_SRC_DIR)/stage1.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(BL_SRC_DIR)/disk.asm
 	nasm -o $@ -f bin -i $(BL_SRC_DIR)/ -D BT_STAGE2_SECTOR_COUNT=$(BT_STAGE2_SECTOR_COUNT) $<
@@ -64,6 +69,11 @@ $(app_entry_o): $(LIB_SRC_DIR)/app/entry.asm $(BL_SRC_DIR)/constants.asm $(BL_SR
 $(app_calc): $(app_entry_o) $(APP_DIR)/calc.c $(SYSCALLS_SRC_DIR)/basic.h $(SYSCALLS_SRC_DIR)/io.h $(SYSCALLS_SRC_DIR)/time.h $(SYSCALLS_SRC_DIR)/color.h $(UTIL_SRC_DIR)/string.h $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_syscall.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DIR)/calc.o $(APP_DIR)/calc.c
 	ld --oformat binary -m elf_i386 -Ttext 0xC000 --strip-all -o $@ $(app_entry_o) $(BUILD_DIR)/calc.o
+	truncate --size=%512 $@
+
+$(app_ttt): $(app_entry_o) $(APP_DIR)/tic_tac_toe.c $(SYSCALLS_SRC_DIR)/basic.h $(SYSCALLS_SRC_DIR)/io.h $(SYSCALLS_SRC_DIR)/time.h $(SYSCALLS_SRC_DIR)/color.h $(UTIL_SRC_DIR)/string.h $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_syscall.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DIR)/ttt.o $(APP_DIR)/tic_tac_toe.c
+	ld --oformat binary -m elf_i386 -Ttext 0xC000 --strip-all -o $@ $(app_entry_o) $(BUILD_DIR)/ttt.o
 	truncate --size=%512 $@
 
 debug_stage1: $(bt_stage1)

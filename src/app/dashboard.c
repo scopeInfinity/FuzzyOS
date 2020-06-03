@@ -46,7 +46,8 @@ int run_dashboard(int argc,char **argv) {
         int num = read_int();
 
         // Load and launch calculator
-        int err = load_sectors(0xC000, 0x80, 27, 25);
+        // int err = load_sectors(0xC000, 0x80, 27, 25);
+        int err = load_sectors(0xC000, 0x80, 52, 25);
         if(err) {
             set_color_bg(C_DARK_GRAY);
             move_xy(2,WINDOW_HEIGHT);
