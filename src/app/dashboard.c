@@ -35,8 +35,8 @@ void print_board() {
     print_applications(4,4, (char*)application_list, 5, 15);
 }
 
-int call_main(unsigned int address, int argc, char *argv[]) {
-    return ((int (*) (int, char *[]))address)(argc, argv);
+int call_main(unsigned short cs,unsigned short ip, int argc, char *argv[]) {
+    return ((int (*) (int, char *[]))(unsigned int)ip)(argc, argv);
 }
 
 int run_dashboard(int argc,char **argv) {
@@ -57,7 +57,7 @@ int run_dashboard(int argc,char **argv) {
             continue;
         }
         char *argv[] = {"argv1, argv2", "argv3"};
-        int return_status = call_main(0xC000, 3, argv);
+        int return_status = call_main(0x0C00,0x0000, 3, argv);
 
         print_board();
         set_color_bg(C_DARK_GRAY);

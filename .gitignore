@@ -1,3 +1,4 @@
 *.vmdk
 *.o
+local_notes/
 build/
