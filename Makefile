@@ -23,6 +23,9 @@ app_dashboard = $(BUILD_DIR)/dashboard
 # Parameters
 BT_STAGE2_SECTOR_COUNT = 19 # In Hex
 
+# General Assumptions
+## Integer is 4 bytes
+
 rebuild: clean all
 
 all: images binaries
@@ -93,7 +96,10 @@ debug_stage2_asm: $(bt_stage2_asm_o)
 	xxd $<
 
 qemu: $(image_vmdk) images
-	cpulimit -f -l 10 -- qemu-system-x86_64 -smp 1 -m 1M -hda $<
+	cpulimit -f -l 10 -- qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot
+
+qemu_debug: $(image_vmdk) images
+	qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot -d  cpu,exec,in_asm
 
 clean:
 	rm -f $(image_vmdk) $(bt_stage1) $(bt_stage2) $(bt_stage2_c_o) $(bt_stage2_asm_o)

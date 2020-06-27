@@ -5,6 +5,80 @@
 
 char message_welcome[] = "C says 'Hello World'";
 char message_dashboard[] = "Opening App 'Dashboard'";
+char message_protected_mode[] = "Enabling Protected Mode...";
+
+#define GDT_TABLE_SIZE 3
+
+struct GDTReference {
+    unsigned short size;
+    unsigned int base_address;
+};
+
+struct GDTEntry {
+    unsigned short limit0;
+    unsigned short base0;
+    unsigned char base1;
+    unsigned char access_byte;
+    unsigned char flags_limit1;
+    unsigned char base2;
+};
+
+// Issue#2: gdt_table must immediately after gdtr.
+struct GDTReference gdtr;
+struct GDTEntry gdt_table[GDT_TABLE_SIZE];
+
+void populate_gct_entry(struct GDTEntry *entry,
+    unsigned int base,
+    unsigned int limit,  // 20 bits
+    unsigned char flags, //  4 bits
+    unsigned char access_byte
+    ) {
+    entry->base0 = (base&0x0000FFFF);
+    entry->base1 = (base&0x00FF0000)>>16;
+    entry->base2 = (base&0xFF000000)>>24;
+    entry->limit0 = (limit&0x0FFFF);
+    entry->flags_limit1 = (flags<<4)|((limit&0xF0000)>>16);
+    entry->access_byte = access_byte;
+}
+
+extern void enter_protected_mode(int gdtr_address);
+
+int populate_gdt_table() {
+    // Assumption DS = 0
+    // Populate simple overlapping code and data segment.
+    populate_gct_entry(
+        &gdt_table[0],
+        0,0,0,0);
+    populate_gct_entry(
+        &gdt_table[1],
+        0x00000000,0x0fffffff,
+        0b00000000,
+        0x9a);
+    populate_gct_entry(
+        &gdt_table[2],
+        0x00000000,0x0fffffff,
+        0b00000000,
+        0x92);
+
+    // Issue#2: For some reason gdtr.base_address assigned is not
+    // being respected later on. So, as a bad workaround hardcoding
+    // base_address as &gdtr+8 in stage2.asm.
+    gdtr.base_address = (int)gdt_table;
+    gdtr.size = (sizeof(gdt_table));
+
+    // Print the table and table addresse.
+    move_xy(6,14);
+    print_int((int)&gdtr);
+    move_xy(6,15);
+    print_int(gdtr.base_address);
+    move_xy(6,16);
+    print_int(gdtr.size);
+    for(int i=0;i<GDT_TABLE_SIZE;i++) {
+        move_xy(6,17+i);
+        print_memory_hex(8*i+(char*)&gdt_table, 8);
+    }
+    return (int)&gdtr;
+}
 
 void entry_stage() {
     move_xy(6, 11);
@@ -13,8 +87,9 @@ void entry_stage() {
     print_line(message_welcome);
     set_color_fg(C_WHITE);
     move_xy(6, 13);
-    print_line(message_dashboard);
-    sleep(100);
-    run_dashboard(0,0);
-    while(1);
+    print_line(message_protected_mode);
+    int gdtr_address = populate_gdt_table();
+    // Note: enter_protected_mode never returns.
+    enter_protected_mode(gdtr_address);
+    // PC should never reach here :)
 }
