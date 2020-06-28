@@ -1,3 +1,5 @@
+#include <kernel/essentials.c>
+#include <kernel/drivers/keyboard.c>
 #include <lib/syscalls/io.h>
 #include <lib/syscalls/io_interface_protected.c>
 
@@ -27,6 +29,7 @@ void entry_core() {
          
     move_xy(3,3);
     print_line(welcome_message);
+    keyboard_init();
     exec(0,0);
     while(1);
 }
