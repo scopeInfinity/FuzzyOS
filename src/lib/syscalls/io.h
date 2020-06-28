@@ -3,72 +3,55 @@
 
 #include <lib/syscalls/basic.h>
 #include <lib/syscalls/color.h>
-
-extern void _low_print(char str[], unsigned short n,
-                       unsigned char x,unsigned char y,
-                       unsigned char color);
-
-extern void _low_put_chars(char c,unsigned short count, unsigned char color);
-extern void _low_move_xy(unsigned char x, unsigned char y, unsigned char page);
-
-// _low_scroll_screen with count 0 implies fill.
-extern void _low_scroll_screen(unsigned char count, unsigned char color,
-                              unsigned char x1,unsigned char y1,
-                              unsigned char x2, unsigned char y2);
-extern char _low_read_char();
-
-unsigned char IO_CURRENT_X = 0;
-unsigned char IO_CURRENT_Y = 0;
-
-#define _move_fix_location() {_low_move_xy(IO_CURRENT_X,IO_CURRENT_Y,0);}
+#include <lib/syscalls/io_interface.h>
 
 void move_x(unsigned char x) {
     IO_CURRENT_X=x;
-    _move_fix_location();
+    io_move_fix_location();
 }
 
 void move_y(unsigned char y) {
     IO_CURRENT_Y=y;
-    _move_fix_location();
+    io_move_fix_location();
 }
 
 void move_xy(unsigned char x, unsigned char y) {
     IO_CURRENT_X=x;
     IO_CURRENT_Y=y;
-    _move_fix_location();
+    io_move_fix_location();
 }
 
 void move_x_diff(unsigned char dx) {
     IO_CURRENT_X+=dx;
-    _move_fix_location();
+    io_move_fix_location();
 }
 
 void move_y_diff(unsigned char dy) {
     IO_CURRENT_Y+=dy;
-    _move_fix_location();
+    io_move_fix_location();
 }
 
 void move_xy_diff(unsigned char dx, unsigned char dy) {
     IO_CURRENT_X+=dx;
     IO_CURRENT_Y+=dy;
-    _move_fix_location();
+    io_move_fix_location();
 }
 
 void print_rectangle(unsigned char x1,unsigned char y1,
                      unsigned char x2, unsigned char y2) {
-    _low_scroll_screen(0, IO_CURRENT_COLOR, x1, y1, x2, y2);    
+    io_low_scroll_screen(0, IO_CURRENT_COLOR, x1, y1, x2, y2);    
 }
 
 void scroll(unsigned char count,
             unsigned char x1,unsigned char y1,
             unsigned char x2, unsigned char y2) {
-    _low_scroll_screen(count, IO_CURRENT_COLOR, x1, y1, x2, y2);    
+    io_low_scroll_screen(count, IO_CURRENT_COLOR, x1, y1, x2, y2);    
 }
 
 void print_char(char c) {
     switch(c) {
         case '\n':
-            if(IO_CURRENT_Y==WINDOW_HEIGHT) {
+            if(IO_CURRENT_Y>WINDOW_HEIGHT) {
                 scroll(1, 0,0,WINDOW_WIDTH, WINDOW_HEIGHT);
             } else {
                 move_y_diff(1);
@@ -76,7 +59,7 @@ void print_char(char c) {
             move_x(0);
             break;
         default:
-            _low_put_chars(c,1, IO_CURRENT_COLOR);
+            io_low_put_char(c, IO_CURRENT_COLOR);
             move_xy_diff(1, 0);
     }
 }
@@ -140,13 +123,13 @@ void print_int(int x) {
 }
 
 char getch() {
-    return _low_read_char();
+    return io_low_read_char();
 }
 
 void read_line(char *str) {
     int i = 0;
     while(1) {
-        str[i]=_low_read_char();
+        str[i]=io_low_read_char();
         if(str[i]=='\r') {
             str[i]='\0';
             print_char('\n');

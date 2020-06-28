@@ -13,6 +13,7 @@ void print_int(int x) {
 }
 #else
 #include <lib/syscalls/io.h>
+#include <lib/syscalls/io_interface_protected.c>
 #include <lib/syscalls/time.h>
 #include <lib/util/string.h>
 #endif
@@ -106,7 +107,7 @@ int handle_expression(char str[]) {
 void console_init() {
     set_color_bg(C_BLACK);
     set_color_fg(C_WHITE);
-    print_rectangle(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    print_rectangle(0, 0, WINDOW_WIDTH-1, WINDOW_HEIGHT-1);
     move_xy(0,0);
 }
 

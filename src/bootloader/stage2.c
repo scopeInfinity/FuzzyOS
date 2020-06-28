@@ -1,10 +1,13 @@
-#include <app/dashboard.c>
+#include <lib/syscalls/color.h>
+#include <lib/syscalls/disk.h>
+#include <lib/syscalls/io_interface_bios.c>
 #include <lib/syscalls/io.h>
 #include <lib/syscalls/time.h>
-#include <lib/syscalls/color.h>
 
 char message_welcome[] = "C says 'Hello World'";
 char message_dashboard[] = "Opening App 'Dashboard'";
+char message_kernel_loading[] = "Loading Kernel....";
+char message_calc_loading[] = "Loading Calc....";
 char message_protected_mode[] = "Enabling Protected Mode...";
 
 #define GDT_TABLE_SIZE 3
@@ -42,6 +45,7 @@ void populate_gct_entry(struct GDTEntry *entry,
 }
 
 extern void enter_protected_mode(int gdtr_address);
+extern void label_exit();
 
 int populate_gdt_table() {
     // Assumption DS = 0
@@ -67,17 +71,37 @@ int populate_gdt_table() {
     gdtr.size = (sizeof(gdt_table));
 
     // Print the table and table addresse.
-    move_xy(6,14);
+    move_xy(8,15);
     print_int((int)&gdtr);
-    move_xy(6,15);
+    move_xy(8,16);
     print_int(gdtr.base_address);
-    move_xy(6,16);
+    move_xy(8,17);
     print_int(gdtr.size);
     for(int i=0;i<GDT_TABLE_SIZE;i++) {
-        move_xy(6,17+i);
+        move_xy(8,18+i);
         print_memory_hex(8*i+(char*)&gdt_table, 8);
     }
     return (int)&gdtr;
+}
+
+void load_kernel() {
+    int err = load_sectors(0xC000, 0x80, DISK_KERNEL_SECTOR_START, DISK_KERNEL_SECTOR_COUNT);
+    if(err) {
+        print_line("Failed to load kernel in memory.");
+        label_exit();
+    } else {
+        print_memory_hex((char*)0xC000, 16);
+    }
+}
+
+void load_calc() {
+    int err = load_sectors(0x2000, 0x80, 27, 25);
+    if(err) {
+        print_line("Failed to load calc in memory.");
+        label_exit();
+    } else {
+        print_memory_hex((char*)0x2000, 16);
+    }
 }
 
 void entry_stage() {
@@ -86,7 +110,13 @@ void entry_stage() {
     set_color_fg(C_GREEN);
     print_line(message_welcome);
     set_color_fg(C_WHITE);
+    move_xy(6, 12);
+    print_line(message_kernel_loading);
+    load_kernel();
     move_xy(6, 13);
+    print_line(message_calc_loading);
+    load_calc();
+    move_xy(6, 14);
     print_line(message_protected_mode);
     int gdtr_address = populate_gdt_table();
     // Note: enter_protected_mode never returns.
