@@ -66,22 +66,27 @@ void print_char(char c) {
 char digit_to_hex[] = "0123456789ABCDEF";
 
 void print_hex_nibble(unsigned char x) {
-    print_char(digit_to_hex[x]);
+    if(x<10) {
+        print_char((char)(x+'0'));
+    } else {
+        print_char((char)(x+('A'-10)));
+    }
 }
 
 void print_hex_byte(unsigned char x) {
-    print_hex_nibble(x>>4);
+    print_hex_nibble((x>>4)&0xF);
     print_hex_nibble(x&0xF);
 }
 
-void print_line(char *str) {
+
+void print_line(const char *str) {
     while((*str)!='\0') {
         print_char(*str);
         str++;
     }
 }
 
-void print_memory_hex(unsigned char *str,unsigned short count) {
+void print_memory_hex(const char *str,unsigned short count) {
     while(count) {
         print_hex_byte(*str);
         str++;

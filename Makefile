@@ -1,5 +1,6 @@
 BL_SRC_DIR = src/bootloader
 KERNEL_SRC_DIR = src/kernel
+KERNEL_DRIVERS_SRC_DIR = src/kernel/drivers
 SYSCALLS_SRC_DIR = src/lib/syscalls
 LIB_SRC_DIR = src/lib
 UTIL_SRC_DIR = src/lib/util
@@ -28,6 +29,7 @@ app_dashboard = $(BUILD_DIR)/dashboard
 
 # Parameters
 BT_STAGE2_SECTOR_COUNT = 19 # In Hex
+SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_unstaged')\""
 
 # General Assumptions
 ## Integer is 4 bytes
@@ -85,10 +87,10 @@ $(kernel_core): $(kernel_core_asm_o) $(kernel_core_c_o)
 	truncate --size=%512 $@
 
 $(kernel_core_asm_o): $(KERNEL_SRC_DIR)/core.asm
-	nasm -o $@ -f elf32 -i $(KERNEL_SRC_DIR)/ -i$(SYSCALLS_SRC_DIR)/ $<
+	nasm -o $@ -f elf32 -i $(KERNEL_SRC_DIR)/ -i $(KERNEL_DRIVERS_SRC_DIR)/ -i$(SYSCALLS_SRC_DIR)/ $<
 
 $(kernel_core_c_o): $(KERNEL_SRC_DIR)/core.c
-	gcc -m16 -fno-pie -c -Isrc -o $@ $<
+	gcc -m16 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $@ $<
 
 $(app_entry_o): $(LIB_SRC_DIR)/app/entry.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_interface_bios.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm
 	nasm -o $@ -f elf32 -i $(BL_SRC_DIR)/ -i$(SYSCALLS_SRC_DIR)/ $<

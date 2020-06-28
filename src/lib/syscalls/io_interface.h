@@ -4,6 +4,14 @@
 unsigned char IO_CURRENT_X = 0;
 unsigned char IO_CURRENT_Y = 0;
 
+unsigned char get_cursor_x() {
+    return IO_CURRENT_X;
+}
+
+unsigned char get_cursor_y() {
+    return IO_CURRENT_Y;
+}
+
 void io_move_fix_location();
 
 void io_low_scroll_screen(unsigned char count, unsigned char color,
