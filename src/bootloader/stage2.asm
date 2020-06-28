@@ -1,7 +1,7 @@
 ; Fuzzy Bootloader Stage 2
 %include "constants.asm"
 %include "io.asm"
-%include "io_syscall.asm"
+%include "io_interface_bios.asm"
 %include "time_syscall.asm"
 %include "disk_syscall.asm"
 
@@ -9,6 +9,7 @@
 
 extern entry_stage
 global enter_protected_mode
+global label_exit
 
 [SECTION .text]
         CLI
@@ -86,5 +87,5 @@ global enter_protected_mode
         mov al,'e'
         mov [ebx],ax
 
-        ; TODO: Will improve this soon.
-        hlt
+        ; Hardcoded Kernel Load Address
+        jmp 0x08:0xC000

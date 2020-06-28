@@ -1,4 +1,5 @@
 #include <app/calc.c>
+#include <lib/syscalls/io_interface_bios.c>
 #include <lib/syscalls/io.h>
 #include <lib/syscalls/time.h>
 #include <lib/syscalls/color.h>
@@ -22,13 +23,13 @@ void print_applications(unsigned char x, unsigned char y, char *list, unsigned c
 void print_board() {
     set_color_bg(C_DARK_GRAY);
     set_color_fg(C_WHITE);
-    print_rectangle(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    print_rectangle(0, 0, WINDOW_WIDTH-1, WINDOW_HEIGHT-1);
     move_xy(1,0);
     print_line("Fuzzy OS");
 
     set_color_bg(C_LIGHT_GRAY);
     set_color_fg(C_BLACK);
-    print_rectangle(1, 1, WINDOW_WIDTH-1, WINDOW_HEIGHT-1);
+    print_rectangle(1, 1, WINDOW_WIDTH-2, WINDOW_HEIGHT-2);
     move_xy(3,3);
 
     print_line(query_app_number);
@@ -50,7 +51,7 @@ int run_dashboard(int argc,char **argv) {
         int err = load_sectors(0xC000, 0x80, 52, 25);
         if(err) {
             set_color_bg(C_DARK_GRAY);
-            move_xy(2,WINDOW_HEIGHT);
+            move_xy(2,WINDOW_HEIGHT-1);
             print_line("Failed to load app in memory, Error: ");
             print_int(err);
             sleep(1000);
@@ -61,7 +62,7 @@ int run_dashboard(int argc,char **argv) {
 
         print_board();
         set_color_bg(C_DARK_GRAY);
-        move_xy(2,WINDOW_HEIGHT);
+        move_xy(2,WINDOW_HEIGHT-1);
         print_line("Program Exited: ");
         print_int(return_status);
         sleep(1000);
