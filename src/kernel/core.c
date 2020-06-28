@@ -1,9 +1,6 @@
 #include <kernel/essentials.c>
-#include <kernel/drivers/keyboard.c>
-#include <lib/syscalls/io.h>
-#include <lib/syscalls/io_interface_protected.c>
-
-char welcome_message[] = "Initializing Kernel...";
+#include <lib/utils/io.h>
+#include <lib/utils/panic.h>
 
 int call_main(unsigned short cs,unsigned short ip, int argc, char *argv[]) {
     return ((int (*) (int, char *[]))(unsigned int)ip)(argc, argv);
@@ -12,6 +9,7 @@ int call_main(unsigned short cs,unsigned short ip, int argc, char *argv[]) {
 void exec(int sector_index, int sector_count){
     int memory_address = 0x2000;
     int err = 0;
+    // Load Sectors for proctected mode is not implemented yet.
     // int err = load_sectors(memory_address, 0x80, 52, 25);
     if(err) {
         move_xy(3,4);
@@ -27,9 +25,7 @@ void entry_core() {
     set_color_bg(C_BLACK);
     set_color_fg(C_WHITE);
          
-    move_xy(3,3);
-    print_line(welcome_message);
-    keyboard_init();
-    exec(0,0);
-    while(1);
+    move_xy(6,22);
+    print_line("Initializing Kernel...");
+    PANIC(501, "Kernel is under construction!!!");
 }

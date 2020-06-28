@@ -1,65 +1,57 @@
-#ifndef __LIB_SYSCALLS_IO
-#define __LIB_SYSCALLS_IO
-
-#include <lib/syscalls/basic.h>
-#include <lib/syscalls/color.h>
-#include <lib/syscalls/io_interface.h>
+#include <lib/utils/basic.h>
+#include <lib/utils/color.h>
+#include <lib/utils/io.h>
+#include <drivers/display/text_mode.h>
 
 void move_x(unsigned char x) {
-    IO_CURRENT_X=x;
-    io_move_fix_location();
+    set_display_text_x(x);
 }
 
 void move_y(unsigned char y) {
-    IO_CURRENT_Y=y;
-    io_move_fix_location();
+    set_display_text_y(y);
 }
 
 void move_xy(unsigned char x, unsigned char y) {
-    IO_CURRENT_X=x;
-    IO_CURRENT_Y=y;
-    io_move_fix_location();
+    set_display_text_xy(x, y);
 }
 
 void move_x_diff(unsigned char dx) {
-    IO_CURRENT_X+=dx;
-    io_move_fix_location();
+    set_display_text_x(get_display_text_x()+dx);
 }
 
 void move_y_diff(unsigned char dy) {
-    IO_CURRENT_Y+=dy;
-    io_move_fix_location();
+    set_display_text_y(get_display_text_y()+dy);
 }
 
 void move_xy_diff(unsigned char dx, unsigned char dy) {
-    IO_CURRENT_X+=dx;
-    IO_CURRENT_Y+=dy;
-    io_move_fix_location();
+    int x = get_display_text_x()+dx;
+    int y = get_display_text_y()+dy;
+    set_display_text_xy(x, y);
 }
 
 void print_rectangle(unsigned char x1,unsigned char y1,
                      unsigned char x2, unsigned char y2) {
-    io_low_scroll_screen(0, IO_CURRENT_COLOR, x1, y1, x2, y2);    
+    io_low_scroll_screen(0, get_color_fgbg(), x1, y1, x2, y2);    
 }
 
 void scroll(unsigned char count,
             unsigned char x1,unsigned char y1,
             unsigned char x2, unsigned char y2) {
-    io_low_scroll_screen(count, IO_CURRENT_COLOR, x1, y1, x2, y2);    
+    io_low_scroll_screen(count, get_color_fgbg(), x1, y1, x2, y2);    
 }
 
 void print_char(char c) {
     switch(c) {
         case '\n':
-            if(IO_CURRENT_Y>WINDOW_HEIGHT) {
-                scroll(1, 0,0,WINDOW_WIDTH, WINDOW_HEIGHT);
+            if (get_display_text_y()>TEXT_WINDOW_HEIGHT) {
+                scroll(1, 0,0,TEXT_WINDOW_WIDTH, TEXT_WINDOW_HEIGHT);
             } else {
                 move_y_diff(1);
             }
             move_x(0);
             break;
         default:
-            io_low_put_char(c, IO_CURRENT_COLOR);
+            io_low_put_char(c, get_color_fgbg());
             move_xy_diff(1, 0);
     }
 }
@@ -144,5 +136,3 @@ void read_line(char *str) {
         i++;
     }
 }
-
-#endif

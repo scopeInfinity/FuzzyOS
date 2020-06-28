@@ -1,10 +1,9 @@
 #include <app/calc.c>
-#include <lib/syscalls/io_interface_bios.c>
-#include <lib/syscalls/io.h>
-#include <lib/syscalls/time.h>
-#include <lib/syscalls/color.h>
-#include <lib/syscalls/disk.h>
-#include <lib/util/string.h>
+#include <lib/utils/io.h>
+#include <lib/utils/time.h>
+#include <lib/utils/color.h>
+#include <lib/utils/disk.h>
+#include <lib/utils/string.h>
 
 char query_app_number[] = "Enter Application Number: ";
 char application_list[5][15] = {"Calculator", "Sample 2", "Sample 3", "Sample 4", "Sample 5"};

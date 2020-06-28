@@ -1,7 +1,4 @@
-#ifndef __LIB_UTIL_STRING
-#define __LIB_UTIL_STRING
-
-#include <lib/syscalls/io.h>
+#include <lib/utils/string.h>
 
 char buffer_num[20];
 
@@ -34,5 +31,3 @@ int strcmp(char *l, char *r) {
     }
     return -1;
 }
-
-#endif

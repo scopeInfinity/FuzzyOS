@@ -12,10 +12,9 @@ void print_int(int x) {
     printf("%d", x);
 }
 #else
-#include <lib/syscalls/io.h>
-#include <lib/syscalls/io_interface_protected.c>
-#include <lib/syscalls/time.h>
-#include <lib/util/string.h>
+#include <lib/utils/io.h>
+#include <lib/utils/time.h>
+#include <lib/utils/string.h>
 #endif
 
 int err;
@@ -107,7 +106,7 @@ int handle_expression(char str[]) {
 void console_init() {
     set_color_bg(C_BLACK);
     set_color_fg(C_WHITE);
-    print_rectangle(0, 0, WINDOW_WIDTH-1, WINDOW_HEIGHT-1);
+    print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
     move_xy(0,0);
 }
 
