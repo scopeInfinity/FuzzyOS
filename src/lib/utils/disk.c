@@ -1,10 +1,3 @@
-#ifndef __LIB_SYSCALLS_DISK
-#define __LIB_SYSCALLS_DISK
-
-// TODO: Fix diff 1 value in DISK_KERNEL_SECTOR_START
-#define DISK_KERNEL_SECTOR_START 78
-#define DISK_KERNEL_SECTOR_COUNT 17
-
 extern int _low_disk_read_sectors(
     unsigned char count,
     unsigned short cylinder_sector,  // 10 bit + 6bit
@@ -21,5 +14,3 @@ int load_sectors(unsigned short address,
         ((sector_index<<2)&0xFF00) | (drive),
         address);
 }
-
-#endif

@@ -1,9 +1,6 @@
 ; Fuzzy Bootloader Stage 2
 %include "constants.asm"
 %include "io.asm"
-%include "io_interface_bios.asm"
-%include "time_syscall.asm"
-%include "disk_syscall.asm"
 
 [BITS 16]
 
@@ -19,7 +16,6 @@ global label_exit
 
         print_string_ext bl_stage_2, bl_stage_2_len, 04, 09, C_WHITE, C_BLACK, 0
         call entry_stage
-        JMP label_exit
 
     enter_protected_mode:
         ; Args: (gdtr_address)
@@ -49,10 +45,6 @@ global label_exit
         HLT
         JMP label_exit
 
-        PLUGIN_SYSCALLS_IO
-        PLUGIN_SYSCALLS_TIME
-        PLUGIN_SYSCALLS_DISK
-
 
 [SECTION .data]
     bl_stage_2             db      "Bootloader: Stage 2"
@@ -68,24 +60,6 @@ global label_exit
         mov es, ax
         mov fs, ax
         mov gs, ax
-
-        ; Print Done
-        mov ah,0x0F
-        mov ebx,0xb8000
-        mov al,'D'
-        mov [ebx],ax
-
-        add ebx, 2
-        mov al,'o'
-        mov [ebx],ax
-
-        add ebx, 2
-        mov al,'n'
-        mov [ebx],ax
-
-        add ebx, 2
-        mov al,'e'
-        mov [ebx],ax
 
         ; Hardcoded Kernel Load Address
         jmp 0x08:0xC000

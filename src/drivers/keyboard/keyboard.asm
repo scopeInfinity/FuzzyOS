@@ -1,4 +1,4 @@
-%macro  PLUGIN_KERNEL_DRIVERS_KEYBOARD 0
+[BITS 16]
 
 global port_write
 global port_read
@@ -27,5 +27,3 @@ global port_read
         mov esp, ebp
         pop ebp
         ret
-
-%endmacro

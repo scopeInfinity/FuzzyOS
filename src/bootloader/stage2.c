@@ -1,8 +1,7 @@
-#include <lib/syscalls/color.h>
-#include <lib/syscalls/disk.h>
-#include <lib/syscalls/io_interface_bios.c>
-#include <lib/syscalls/io.h>
-#include <lib/syscalls/time.h>
+#include <lib/utils/color.h>
+#include <lib/utils/disk.h>
+#include <lib/utils/io.h>
+#include <lib/utils/time.h>
 
 char message_welcome[] = "C says 'Hello World'";
 char message_dashboard[] = "Opening App 'Dashboard'";
@@ -87,7 +86,8 @@ int populate_gdt_table() {
 void load_kernel() {
     int err = load_sectors(0xC000, 0x80, DISK_KERNEL_SECTOR_START, DISK_KERNEL_SECTOR_COUNT);
     if(err) {
-        print_line("Failed to load kernel in memory.");
+        print_line("Failed to load kernel in memory: ");
+        print_int(err);
         label_exit();
     } else {
         print_memory_hex((char*)0xC000, 16);
@@ -98,6 +98,7 @@ void load_calc() {
     int err = load_sectors(0x2000, 0x80, 27, 25);
     if(err) {
         print_line("Failed to load calc in memory.");
+        print_int(err);
         label_exit();
     } else {
         print_memory_hex((char*)0x2000, 16);
@@ -119,7 +120,7 @@ void entry_stage() {
     move_xy(6, 14);
     print_line(message_protected_mode);
     int gdtr_address = populate_gdt_table();
-    // Note: enter_protected_mode never returns.
+    // Enter_protected_mode never returns.
     enter_protected_mode(gdtr_address);
-    // PC should never reach here :)
+    // And thus PC should never reach here :)
 }

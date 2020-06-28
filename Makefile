@@ -1,31 +1,34 @@
-BL_SRC_DIR = src/bootloader
-KERNEL_SRC_DIR = src/kernel
-KERNEL_DRIVERS_SRC_DIR = src/kernel/drivers
-SYSCALLS_SRC_DIR = src/lib/syscalls
-LIB_SRC_DIR = src/lib
-UTIL_SRC_DIR = src/lib/util
 BUILD_DIR = build
-APP_DIR = src/app
+
+SRC_BOOTLOADER = src/bootloader
+SRC_KERNEL = src/kernel
+SRC_DRIVERS = src/drivers
+SRC_LIB_UTILS = src/lib/utils
+SRC_LIB = src/lib
+SRC_APP = src/app
+
+BUILD_BOOTLOADER = build/bootloader
+BUILD_KERNEL = build/kernel
+BUILD_DRIVERS = build/drivers
+BUILD_LIB_UTILS = build/lib/utils
+BUILD_LIB = build/lib
+BUILD_APP = build/app
 
 .PHONY: all clean
 
 # Files
-bt_stage1 = $(BUILD_DIR)/bt_stage1
-bt_stage2_c_o = $(BUILD_DIR)/bt_stage2_c.o
-bt_stage2_asm_o = $(BUILD_DIR)/bt_stage2_asm.o
-bt_stage2 = $(BUILD_DIR)/bt_stage2
+bt_stage1 = $(BUILD_BOOTLOADER)/stage1
+bt_stage2 = $(BUILD_BOOTLOADER)/stage2
 image_vmdk = $(BUILD_DIR)/image.vmdk
-app_entry_o = $(BUILD_DIR)/app_entry.o
+app_entry = $(BUILD_LIB)/app/entry
 
 # Kernel
-kernel_core = $(BUILD_DIR)/kernel_core
-kernel_core_c_o = $(BUILD_DIR)/kernel_core_c.o
-kernel_core_asm_o = $(BUILD_DIR)/kernel_core_asm.o
+kernel_core = $(BUILD_DIR)/kernel/core
 
 # Apps
-app_calc = $(BUILD_DIR)/calc
-app_ttt = $(BUILD_DIR)/ttt
-app_dashboard = $(BUILD_DIR)/dashboard
+app_calc = $(BUILD_APP)/calc
+app_tick_tac_toe = $(BUILD_APP)/tick_tac_toe
+app_dashboard = $(BUILD_APP)/dashboard
 
 # Parameters
 BT_STAGE2_SECTOR_COUNT = 19 # In Hex
@@ -42,7 +45,7 @@ images: $(image_vmdk)
 
 binaries: $(bt_stage1) $(bt_stage2) $(kernel_core)
 
-$(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_ttt)
+$(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tick_tac_toe)
 	dd bs=512 count=2 if=$(bt_stage1) of=$@
 	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
 	@echo "Stage 1 Size     : " $$(stat -c %s $(bt_stage1))
@@ -57,53 +60,16 @@ $(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_ttt)
 	@echo "AppCalc Sector Count : "$$(( $$(stat -c %s $(app_calc)) / 512))
 	@echo "App Calc Size    : " $$(stat -c %s $(app_calc))
 	
-	@echo "AppTTT Sector Start : "$$(( 1 + $$(stat -c %s $(image_vmdk)) / 512 ))
-	cat $(app_ttt)  >> $@
-	@echo "AppTTT Sector Count : "$$(( $$(stat -c %s $(app_ttt)) / 512))
-	@echo "App TTT Size    : " $$(stat -c %s $(app_ttt))
+	@echo "App TickTacToe Sector Start : "$$(( 1 + $$(stat -c %s $(image_vmdk)) / 512 ))
+	cat $(app_tick_tac_toe)  >> $@
+	@echo "App TickTacToe Sector Count : "$$(( $$(stat -c %s $(app_tick_tac_toe)) / 512))
+	@echo "App TickTacToe Size    : " $$(stat -c %s $(app_tick_tac_toe))
 	
 	@echo "Kernel Core Sector Start : "$$(( 1 + $$(stat -c %s $(image_vmdk)) / 512 ))
 	cat $(kernel_core) >> $@
 	@echo "Kernel Core Sector Count : "$$(( $$(stat -c %s $(kernel_core)) / 512))
 	@echo "Kernel Core Size : " $$(stat -c %s $(kernel_core))
 	@echo "Image Size       : " $$(stat -c %s $@)
-
-$(bt_stage1): $(BL_SRC_DIR)/stage1.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(BL_SRC_DIR)/disk.asm
-	nasm -o $@ -f bin -i $(BL_SRC_DIR)/ -D BT_STAGE2_SECTOR_COUNT=$(BT_STAGE2_SECTOR_COUNT) $<
-	truncate --size=%512 $@
-
-$(bt_stage2): $(bt_stage2_asm_o) $(bt_stage2_c_o)
-	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $^
-	truncate --size=%512 $@
-
-$(bt_stage2_c_o): $(BL_SRC_DIR)/stage2.c $(SYSCALLS_SRC_DIR)/basic.h $(SYSCALLS_SRC_DIR)/io.h $(SYSCALLS_SRC_DIR)/time.h $(SYSCALLS_SRC_DIR)/color.h $(UTIL_SRC_DIR)/string.h $(APP_DIR)/dashboard.c
-	gcc -m16 -fno-pie -c -Isrc -o $@ $<
-
-$(bt_stage2_asm_o): $(BL_SRC_DIR)/stage2.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_interface_bios.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm $(bt_stage2_o) $(SYSCALLS_SRC_DIR)/disk_syscall.asm
-	nasm -o $@ -f elf32 -i $(BL_SRC_DIR)/ -i$(SYSCALLS_SRC_DIR)/ $<
-
-$(kernel_core): $(kernel_core_asm_o) $(kernel_core_c_o)
-	ld --oformat binary -m elf_i386 -Ttext 0xC000 --strip-all -o $@ $^
-	truncate --size=%512 $@
-
-$(kernel_core_asm_o): $(KERNEL_SRC_DIR)/core.asm
-	nasm -o $@ -f elf32 -i $(KERNEL_SRC_DIR)/ -i $(KERNEL_DRIVERS_SRC_DIR)/ -i$(SYSCALLS_SRC_DIR)/ $<
-
-$(kernel_core_c_o): $(KERNEL_SRC_DIR)/core.c
-	gcc -m16 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $@ $<
-
-$(app_entry_o): $(LIB_SRC_DIR)/app/entry.asm $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_interface_bios.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm
-	nasm -o $@ -f elf32 -i $(BL_SRC_DIR)/ -i$(SYSCALLS_SRC_DIR)/ $<
-
-$(app_calc): $(app_entry_o) $(APP_DIR)/calc.c $(SYSCALLS_SRC_DIR)/basic.h $(SYSCALLS_SRC_DIR)/io.h $(SYSCALLS_SRC_DIR)/time.h $(SYSCALLS_SRC_DIR)/color.h $(UTIL_SRC_DIR)/string.h $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_interface_bios.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm
-	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DIR)/calc.o $(APP_DIR)/calc.c
-	ld --oformat binary -m elf_i386 -Ttext 0x2000 --strip-all -o $@ $(app_entry_o) $(BUILD_DIR)/calc.o
-	truncate --size=%512 $@
-
-$(app_ttt): $(app_entry_o) $(APP_DIR)/tic_tac_toe.c $(SYSCALLS_SRC_DIR)/basic.h $(SYSCALLS_SRC_DIR)/io.h $(SYSCALLS_SRC_DIR)/time.h $(SYSCALLS_SRC_DIR)/color.h $(UTIL_SRC_DIR)/string.h $(BL_SRC_DIR)/constants.asm $(BL_SRC_DIR)/io.asm $(SYSCALLS_SRC_DIR)/io_interface_bios.asm $(SYSCALLS_SRC_DIR)/time_syscall.asm
-	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DIR)/ttt.o $(APP_DIR)/tic_tac_toe.c
-	ld --oformat binary -m elf_i386 -Ttext 0xC000 --strip-all -o $@ $(app_entry_o) $(BUILD_DIR)/ttt.o
-	truncate --size=%512 $@
 
 debug_stage1: $(bt_stage1)
 	objdump -b binary -mi386 -Maddr16,data16 -D $<
@@ -113,31 +79,85 @@ debug_stage2: $(bt_stage2)
 	objdump -b binary -mi386 -Maddr16,data16 -D $<
 	xxd $<
 
-debug_stage2_c: $(bt_stage2_c_o)
-	objdump -d -Maddr16,data16 $<
-	xxd $<
-
-debug_stage2_asm: $(bt_stage2_asm_o)
-	objdump -d -Maddr16,data16 $<
-	xxd $<
-
 debug_kernel: $(kernel_core)
 	objdump -b binary -mi386 -Maddr16,data16 -D $<
 	xxd $<
 
-debug_kernel_c: $(kernel_core_c_o)
-	objdump -d -Maddr16,data16 $<
-	xxd $<
-
-debug_kernel_asm: $(kernel_core_asm_o)
-	objdump -d -Maddr16,data16 $<
-	xxd $<
-
-qemu: $(image_vmdk) images
+qemu: $(image_vmdk)
 	cpulimit -f -l 10 -- qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot
 
-qemu_debug: $(image_vmdk) images
+qemu_debug: $(image_vmdk)
 	qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot -d  cpu,exec,in_asm
 
 clean:
-	rm -f $(image_vmdk) $(bt_stage1) $(bt_stage2) $(bt_stage2_c_o) $(bt_stage2_asm_o) $(kernel_core) $(kernel_core_c_o) $(kernel_core_asm_o)  $(app_calc) $(app_ttt)
+	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."
+
+# Fuzzy OS
+$(bt_stage1): $(SRC_BOOTLOADER)/stage1.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/disk.asm
+	mkdir -p $$(dirname $(bt_stage1))
+	nasm -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D BT_STAGE2_SECTOR_COUNT=$(BT_STAGE2_SECTOR_COUNT) $<
+	truncate --size=%512 $@
+
+$(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/constants.asm $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_bios
+	mkdir -p $$(dirname $(bt_stage2))
+	nasm -o $(BUILD_BOOTLOADER)/stage2_asm.o -f elf32 -i $(SRC_BOOTLOADER)/ $(SRC_BOOTLOADER)/stage2.asm
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_BOOTLOADER)/stage2_c.o $(SRC_BOOTLOADER)/stage2.c
+	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_bios
+	truncate --size=%512 $@
+
+$(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essentials.c $(SRC_LIB_UTILS)/io.h  $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga # And other io.h dependecies -_-
+	mkdir -p $$(dirname $(kernel_core))
+	nasm -o $(BUILD_KERNEL)/core_asm.o -f elf32 $(SRC_KERNEL)/core.asm
+	gcc -m16 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
+	ld --oformat binary -m elf_i386 -Ttext 0xC000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
+	truncate --size=%512 $(kernel_core)
+
+# Libraries
+
+$(app_entry): $(SRC_LIB)/app/entry.asm
+	mkdir -p $$(dirname $(app_entry))
+	nasm -o $@ -f elf32 $<
+
+$(BUILD_DRIVERS)/display/libtm_bios: $(SRC_DRIVERS)/display/text_mode_bios.c $(SRC_DRIVERS)/display/text_mode_bios.asm $(SRC_DRIVERS)/display/text_mode.h
+	mkdir -p $(BUILD_DRIVERS)/display/
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/display/text_mode_bios_c.o $(SRC_DRIVERS)/display/text_mode_bios.c
+	nasm -o $(SRC_DRIVERS)/display/text_mode_bios_asm.o -f elf32 $(SRC_DRIVERS)/display/text_mode_bios.asm
+	ar rc 	$@ $(BUILD_DRIVERS)/display/text_mode_bios_c.o $(SRC_DRIVERS)/display/text_mode_bios_asm.o
+
+$(BUILD_DRIVERS)/display/libtm_vga: $(SRC_DRIVERS)/display/text_mode_vga.c $(SRC_DRIVERS)/display/text_mode_vga.asm $(SRC_DRIVERS)/display/text_mode.h
+	mkdir -p $(BUILD_DRIVERS)/display/
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/display/text_mode_vga_c.o $(SRC_DRIVERS)/display/text_mode_vga.c
+	nasm -o $(SRC_DRIVERS)/display/text_mode_vga_asm.o -f elf32 $(SRC_DRIVERS)/display/text_mode_vga.asm
+	ar rc $@ $(BUILD_DRIVERS)/display/text_mode_vga_c.o $(SRC_DRIVERS)/display/text_mode_vga_asm.o
+
+$(BUILD_DRIVERS)/keyboard/libkeyboard: $(SRC_DRIVERS)/keyboard/keyboard.c $(SRC_DRIVERS)/keyboard/keyboard.asm
+	mkdir -p $(BUILD_DRIVERS)/keyboard/
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard.c
+	nasm -o $(SRC_DRIVERS)/keyboard/keyboard_asm.o -f elf32 $(SRC_DRIVERS)/keyboard/keyboard.asm
+	ar rc $@ $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard_asm.o
+
+$(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/io.c $(SRC_LIB_UTILS)/io.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/disk.c $(SRC_LIB_UTILS)/disk.asm $(SRC_LIB_UTILS)/disk.h  $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
+	mkdir -p $(BUILD_LIB_UTILS)/
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/io.o $(SRC_LIB_UTILS)/io.c
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string.o $(SRC_LIB_UTILS)/string.c
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color.o $(SRC_LIB_UTILS)/color.c
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/disk_c.o $(SRC_LIB_UTILS)/disk.c
+	nasm -o $(BUILD_LIB_UTILS)/disk_asm.o -f elf32 $(SRC_LIB_UTILS)/disk.asm
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
+	nasm -o $(BUILD_LIB_UTILS)/panic_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
+	nasm -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
+	ar rc $@ $(BUILD_LIB_UTILS)/io.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/disk_c.o $(BUILD_LIB_UTILS)/disk_asm.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
+
+# User Applications
+$(app_calc): $(app_entry) $(SRC_APP)/calc.c $(SRC_LIB_UTILS)/io.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils  # And dependecies :/
+	mkdir -p $$(dirname $(app_calc))
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_APP)/calc.o $(SRC_APP)/calc.c
+	ld --oformat binary -m elf_i386 -Ttext 0x2000 --strip-all -o $@ $(app_entry) $(BUILD_APP)/calc.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
+	truncate --size=%512 $@
+
+$(app_tick_tac_toe): $(app_entry) $(SRC_APP)/tic_tac_toe.c $(SRC_LIB_UTILS)/io.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils  # And dependecies :/
+	mkdir -p $$(dirname $(app_tick_tac_toe))
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_APP)/tic_tac_toe.o $(SRC_APP)/tic_tac_toe.c
+	ld --oformat binary -m elf_i386 -Ttext 0x2000 --strip-all -o $@ $(app_entry) $(BUILD_APP)/tic_tac_toe.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
+	truncate --size=%512 $@
