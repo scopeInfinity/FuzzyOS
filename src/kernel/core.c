@@ -1,3 +1,4 @@
+#include <drivers/keyboard/keyboard.h>
 #include <kernel/essentials.c>
 #include <lib/utils/io.h>
 #include <lib/utils/panic.h>
@@ -27,5 +28,6 @@ void entry_core() {
          
     move_xy(6,22);
     print_line("Initializing Kernel...");
-    PANIC(501, "Kernel is under construction!!!");
+    keyboard_init();
+    PANIC(501, "Kernel is under development!!!");
 }

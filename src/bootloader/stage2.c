@@ -52,14 +52,18 @@ int populate_gdt_table() {
     populate_gct_entry(
         &gdt_table[0],
         0,0,0,0);
+    // Kernel Code Segment Selector
     populate_gct_entry(
         &gdt_table[1],
         0x00000000,0x0fffffff,
+        // 0x0000C000,0x0fffffff,
         0b00000000,
         0x9a);
+    // Kernel Data Segment Selector
     populate_gct_entry(
         &gdt_table[2],
         0x00000000,0x0fffffff,
+        // 0x000000C000,0x0fffffff,
         0b00000000,
         0x92);
 

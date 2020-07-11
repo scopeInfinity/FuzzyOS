@@ -39,6 +39,7 @@ global label_exit
         mov eax, cr0
         or eax, 0x00000001
         mov cr0, eax
+        ;jmp 0x08:0x0000 ; address to kernel in memory
         jmp 0x08:long_jump_enter_protected
 
     label_exit:
@@ -53,13 +54,12 @@ global label_exit
 
 [BITS 16]
     long_jump_enter_protected:
-
+        ; this won't be required here in future.
         mov ax, 0x10
         mov ds, ax
         mov ss, ax
         mov es, ax
         mov fs, ax
         mov gs, ax
-
         ; Hardcoded Kernel Load Address
         jmp 0x08:0xC000

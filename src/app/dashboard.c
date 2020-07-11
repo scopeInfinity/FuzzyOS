@@ -39,7 +39,7 @@ int call_main(unsigned short cs,unsigned short ip, int argc, char *argv[]) {
     return ((int (*) (int, char *[]))(unsigned int)ip)(argc, argv);
 }
 
-int run_dashboard(int argc,char **argv) {
+int main(int argc,char **argv) {
     while(1) {
         print_board();
         move_xy(3+sizeof(query_app_number)-1,3);

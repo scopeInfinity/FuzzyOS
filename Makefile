@@ -105,11 +105,11 @@ $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_BOOT
 	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_bios
 	truncate --size=%512 $@
 
-$(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essentials.c $(SRC_LIB_UTILS)/io.h  $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga # And other io.h dependecies -_-
+$(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essentials.c $(SRC_LIB_UTILS)/io.h $(SRC_DRIVERS)/keyboard/keyboard.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga # And other io.h dependecies -_-
 	mkdir -p $$(dirname $(kernel_core))
 	nasm -o $(BUILD_KERNEL)/core_asm.o -f elf32 $(SRC_KERNEL)/core.asm
-	gcc -m16 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
-	ld --oformat binary -m elf_i386 -Ttext 0xC000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
+	ld --oformat binary -m elf_i386 --trace -Ttext 0xC000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga
 	truncate --size=%512 $(kernel_core)
 
 # Libraries
@@ -130,7 +130,7 @@ $(BUILD_DRIVERS)/display/libtm_vga: $(SRC_DRIVERS)/display/text_mode_vga.c $(SRC
 	nasm -o $(SRC_DRIVERS)/display/text_mode_vga_asm.o -f elf32 $(SRC_DRIVERS)/display/text_mode_vga.asm
 	ar rc $@ $(BUILD_DRIVERS)/display/text_mode_vga_c.o $(SRC_DRIVERS)/display/text_mode_vga_asm.o
 
-$(BUILD_DRIVERS)/keyboard/libkeyboard: $(SRC_DRIVERS)/keyboard/keyboard.c $(SRC_DRIVERS)/keyboard/keyboard.asm
+$(BUILD_DRIVERS)/keyboard/libkeyboard: $(SRC_DRIVERS)/keyboard/keyboard.c $(SRC_DRIVERS)/keyboard/keyboard.asm $(SRC_DRIVERS)/keyboard/keyboard.h $(SRC_LIB_UTILS)/time.h
 	mkdir -p $(BUILD_DRIVERS)/keyboard/
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard.c
 	nasm -o $(SRC_DRIVERS)/keyboard/keyboard_asm.o -f elf32 $(SRC_DRIVERS)/keyboard/keyboard.asm
@@ -143,7 +143,7 @@ $(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/io.c $(SRC_LIB_UTILS)/io.h $(SRC_L
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color.o $(SRC_LIB_UTILS)/color.c
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/disk_c.o $(SRC_LIB_UTILS)/disk.c
 	nasm -o $(BUILD_LIB_UTILS)/disk_asm.o -f elf32 $(SRC_LIB_UTILS)/disk.asm
-	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
+	gcc -m16 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
 	nasm -o $(BUILD_LIB_UTILS)/panic_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
 	nasm -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
