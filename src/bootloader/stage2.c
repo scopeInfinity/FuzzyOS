@@ -49,22 +49,25 @@ extern void label_exit();
 int populate_gdt_table() {
     // Assumption DS = 0
     // Populate simple overlapping code and data segment.
+
+    // Kernel Memory Location: 0x100000
+
     populate_gct_entry(
         &gdt_table[0],
         0,0,0,0);
     // Kernel Code Segment Selector
     populate_gct_entry(
         &gdt_table[1],
-        0x00000000,0x0fffffff,
-        // 0x0000C000,0x0fffffff,
-        0b00000000,
+        // 0x00000000,0x0fffffff,
+        KERNEL_MEMORY_LOCATION, 0x0fffffff,
+        0b0100,  // 32-bit protected mode
         0x9a);
     // Kernel Data Segment Selector
     populate_gct_entry(
         &gdt_table[2],
-        0x00000000,0x0fffffff,
-        // 0x000000C000,0x0fffffff,
-        0b00000000,
+        // 0x00000000,0x0fffffff,
+        KERNEL_MEMORY_LOCATION, 0x0fffffff,
+        0b0100,  // 32-bit protected mode
         0x92);
 
     // Issue#2: For some reason gdtr.base_address assigned is not
@@ -88,13 +91,15 @@ int populate_gdt_table() {
 }
 
 void load_kernel() {
-    int err = load_sectors(0xC000, 0x80, DISK_KERNEL_SECTOR_START, DISK_KERNEL_SECTOR_COUNT);
+    // As we are in real mode with DS as 0
+    // KERNEL_MEMORY_LOCATION should be within 16 bit for now.
+    int err = load_sectors(KERNEL_MEMORY_LOCATION, 0x80, DISK_KERNEL_SECTOR_START, DISK_KERNEL_SECTOR_COUNT);
     if(err) {
         print_line("Failed to load kernel in memory: ");
         print_int(err);
         label_exit();
     } else {
-        print_memory_hex((char*)0xC000, 16);
+        print_memory_hex((char*)KERNEL_MEMORY_LOCATION, 16);
     }
 }
 

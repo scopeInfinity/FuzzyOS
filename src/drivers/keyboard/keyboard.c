@@ -179,24 +179,23 @@ void keyboard_init() {
     if (out != 0xFA) {
         PANIC(out, "reset ps/2 first failed");
     }
-    // if(second_port_exists) {
-    //     // reset second port
-    //     write_to_ps2_first_port(0xFF);
-    //     out = read_reply();
-    //     if (out != 0xFA) {
-    //         PANIC(out, "reset ps/2 second failed");
-    //     }
-    // }
+    if(second_port_exists) {
+        // reset second port
+        out = write_to_ps2_first_port(0xFF, 1);
+        if (out != 0xFA) {
+            PANIC(out, "reset ps/2 second failed");
+        }
+    }
 
     // scan code
-    // write_to_ps2_first_port(0xF0, 0);
-    // out = write_to_ps2_first_port(0, 1);
-    // if (out != 0xFA) {
-    //     PANIC(out, "failed to get scan code");
-    // } else {
-    //     PANIC(out, "got get scan code");
-    // }
-    // write_to_ps2_first_port(0xF4);
+    write_to_ps2_first_port(0xF0, 0);
+    out = write_to_ps2_first_port(0, 1);
+    if (out != 0xFA) {
+        PANIC(out, "failed to get scan code");
+    } else {
+        PANIC(out, "got get scan code");
+    }
+    write_to_ps2_first_port(0xF4, 0);
 
     // Caps
     write_to_ps2_first_port(0xED, 0);
@@ -204,11 +203,10 @@ void keyboard_init() {
     if (out != 0xFA) {
         PANIC(out, "caps failed");
     }
-    // write_to_ps2_first_port(0xF4);
-    // out = read_reply();
-    // if (out != 0xFA) {
-    //     PANIC(out, "scan failed");
-    // }
+    out = write_to_ps2_first_port(0xF4, 1);
+    if (out != 0xFA) {
+        PANIC(out, "scan failed");
+    }
 
     // // detect device type
     out = write_to_ps2_first_port(0xF5, 1);

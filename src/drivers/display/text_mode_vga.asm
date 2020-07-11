@@ -1,4 +1,4 @@
-[BITS 16]
+[BITS 32]
 
 global _low_put_char
 global _low_vga_copy_step
@@ -7,6 +7,10 @@ global _low_vga_copy_step
     _low_put_char:
         push ebp
         mov ebp, esp
+        push ds
+        mov eax, 0
+        mov ds, eax                 ; memory address mapping is absolute
+
 
         mov ebx,[ebp + 0x10]        ; (ROW_WIDTH*y+x)
         shl ebx, 1
@@ -15,6 +19,7 @@ global _low_vga_copy_step
         mov ah, [ebp + 0xc]         ; (color)
         mov [ebx], ax
 
+        pop ds
         mov esp, ebp
         pop ebp
         ret
@@ -22,13 +27,17 @@ global _low_vga_copy_step
     _low_vga_copy_step:
         push ebp
         mov ebp, esp
+        push ds
+        mov eax, 0
+        mov ds, eax                 ; memory address mapping is absolute
+
         ; Copy char+colors in Row Order Format
         mov eax,[ebp + 0x8]    ; (ROW_WIDTH*y1+x1)
         mov ebx,[ebp + 0xc]    ; (ROW_WIDTH*y2+x2)
         mov ecx,[ebp + 0x10]   ; (bytes_count/2)
         add eax,0xb8000
         add ebx,0xb8000
-        
+
         _low_vga_copy_step_internal:
         mov dx, [eax]
         mov [ebx], dx
@@ -36,6 +45,7 @@ global _low_vga_copy_step
         add ebx, 2
         loop _low_vga_copy_step_internal
 
+        pop ds
         mov esp, ebp
         pop ebp
         ret

@@ -1,4 +1,4 @@
-[BITS 16]
+[BITS 32]
 
 global port_write
 global port_read
@@ -7,7 +7,7 @@ global port_read
     port_write:
         push ebp
         mov ebp, esp
-        
+
         mov al,  [ebp + 0xc]   ; value
         mov dx,  [ebp + 0x8]   ; port
         out dx, al
@@ -19,7 +19,7 @@ global port_read
     port_read:
         push ebp
         mov ebp, esp
-        
+
         mov dx,  [ebp + 0x8]   ; port
         in al, dx
         and eax, 0xFF
