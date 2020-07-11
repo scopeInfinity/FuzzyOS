@@ -1,9 +1,9 @@
 #include <lib/utils/panic.h>
 
-extern void __low_panic_halt();
+extern void panic_just_halt();
 
 void panic(int err, const char *message, const char *src_file,
-    unsigned int line_number, const char *src_snapshot) {
+    unsigned int line_number) {
     set_color_bg(C_WHITE);
     set_color_fg(C_RED);
     move_xy(0,0);
@@ -11,7 +11,7 @@ void panic(int err, const char *message, const char *src_file,
     print_char(':');
     print_int(line_number);
     print_char(',');
-    print_line(src_snapshot);
+    print_line(__SOURCE_SNAPSHOT__);
     move_xy(0,1);
     print_line("Panic");
     if (err>0) {
@@ -21,5 +21,5 @@ void panic(int err, const char *message, const char *src_file,
     }
     print_line(": ");
     print_line(message);
-    __low_panic_halt();
+    panic_just_halt();
 }

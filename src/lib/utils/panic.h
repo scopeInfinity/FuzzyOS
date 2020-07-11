@@ -1,7 +1,8 @@
 #pragma once
 #include <lib/utils/io.h>
 
-#define PANIC(err, message) panic((err), (message), __FILE__, __LINE__, __SOURCE_SNAPSHOT__)
+#define PANIC(err, message) panic((err), (message), __FILE__, __LINE__)
 
+void panic_just_halt();
 void panic(int err, const char *message, const char *src_file,
-    unsigned int line_number, const char *src_snapshot);
+    unsigned int line_number);

@@ -1,8 +1,8 @@
 [BITS 16]
 
-global __low_panic_halt
+global panic_just_halt
 
 [SECTION .text]
-    __low_panic_halt:
+    panic_just_halt:
         HLT
-        JMP __low_panic_halt
+        JMP panic_just_halt
