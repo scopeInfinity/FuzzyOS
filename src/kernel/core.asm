@@ -1,13 +1,13 @@
-[BITS 16]
+[BITS 32]
 
 extern entry_core
 global __low_va_args
 
 [SECTION .text]
         mov ax, 0x10
-        mov ds, ax
-        mov ss, ax
         mov es, ax
+        mov ss, ax
+        mov ds, ax
         mov fs, ax
         mov gs, ax
         jmp entry_core

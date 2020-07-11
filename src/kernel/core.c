@@ -1,3 +1,4 @@
+#include <drivers/display/text_mode.h>
 #include <drivers/keyboard/keyboard.h>
 #include <kernel/essentials.c>
 #include <lib/utils/io.h>
@@ -25,9 +26,9 @@ void exec(int sector_index, int sector_count){
 void entry_core() {
     set_color_bg(C_BLACK);
     set_color_fg(C_WHITE);
-         
+
     move_xy(6,22);
     print_line("Initializing Kernel...");
-    keyboard_init();
+    // keyboard_init();
     PANIC(501, "Kernel is under development!!!");
 }

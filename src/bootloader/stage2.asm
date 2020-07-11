@@ -39,8 +39,7 @@ global label_exit
         mov eax, cr0
         or eax, 0x00000001
         mov cr0, eax
-        ;jmp 0x08:0x0000 ; address to kernel in memory
-        jmp 0x08:long_jump_enter_protected
+        jmp 0x08:0x0000     ; address to kernel in memory
 
     label_exit:
         HLT
@@ -50,16 +49,3 @@ global label_exit
 [SECTION .data]
     bl_stage_2             db      "Bootloader: Stage 2"
     bl_stage_2_len         equ       ($-bl_stage_2)
-
-
-[BITS 16]
-    long_jump_enter_protected:
-        ; this won't be required here in future.
-        mov ax, 0x10
-        mov ds, ax
-        mov ss, ax
-        mov es, ax
-        mov fs, ax
-        mov gs, ax
-        ; Hardcoded Kernel Load Address
-        jmp 0x08:0xC000
