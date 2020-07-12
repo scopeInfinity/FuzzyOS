@@ -29,6 +29,6 @@ void entry_core() {
 
     move_xy(6,22);
     print_line("Initializing Kernel...");
-    // keyboard_init();
+    keyboard_init();
     PANIC(501, "Kernel is under development!!!");
 }

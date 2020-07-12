@@ -1,4 +1,7 @@
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <lib/utils/basic.h>
 #include <lib/utils/color.h>
@@ -27,3 +30,7 @@ void print_int(int x);
 
 char getch();
 void read_line(char *str);
+
+#ifdef __cplusplus
+}
+#endif
