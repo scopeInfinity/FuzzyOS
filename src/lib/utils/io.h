@@ -24,6 +24,8 @@ void scroll(unsigned char count,
 void print_char(char c);
 void print_hex_nibble(unsigned char x);
 void print_hex_byte(unsigned char x);
+void print_hex_short(unsigned short x);
+void print_hex_int(unsigned int x);
 void print_line(const char *str);
 void print_memory_hex(const char *str,unsigned short count);
 void print_int(int x);

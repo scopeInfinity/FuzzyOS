@@ -129,9 +129,13 @@ unsigned char read_data_reply() {
     wait_for_status_flag_timeout(STATUS_OUTPUT_BUFFER, 1, WAIT_FOR_STATUS_TIMEOUT);
     return port_read(DRIVERS_KEYBOARD_PORT_DATA);
 }
+extern "C" void enable_interrupts();
+extern "C" void disable_interrupts();
+
 
 extern "C" void keyboard_init() {
-    sleep_mini(30000000);
+    sleep_mini(3000000);
+
     unsigned char out;
     // disable PS/2 first port
     ps2_controller_send_command(0XAD, 0);
@@ -186,6 +190,7 @@ extern "C" void keyboard_init() {
         // enable second port
         ps2_controller_send_command(0xA8, 0);
     }
+
     // enable interrupts
     // out = ps2_controller_send_command(0X20, 1);
     // out |= 0b11;

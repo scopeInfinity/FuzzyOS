@@ -106,11 +106,12 @@ $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_BOOT
 	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios
 	truncate --size=%512 $@
 
-$(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essentials.c $(SRC_LIB_UTILS)/io.h $(SRC_DRIVERS)/keyboard/keyboard.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga # And other io.h dependecies -_-
+$(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essentials.c $(SRC_KERNEL)/interrupts.c $(SRC_KERNEL)/interrupts.asm $(SRC_LIB_UTILS)/io.h $(SRC_DRIVERS)/keyboard/keyboard.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga # And other io.h dependecies -_-
 	mkdir -p $$(dirname $(kernel_core))
 	nasm -o $(BUILD_KERNEL)/core_asm.o -f elf32 $(SRC_KERNEL)/core.asm
-	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
-	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga
+	nasm -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 $(SRC_KERNEL)/interrupts.asm
+	gcc -m32 -fno-pie -c -Isrc -D KERNEL_MEMORY_LOCATION=$(KERNEL_MEMORY_LOCATION) -o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
+	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga
 	truncate --size=%512 $(kernel_core)
 
 # Libraries

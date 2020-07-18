@@ -9,7 +9,6 @@ global enter_protected_mode
 global label_exit
 
 [SECTION .text]
-        CLI
         MOV ax, 0x0000
         MOV es, ax                  ; es := 0
         set_blinking 0
@@ -23,8 +22,6 @@ global label_exit
 
         push ebp
         mov ebp, esp
-
-        cli
 
         ; Load GDT Table
             ; Workaround for Issue #3

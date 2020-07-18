@@ -4,6 +4,7 @@ extern entry_core
 global __low_va_args
 
 [SECTION .text]
+        CLI
         mov ax, 0x10
         mov es, ax
         mov ss, ax
