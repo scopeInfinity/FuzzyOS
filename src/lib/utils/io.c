@@ -31,13 +31,13 @@ void move_xy_diff(unsigned char dx, unsigned char dy) {
 
 void print_rectangle(unsigned char x1,unsigned char y1,
                      unsigned char x2, unsigned char y2) {
-    io_low_scroll_screen(0, get_color_fgbg(), x1, y1, x2, y2);    
+    io_low_scroll_screen(0, get_color_fgbg(), x1, y1, x2, y2);
 }
 
 void scroll(unsigned char count,
             unsigned char x1,unsigned char y1,
             unsigned char x2, unsigned char y2) {
-    io_low_scroll_screen(count, get_color_fgbg(), x1, y1, x2, y2);    
+    io_low_scroll_screen(count, get_color_fgbg(), x1, y1, x2, y2);
 }
 
 void print_char(char c) {
@@ -70,6 +70,15 @@ void print_hex_byte(unsigned char x) {
     print_hex_nibble(x&0xF);
 }
 
+void print_hex_short(unsigned short x) {
+    print_hex_byte(x>>8);
+    print_hex_byte(x&0xFF);
+}
+
+void print_hex_int(unsigned int x) {
+    print_hex_short(x>>16);
+    print_hex_short(x&0xFFFF);
+}
 
 void print_line(const char *str) {
     while((*str)!='\0') {

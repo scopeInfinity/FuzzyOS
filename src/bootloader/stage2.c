@@ -11,11 +11,11 @@ char message_protected_mode[] = "Enabling Protected Mode...";
 
 #define GDT_TABLE_SIZE 3
 
+#pragma pack(push, 1)
 struct GDTReference {
     unsigned short size;
     unsigned int base_address;
 };
-
 struct GDTEntry {
     unsigned short limit0;
     unsigned short base0;
@@ -24,6 +24,7 @@ struct GDTEntry {
     unsigned char flags_limit1;
     unsigned char base2;
 };
+#pragma pack(pop)
 
 // Issue#2: gdt_table must immediately after gdtr.
 struct GDTReference gdtr;

@@ -2,6 +2,8 @@
 
 global port_write
 global port_read
+global enable_interrupts
+global disable_interrupts
 
 [SECTION .text]
     port_write:
@@ -26,4 +28,12 @@ global port_read
 
         mov esp, ebp
         pop ebp
+        ret
+
+    enable_interrupts:
+        STI
+        ret
+
+    disable_interrupts:
+        CLI
         ret
