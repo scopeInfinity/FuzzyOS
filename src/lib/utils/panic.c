@@ -2,7 +2,7 @@
 
 extern void panic_just_halt();
 
-void panic(int err, const char *message, const char *src_file,
+int panic(int err, const char *message, const char *src_file,
     unsigned int line_number) {
     set_color_bg(C_WHITE);
     set_color_fg(C_RED);

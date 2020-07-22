@@ -7,8 +7,10 @@ extern "C" {
 
 #define PANIC(err, message) panic((err), (message), __FILE__, __LINE__)
 
+#define ASSERT(ok)  (ok || panic(0, "Assert Failed: " #ok, __FILE__, __LINE__))
+
 void panic_just_halt();
-void panic(int err, const char *message, const char *src_file,
+int panic(int err, const char *message, const char *src_file,
     unsigned int line_number);
 
 #ifdef __cplusplus

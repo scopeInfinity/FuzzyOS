@@ -1,4 +1,4 @@
-#define IDT_SIZE 16
+#define IDT_SIZE 128
 
 extern void interrupt_nohup();
 extern void load_idt_table(unsigned int idtr_address);
@@ -53,10 +53,20 @@ void populate_idt_entry_32bit(int id,
         );
 }
 
+extern void syscall_interrupt_handler_low();
+int x = 0;
+void syscall_interrupt_handler() {
+    move_xy(4,7);
+    print_line("Wierd syscall interrupt 0x64!!!! ");
+    print_int(x);
+    x++;
+}
+
 void populate_and_load_idt_table() {
     for (int i = 0; i < IDT_SIZE; ++i) {
         populate_idt_entry_32bit(i, (unsigned int)interrupt_nohup, 0, 1);
     }
+    populate_idt_entry_32bit(0x64, (unsigned int)syscall_interrupt_handler_low, 0, 1);
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
     idtr.base_address = ((int)idt_table + KERNEL_MEMORY_LOCATION);
 
