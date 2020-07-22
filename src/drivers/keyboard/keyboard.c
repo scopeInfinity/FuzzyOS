@@ -1,10 +1,10 @@
-// UnderDevelopment: Not in functional state.
-// It's NOT Working :(...
-// Also keyboard is depending lib/utils which depends on drivers :(
 #include <drivers/keyboard/keyboard.h>
+#include <lib/ds/queue.h>
 #include <lib/utils/io.h>
 #include <lib/utils/time.h>
 #include <lib/utils/panic.h>
+
+#include "scancode_handler.c"
 
 #define DRIVERS_KEYBOARD_PORT_DATA      0x60
 #define DRIVERS_KEYBOARD_PORT_STATUS    0x64
@@ -16,14 +16,11 @@
 #define STATUS_SYSTEM_FLAG 0x4
 #define STATUS_CMD_DATA 0x8 // 0:cmd 1:data
 
-
-extern "C" {
-    // Using USB Legacy Support
-    extern void port_write(unsigned short port, unsigned char value);
-    extern unsigned char port_read(unsigned short port);
-    void __stack_chk_fail(void) {
-        PANIC(0, "Kernel stack overflow!!!");
-    }
+// Using USB Legacy Support
+extern void port_write(unsigned short port, unsigned char value);
+extern unsigned char port_read(unsigned short port);
+void __stack_chk_fail(void) {
+    PANIC(0, "Kernel stack overflow!!!");
 }
 
 void print_status(const char *message, int status) {
@@ -50,26 +47,36 @@ void keyboard_wait() {
 }
 
 const int WAIT_FOR_STATUS_TIMEOUT = 1000000;
+const int WAIT_FOR_STATUS_KEYSCANCODE_TIMEOUT = 1000;
 
-void wait_for_status_flag_timeout(unsigned char flag, unsigned char check_true, int timeout) {
+int wait_for_status_flag_timeout_low(unsigned char flag, unsigned char check_true, int timeout, int canpanic) {
     while(timeout>0) {
         if((((port_read(DRIVERS_KEYBOARD_PORT_STATUS))&flag)!=0)^check_true) {
              // waiting
         } else {
             // poll done
-            return;
+            return 1;
         }
         timeout--;
     }
+    if(!canpanic) return 0;
     if(check_true) {
         PANIC(flag,"TIMEOUT: status bit set");
     } else {
         PANIC(flag,"TIMEOUT: status bit reset");
     }
 }
-
-void wait_for_status_flag(unsigned char flag, unsigned char check_true) {
-    wait_for_status_flag_timeout(flag, check_true, WAIT_FOR_STATUS_TIMEOUT);
+int wait_for_status_flag_timeout(unsigned char flag, unsigned char check_true, int timeout) {
+    return wait_for_status_flag_timeout_low(flag, check_true, timeout, 1);
+}
+int wait_for_status_flag_nopanic(unsigned char flag, unsigned char check_true) {
+    return wait_for_status_flag_timeout_low(flag, check_true, WAIT_FOR_STATUS_TIMEOUT, 0);
+}
+int wait_for_status_flag_nopanic_timeout(unsigned char flag, unsigned char check_true, int timeout) {
+    return wait_for_status_flag_timeout_low(flag, check_true, timeout, 0);
+}
+int wait_for_status_flag(unsigned char flag, unsigned char check_true) {
+    return wait_for_status_flag_timeout_low(flag, check_true, WAIT_FOR_STATUS_TIMEOUT, 1);
 }
 
 unsigned char ps2_controller_send_command(unsigned char cmd, int want_reply) {
@@ -129,11 +136,45 @@ unsigned char read_data_reply() {
     wait_for_status_flag_timeout(STATUS_OUTPUT_BUFFER, 1, WAIT_FOR_STATUS_TIMEOUT);
     return port_read(DRIVERS_KEYBOARD_PORT_DATA);
 }
-extern "C" void enable_interrupts();
-extern "C" void disable_interrupts();
 
+#define KEYBOARD_BUFFER_SIZE 64
+int keyboard_buffer[KEYBOARD_BUFFER_SIZE+3];
 
-extern "C" void keyboard_init() {
+void keyboard_scanner_handle_buffer(int keyboard_buffer_queue[]);
+
+void keyboard_scanner_init() {
+    ASSERT( queue_init(keyboard_buffer, KEYBOARD_BUFFER_SIZE) );
+}
+
+int keyboard_scanner_step() {
+    int state_change = 0;
+    int qc = queue_capacity(keyboard_buffer);
+    int qs = queue_size(keyboard_buffer);
+    while(qs<qc) {
+        int got_response = wait_for_status_flag_nopanic_timeout(STATUS_OUTPUT_BUFFER, 1, WAIT_FOR_STATUS_KEYSCANCODE_TIMEOUT);
+        if(!got_response) return;
+        unsigned char out = read_data_reply();
+        if(out == 0) return;
+        state_change = 1;
+
+        queue_push(keyboard_buffer, out);
+        qs++;
+    }
+    keyboard_scanner_handle_buffer(keyboard_buffer);
+    return state_change;
+}
+
+int fake_getch() {
+    while(queue_size(keyboard_buffer) == 0) {
+        // busy wait but checking on keyboard replies.
+        keyboard_scanner_step();
+    }
+    int out = queue_front(keyboard_buffer);
+    queue_pop(keyboard_buffer);
+    return out;
+}
+
+void keyboard_init() {
     sleep_mini(3000000);
 
     unsigned char out;
@@ -192,9 +233,9 @@ extern "C" void keyboard_init() {
     }
 
     // enable interrupts
-    // out = ps2_controller_send_command(0X20, 1);
-    // out |= 0b11;
-    // ps2_controller_send_command_with_data(0x60, out, 0);
+    out = ps2_controller_send_command(0X20, 1);
+    out |= 0b11;
+    ps2_controller_send_command_with_data(0x60, out, 0);
 
 
     // reset device
@@ -241,31 +282,28 @@ extern "C" void keyboard_init() {
     if (out != 0xFA) {
         PANIC(out, "caps failed");
     }
+    // get scan code
+    write_to_ps2_first_port(0xF0, 0);
+    out = write_to_ps2_first_port(0, 1);
+    if (out != 0xFA) {
+        PANIC(out, "failed to get scan code");
+    } else {
+        // Not yet working
+        // out = read_data_reply();
+        // PANIC(out, "got get scan code");
+    }
 
     // set scan code
     write_to_ps2_first_port(0xF0, 0);
-    out = write_to_ps2_first_port(1, 2);
+    out = write_to_ps2_first_port(2, 1);
     if (out != 0xFA) {
         PANIC(out, "failed to set scan code");
     }
+
     // enable scanning
-    write_to_ps2_first_port(0xF4, 0);
-
-    // get scan code
-    // write_to_ps2_first_port(0xF0, 0);
-    // out = write_to_ps2_first_port(0, 1);
-    // if (out != 0xFA) {
-    //     PANIC(out, "failed to get scan code");
-    // } else {
-    //     PANIC(out, "got get scan code");
-    // }
-    // write_to_ps2_first_port(0xF4, 0);
-
     out = write_to_ps2_first_port(0xF4, 1);
     if (out != 0xFA) {
         PANIC(out, "scan failed");
     }
-
-
-    PANIC(1, "end");
+    keyboard_scanner_init();
 }

@@ -36,5 +36,13 @@ void entry_core() {
     print_line("Initializing Kernel...");
     populate_and_load_idt_table();
     kernel_enable_interrupts();
+    keyboard_init();
+
+    move_xy(2,8);
+    print_line("Keyboard ScanCode: ");
+    while(1) {
+        move_xy(21, 8);
+        print_hex_int(fake_getch());
+    }
     PANIC(501, "Kernel is under development!!!");
 }

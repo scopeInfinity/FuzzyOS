@@ -6,6 +6,9 @@ global kernel_enable_interrupts
 global kernel_disable_interrupts
 global idt_table
 
+global syscall_interrupt_handler_low
+extern syscall_interrupt_handler
+
 [SECTION .text]
 
     interrupt_nohup:
@@ -29,3 +32,7 @@ global idt_table
     kernel_disable_interrupts:
         CLI
         ret
+
+    syscall_interrupt_handler_low:
+        call syscall_interrupt_handler
+        iret

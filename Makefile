@@ -3,6 +3,7 @@ BUILD_DIR = build
 SRC_BOOTLOADER = src/bootloader
 SRC_KERNEL = src/kernel
 SRC_DRIVERS = src/drivers
+SRC_LIB_DS = src/lib/ds
 SRC_LIB_UTILS = src/lib/utils
 SRC_LIB = src/lib
 SRC_APP = src/app
@@ -10,6 +11,7 @@ SRC_APP = src/app
 BUILD_BOOTLOADER = build/bootloader
 BUILD_KERNEL = build/kernel
 BUILD_DRIVERS = build/drivers
+BUILD_LIB_DS = build/lib/ds
 BUILD_LIB_UTILS = build/lib/utils
 BUILD_LIB = build/lib
 BUILD_APP = build/app
@@ -111,7 +113,7 @@ $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essent
 	nasm -o $(BUILD_KERNEL)/core_asm.o -f elf32 $(SRC_KERNEL)/core.asm
 	nasm -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 $(SRC_KERNEL)/interrupts.asm
 	gcc -m32 -fno-pie -c -Isrc -D KERNEL_MEMORY_LOCATION=$(KERNEL_MEMORY_LOCATION) -o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
-	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga
+	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_DS)/libds
 	truncate --size=%512 $(kernel_core)
 
 # Libraries
@@ -133,11 +135,11 @@ $(BUILD_DRIVERS)/display/libtm_vga: $(SRC_DRIVERS)/display/text_mode_vga.c $(SRC
 	nasm -o $(SRC_DRIVERS)/display/text_mode_vga_asm.o -f elf32 $(SRC_DRIVERS)/display/text_mode_vga.asm
 	ar rc $@ $(BUILD_DRIVERS)/display/text_mode_vga_c.o $(SRC_DRIVERS)/display/text_mode_vga_asm.o
 
-$(BUILD_DRIVERS)/keyboard/libkeyboard: $(SRC_DRIVERS)/keyboard/keyboard.cpp $(SRC_DRIVERS)/keyboard/keyboard.asm $(SRC_DRIVERS)/keyboard/keyboard.h $(SRC_LIB_UTILS)/time.h
+$(BUILD_DRIVERS)/keyboard/libkeyboard: $(SRC_DRIVERS)/keyboard/keyboard.c $(SRC_DRIVERS)/keyboard/keyboard.asm $(SRC_DRIVERS)/keyboard/keyboard.h $(SRC_DRIVERS)/keyboard/scancode_handler.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_DS)/queue.h $(BUILD_LIB_DS)/libds
 	mkdir -p $(BUILD_DRIVERS)/keyboard/
-	g++ -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard.cpp
-	nasm -o $(SRC_DRIVERS)/keyboard/keyboard_asm.o -f elf32 $(SRC_DRIVERS)/keyboard/keyboard.asm
-	ar rc $@ $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard_asm.o
+	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard.c
+	nasm -o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o -f elf32 $(SRC_DRIVERS)/keyboard/keyboard.asm
+	ar rc $@ $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o
 
 $(BUILD_LIB_UTILS)/libutils_16: $(SRC_LIB_UTILS)/io.c $(SRC_LIB_UTILS)/io.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/disk.c $(SRC_LIB_UTILS)/disk.asm $(SRC_LIB_UTILS)/disk.h  $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
 	mkdir -p $(BUILD_LIB_UTILS)/
@@ -164,6 +166,11 @@ $(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/io.c $(SRC_LIB_UTILS)/io.h $(SRC_L
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
 	nasm -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
 	ar rc $@ $(BUILD_LIB_UTILS)/io.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/disk_c.o $(BUILD_LIB_UTILS)/disk_asm.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
+
+$(BUILD_LIB_DS)/libds: $(SRC_LIB_DS)/queue.h $(SRC_LIB_DS)/queue.c
+	mkdir -p $(BUILD_LIB_DS)/
+	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_DS)/queue.o $(SRC_LIB_DS)/queue.c
+	ar rc $@ $(BUILD_LIB_DS)/queue.o
 
 # User Applications
 $(app_calc): $(app_entry) $(SRC_APP)/calc.c $(SRC_LIB_UTILS)/io.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga  # And dependecies :/
