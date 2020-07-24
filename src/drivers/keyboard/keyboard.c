@@ -138,10 +138,12 @@ unsigned char read_data_reply() {
 #define KEYBOARD_BUFFER_SIZE 64
 int keyboard_buffer[KEYBOARD_BUFFER_SIZE+3];
 
+void keyboard_scanner_handler_init();
 int keyboard_scanner_handle_buffer(int keyboard_buffer_queue[]);
 
 void keyboard_scanner_init() {
     ASSERT( queue_init(keyboard_buffer, KEYBOARD_BUFFER_SIZE) );
+    keyboard_scanner_handler_init();
 }
 
 int keyboard_scanner_step() {
