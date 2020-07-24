@@ -171,7 +171,7 @@ static const unsigned char KEYBOARD_ASCII_MAPH_OTHERS[] = {
     KEYBOARD_SC_RPF0_blackslash, '\\'
 };
 
-
+static unsigned char KEYBOARD_ASCII_MAPPING[256];
 static char last_ascii;
 static int last_ascii_available = 0;
 static char tmp_juggad_is_f0 = 0;
@@ -183,6 +183,28 @@ int keyboard_scanner_ascii_is_available() {
 char keyboard_scanner_ascii_get() {
     last_ascii_available = 0;
     return last_ascii;
+}
+
+void keyboard_scanner_handler_init() {
+    for (int i = 0; i < sizeof(KEYBOARD_ASCII_MAPPING); ++i) {
+        KEYBOARD_ASCII_MAPPING[i] = 0;
+    }
+    for(int i = 0;i<sizeof(KEYBOARD_ASCII_MAPH_AZ);i++) {
+        unsigned char code = KEYBOARD_ASCII_MAPH_AZ[i];
+        unsigned char c = 'a'+i;
+        KEYBOARD_ASCII_MAPPING[code]=c;
+    }
+     for(int i = 0;i<sizeof(KEYBOARD_ASCII_MAPH_09);i++) {
+        unsigned char code = KEYBOARD_ASCII_MAPH_09[i];
+        unsigned char c = '0'+i;
+        KEYBOARD_ASCII_MAPPING[code]=c;
+    }
+    if(last_ascii_available) return 1;
+    for(int i = 0;i<sizeof(KEYBOARD_ASCII_MAPH_OTHERS);i+=2) {
+        unsigned char code = KEYBOARD_ASCII_MAPH_OTHERS[i];
+        unsigned char c = KEYBOARD_ASCII_MAPH_OTHERS[i+1];
+        KEYBOARD_ASCII_MAPPING[code]=c;
+    }
 }
 
 int keyboard_scanner_handle_buffer(int keyboard_buffer[]) {
@@ -203,28 +225,9 @@ int keyboard_scanner_handle_buffer(int keyboard_buffer[]) {
         return 1;
     }
 
-    for(int i = 0;i<sizeof(KEYBOARD_ASCII_MAPH_AZ);i++) {
-        if(KEYBOARD_ASCII_MAPH_AZ[i]==c0) {
-            last_ascii = 'a'+i;
-            last_ascii_available = 1;
-            break;
-        }
-    }
-    if(last_ascii_available) return 1;
-    for(int i = 0;i<sizeof(KEYBOARD_ASCII_MAPH_09);i++) {
-        if(KEYBOARD_ASCII_MAPH_09[i]==c0) {
-            last_ascii = '0'+i;
-            last_ascii_available = 1;
-            break;
-        }
-    }
-    if(last_ascii_available) return 1;
-    for(int i = 0;i<sizeof(KEYBOARD_ASCII_MAPH_OTHERS);i+=2) {
-        if(KEYBOARD_ASCII_MAPH_OTHERS[i]==c0) {
-            last_ascii = KEYBOARD_ASCII_MAPH_OTHERS[i+1];
-            last_ascii_available = 1;
-            break;
-        }
+    if(KEYBOARD_ASCII_MAPPING[c0]>0) {
+        last_ascii = KEYBOARD_ASCII_MAPPING[c0];
+        last_ascii_available = 1;
     }
     if(last_ascii_available) return 1;
     return 0;

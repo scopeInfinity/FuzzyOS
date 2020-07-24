@@ -3,6 +3,7 @@
 #include <lib/utils/output.h>
 #include <lib/utils/input.h>
 #include <lib/utils/panic.h>
+#include <lib/utils/time.h>
 
 #include "kernel/essentials.c"
 #include "kernel/interrupts.c"
