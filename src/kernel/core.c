@@ -1,6 +1,7 @@
 #include <drivers/display/text_mode.h>
 #include <drivers/keyboard/keyboard.h>
-#include <lib/utils/io.h>
+#include <lib/utils/output.h>
+#include <lib/utils/input.h>
 #include <lib/utils/panic.h>
 
 #include "kernel/essentials.c"
@@ -30,7 +31,7 @@ void exec(int sector_index, int sector_count){
 void entry_core() {
     set_color_bg(C_BLUE);
     set_color_fg(C_WHITE);
-    print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_WIDTH-1);
+    print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
 
     move_xy(2,2);
     print_line("Initializing Kernel...");
@@ -39,10 +40,15 @@ void entry_core() {
     keyboard_init();
 
     move_xy(2,8);
-    print_line("Keyboard ScanCode: ");
+    print_line("Keyboard: ");
+
+    set_color_bg(C_WHITE);
+    set_color_fg(C_BLACK);
+    print_rectangle(0, 10, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-2);
+    move_xy(0,10);
+
     while(1) {
-        move_xy(21, 8);
-        print_hex_int(fake_getch());
+        print_char(getch());
     }
     PANIC(501, "Kernel is under development!!!");
 }

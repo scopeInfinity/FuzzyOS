@@ -1,7 +1,6 @@
 #pragma once
 
-#include <lib/utils/io.h>
+#include <lib/utils/output.h>
 
 int parse_int(char *s);
-int read_int();
 int strcmp(char *l, char *r);

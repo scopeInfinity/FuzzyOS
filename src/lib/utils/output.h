@@ -30,9 +30,6 @@ void print_line(const char *str);
 void print_memory_hex(const char *str,unsigned short count);
 void print_int(int x);
 
-char getch();
-void read_line(char *str);
-
 #ifdef __cplusplus
 }
 #endif

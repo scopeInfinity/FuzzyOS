@@ -1,6 +1,6 @@
 #include <lib/utils/color.h>
 #include <lib/utils/disk.h>
-#include <lib/utils/io.h>
+#include <lib/utils/output.h>
 #include <lib/utils/time.h>
 
 char message_welcome[] = "C says 'Hello World'";

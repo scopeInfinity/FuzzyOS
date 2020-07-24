@@ -20,5 +20,6 @@
 #define make_color(fg, bg) ((unsigned char)((fg) + ((bg)<<4)))
 
 unsigned char get_color_fgbg();
+void set_color_fgbg(unsigned char color);
 void set_color_fg(unsigned char color);
 void set_color_bg(unsigned char color);

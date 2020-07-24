@@ -3,7 +3,7 @@
 extern "C" {
 #endif
 
-#include <lib/utils/io.h>
+#include <lib/utils/output.h>
 
 #define PANIC(err, message) panic((err), (message), __FILE__, __LINE__)
 

@@ -29,6 +29,26 @@ int queue_push(int container[], int data) {
     return 1;
 }
 
+int queue_push_front(int container[], int data) {
+    int *back = &container[0];
+    int *front = &container[1];
+    int size = container[2];
+    if((*back) == -1) {
+        *back = 3;
+        *front = 3;
+    } else {
+        (*front)--;
+        if((*front)<3) {
+            (*front) = size-1;
+        }
+        if((*back)==(*front)) {
+            return 0;
+        }
+    }
+    container[*front] = data;
+    return 1;
+}
+
 int queue_front(int container[]) {
     int *front = &container[0];
     return container[*front];

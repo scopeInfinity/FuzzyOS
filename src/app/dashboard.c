@@ -1,9 +1,14 @@
 #include <app/calc.c>
-#include <lib/utils/io.h>
+#include <lib/utils/output.h>
 #include <lib/utils/time.h>
 #include <lib/utils/color.h>
 #include <lib/utils/disk.h>
 #include <lib/utils/string.h>
+
+void read_line(char *s) {
+    // Not Implemented.
+    // Migrate binary to 32-bit.
+}
 
 char query_app_number[] = "Enter Application Number: ";
 char application_list[5][15] = {"Calculator", "Sample 2", "Sample 3", "Sample 4", "Sample 5"};
