@@ -2,4 +2,4 @@
 
 void keyboard_init();
 
-int fake_getch();
+char keyboard_get_key_pressed_blocking();

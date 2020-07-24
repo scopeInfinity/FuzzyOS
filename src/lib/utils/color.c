@@ -12,6 +12,10 @@ unsigned char get_color_fgbg() {
     return IO_CURRENT_COLOR;
 }
 
+void set_color_fgbg(unsigned char color) {
+    IO_CURRENT_COLOR = color;
+}
+
 void set_color_fg(unsigned char color) {
     IO_CURRENT_FG = color;
     _compute_color();

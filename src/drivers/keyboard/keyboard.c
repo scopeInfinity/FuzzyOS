@@ -1,6 +1,6 @@
 #include <drivers/keyboard/keyboard.h>
 #include <lib/ds/queue.h>
-#include <lib/utils/io.h>
+#include <lib/utils/output.h>
 #include <lib/utils/time.h>
 #include <lib/utils/panic.h>
 
@@ -24,8 +24,6 @@ void __stack_chk_fail(void) {
 }
 
 void print_status(const char *message, int status) {
-    set_color_bg(C_WHITE);
-    set_color_fg(C_BLACK);
     move_xy(0, TEXT_WINDOW_HEIGHT-1);
     print_line(message);
     print_int(status);
@@ -47,7 +45,7 @@ void keyboard_wait() {
 }
 
 const int WAIT_FOR_STATUS_TIMEOUT = 1000000;
-const int WAIT_FOR_STATUS_KEYSCANCODE_TIMEOUT = 1000;
+const int WAIT_FOR_STATUS_KEYSCANCODE_TIMEOUT = 10;
 
 int wait_for_status_flag_timeout_low(unsigned char flag, unsigned char check_true, int timeout, int canpanic) {
     while(timeout>0) {
@@ -140,7 +138,7 @@ unsigned char read_data_reply() {
 #define KEYBOARD_BUFFER_SIZE 64
 int keyboard_buffer[KEYBOARD_BUFFER_SIZE+3];
 
-void keyboard_scanner_handle_buffer(int keyboard_buffer_queue[]);
+int keyboard_scanner_handle_buffer(int keyboard_buffer_queue[]);
 
 void keyboard_scanner_init() {
     ASSERT( queue_init(keyboard_buffer, KEYBOARD_BUFFER_SIZE) );
@@ -150,11 +148,11 @@ int keyboard_scanner_step() {
     int state_change = 0;
     int qc = queue_capacity(keyboard_buffer);
     int qs = queue_size(keyboard_buffer);
-    while(qs<qc) {
+    if(qs<qc) {
         int got_response = wait_for_status_flag_nopanic_timeout(STATUS_OUTPUT_BUFFER, 1, WAIT_FOR_STATUS_KEYSCANCODE_TIMEOUT);
-        if(!got_response) return;
+        if(!got_response) return 0;
         unsigned char out = read_data_reply();
-        if(out == 0) return;
+        if(out == 0) return 0;
         state_change = 1;
 
         queue_push(keyboard_buffer, out);
@@ -164,17 +162,19 @@ int keyboard_scanner_step() {
     return state_change;
 }
 
-int fake_getch() {
-    while(queue_size(keyboard_buffer) == 0) {
-        // busy wait but checking on keyboard replies.
+char keyboard_get_key_pressed_blocking() {
+    while(!keyboard_scanner_ascii_is_available()) {
         keyboard_scanner_step();
     }
-    int out = queue_front(keyboard_buffer);
-    queue_pop(keyboard_buffer);
-    return out;
+    return keyboard_scanner_ascii_get();
 }
 
 void keyboard_init() {
+    unsigned char original_colors =  get_color_fgbg();
+
+    set_color_bg(C_LIGHT_GRAY);
+    set_color_fg(C_BLACK);
+
     sleep_mini(3000000);
 
     unsigned char out;
@@ -306,4 +306,5 @@ void keyboard_init() {
         PANIC(out, "scan failed");
     }
     keyboard_scanner_init();
+    set_color_fgbg(original_colors);
 }

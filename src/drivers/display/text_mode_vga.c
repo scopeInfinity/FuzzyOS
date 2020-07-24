@@ -75,9 +75,3 @@ void io_low_scroll_screen(unsigned char count, unsigned char color,
 void io_low_put_char(char c, unsigned char color) {
     _low_put_char(c,color, location_xy);
 }
-
-char io_low_read_char() {
-    // Not implemented!
-    while(1);
-    return 0;
-}

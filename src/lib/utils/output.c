@@ -1,6 +1,6 @@
 #include <lib/utils/basic.h>
 #include <lib/utils/color.h>
-#include <lib/utils/io.h>
+#include <lib/utils/output.h>
 #include <drivers/display/text_mode.h>
 
 void move_x(unsigned char x) {
@@ -125,23 +125,5 @@ void print_int(int x) {
     while(tailing_zero) {
         print_char('0');
         tailing_zero--;
-    }
-}
-
-char getch() {
-    return io_low_read_char();
-}
-
-void read_line(char *str) {
-    int i = 0;
-    while(1) {
-        str[i]=io_low_read_char();
-        if(str[i]=='\r') {
-            str[i]='\0';
-            print_char('\n');
-            break;
-        }
-        print_char(str[i]);
-        i++;
     }
 }

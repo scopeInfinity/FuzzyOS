@@ -12,9 +12,13 @@ void print_int(int x) {
     printf("%d", x);
 }
 #else
-#include <lib/utils/io.h>
+#include <lib/utils/output.h>
 #include <lib/utils/time.h>
 #include <lib/utils/string.h>
+void read_line(char *s) {
+    // Not Implemented.
+    // Migrate binary to 32-bit.
+}
 #endif
 
 int err;
@@ -98,7 +102,7 @@ int handle_expression(char str[]) {
     } else {
         print_line("  Result: ");
         print_int(result);
-        print_line("\n\n");       
+        print_line("\n\n");
     }
     return 1;
 }

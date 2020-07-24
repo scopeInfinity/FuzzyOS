@@ -14,6 +14,3 @@ void io_low_scroll_screen(unsigned char count, unsigned char color,
                           unsigned char x2, unsigned char y2);
 
 void io_low_put_char(char c, unsigned char color);
-
-// Should be out of here.
-char io_low_read_char();

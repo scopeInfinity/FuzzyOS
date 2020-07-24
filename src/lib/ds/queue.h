@@ -6,6 +6,8 @@
 int queue_init(int container[], int effective_size);
 // Returns if the push is successful.
 int queue_push(int container[], int data);
+// Returns if the push is successful.
+int queue_push_front(int container[], int data);
 // Returns the front of the queue.
 int queue_front(int container[]);
 // Returns if the pop is successful.

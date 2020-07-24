@@ -51,15 +51,3 @@ global _low_read_char
         mov esp, ebp
         pop ebp
         ret
-
-    _low_read_char:
-        push ebp
-        mov ebp, esp
-
-        mov ah, 0x00                  ; (read character)
-        int 0x16
-        and eax, 0xFF
-
-        mov esp, ebp
-        pop ebp
-        ret
