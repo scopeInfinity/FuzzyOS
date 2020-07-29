@@ -9,6 +9,12 @@ int queue_init(int container[], int size) {
     return 1;
 }
 
+void queue_clear(int container[]) {
+    int *back = &container[0];
+    int *front = &container[1];
+    *back = *front = -1;
+}
+
 int queue_push(int container[], int data) {
     int *back = &container[0];
     int *front = &container[1];

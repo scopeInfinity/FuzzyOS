@@ -4,6 +4,8 @@
 
 // Returns if the queue init is successful.
 int queue_init(int container[], int effective_size);
+// Clears the queue.
+void queue_clear(int container[]);
 // Returns if the push is successful.
 int queue_push(int container[], int data);
 // Returns if the push is successful.

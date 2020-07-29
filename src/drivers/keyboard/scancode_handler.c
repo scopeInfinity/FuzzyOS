@@ -172,9 +172,14 @@ static const unsigned char KEYBOARD_ASCII_MAPH_OTHERS[] = {
 };
 
 static unsigned char KEYBOARD_ASCII_MAPPING[256];
+extern int keyboard_buffer[];
 static char last_ascii;
 static int last_ascii_available = 0;
 static char tmp_juggad_is_f0 = 0;
+
+void keyboard_scanner_ascii_clear() {
+    queue_clear(keyboard_buffer);
+}
 
 int keyboard_scanner_ascii_is_available() {
     return last_ascii_available;
@@ -207,7 +212,7 @@ void keyboard_scanner_handler_init() {
     }
 }
 
-int keyboard_scanner_handle_buffer(int keyboard_buffer[]) {
+int keyboard_scanner_handle_buffer() {
     // For now just taking care of some of the key press and disgarding others.
     int len = queue_size(keyboard_buffer);
     if(len == 0) return 0;
