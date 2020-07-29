@@ -53,6 +53,9 @@ void populate_idt_entry_32bit(int id,
         );
 }
 
+extern void irq0_interrupt_timer_handler_low();
+extern void enable_timer_interrupt();
+
 extern void syscall_interrupt_handler_low();
 int x = 0;
 void syscall_interrupt_handler() {
@@ -62,11 +65,13 @@ void syscall_interrupt_handler() {
     x++;
 }
 
+
 void populate_and_load_idt_table() {
     for (int i = 0; i < IDT_SIZE; ++i) {
-        populate_idt_entry_32bit(i, (unsigned int)interrupt_nohup, 0, 1);
+        populate_idt_entry_32bit(i, (unsigned int)interrupt_nohup, 0, 0);
     }
-    populate_idt_entry_32bit(0x64, (unsigned int)syscall_interrupt_handler_low, 0, 1);
+    populate_idt_entry_32bit(0, (unsigned int)irq0_interrupt_timer_handler_low, 0, 0);
+    populate_idt_entry_32bit(0x64, (unsigned int)syscall_interrupt_handler_low, 0, 0);
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
     idtr.base_address = ((int)idt_table + KERNEL_MEMORY_LOCATION);
 

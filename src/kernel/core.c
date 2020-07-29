@@ -48,6 +48,12 @@ void entry_core() {
     print_rectangle(0, 10, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-2);
     move_xy(0,10);
 
+    for (int i = 0; i < 5; ++i) {
+        print_char(getch());
+    }
+    print_line("enabling timer interrupt");
+
+    enable_timer_interrupt();
     while(1) {
         print_char(getch());
     }
