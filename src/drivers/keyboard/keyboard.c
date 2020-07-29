@@ -139,7 +139,8 @@ unsigned char read_data_reply() {
 int keyboard_buffer[KEYBOARD_BUFFER_SIZE+3];
 
 void keyboard_scanner_handler_init();
-int keyboard_scanner_handle_buffer(int keyboard_buffer_queue[]);
+void keyboard_scanner_ascii_clear();
+int keyboard_scanner_handle_buffer();
 
 void keyboard_scanner_init() {
     ASSERT( queue_init(keyboard_buffer, KEYBOARD_BUFFER_SIZE) );
@@ -160,11 +161,12 @@ int keyboard_scanner_step() {
         queue_push(keyboard_buffer, out);
         qs++;
     }
-    keyboard_scanner_handle_buffer(keyboard_buffer);
+    keyboard_scanner_handle_buffer();
     return state_change;
 }
 
 char keyboard_get_key_pressed_blocking() {
+    keyboard_scanner_ascii_clear();
     while(!keyboard_scanner_ascii_is_available()) {
         keyboard_scanner_step();
     }
