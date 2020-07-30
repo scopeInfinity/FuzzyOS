@@ -24,12 +24,7 @@ global label_exit
         mov ebp, esp
 
         ; Load GDT Table
-            ; Workaround for Issue #3
-            mov eax, [esp+8]   ; gdtr_address
-            mov ebx, eax
-            add ebx, 8         ; &gdtr_table
-            mov [eax+2], ebx   ; gdtr.base_address = &gdtr_table
-
+        mov eax, [esp+8]   ; gdtr_address
         lgdt [eax]         ; Load GDT Table
 
         ; Enter Protected mode
