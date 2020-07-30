@@ -26,7 +26,6 @@ struct GDTEntry {
 };
 #pragma pack(pop)
 
-// Issue#2: gdt_table must immediately after gdtr.
 struct GDTReference gdtr;
 struct GDTEntry gdt_table[GDT_TABLE_SIZE];
 
@@ -71,9 +70,6 @@ int populate_gdt_table() {
         0b0100,  // 32-bit protected mode
         0x92);
 
-    // Issue#2: For some reason gdtr.base_address assigned is not
-    // being respected later on. So, as a bad workaround hardcoding
-    // base_address as &gdtr+8 in stage2.asm.
     gdtr.base_address = (int)gdt_table;
     gdtr.size = (sizeof(gdt_table));
 
