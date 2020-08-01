@@ -1,15 +1,9 @@
 #include <lib/utils/color.h>
-#include <lib/utils/disk.h>
+#include <drivers/disk/disk.h>
 #include <lib/utils/output.h>
 #include <lib/utils/time.h>
 
-char message_welcome[] = "C says 'Hello World'";
-char message_dashboard[] = "Opening App 'Dashboard'";
-char message_kernel_loading[] = "Loading Kernel....";
-char message_calc_loading[] = "Loading Calc....";
-char message_protected_mode[] = "Enabling Protected Mode...";
-
-#define GDT_TABLE_SIZE 3
+#define GDT_TABLE_SIZE 5
 
 #pragma pack(push, 1)
 struct GDTReference {
@@ -26,7 +20,7 @@ struct GDTEntry {
 };
 #pragma pack(pop)
 
-struct GDTReference gdtr;
+struct GDTReference *gdtr;
 struct GDTEntry gdt_table[GDT_TABLE_SIZE];
 
 void populate_gct_entry(struct GDTEntry *entry,
@@ -43,10 +37,11 @@ void populate_gct_entry(struct GDTEntry *entry,
     entry->access_byte = access_byte;
 }
 
-extern void enter_protected_mode(int gdtr_address);
+extern int _low_get_gdtr_address();
+extern void enter_protected_mode();
 extern void label_exit();
 
-int populate_gdt_table() {
+void populate_gdt_table() {
     // Assumption DS = 0
     // Populate simple overlapping code and data segment.
 
@@ -58,33 +53,43 @@ int populate_gdt_table() {
     // Kernel Code Segment Selector
     populate_gct_entry(
         &gdt_table[1],
-        // 0x00000000,0x0fffffff,
         KERNEL_MEMORY_LOCATION, 0x0fffffff,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Kernel Data Segment Selector
     populate_gct_entry(
         &gdt_table[2],
-        // 0x00000000,0x0fffffff,
         KERNEL_MEMORY_LOCATION, 0x0fffffff,
         0b0100,  // 32-bit protected mode
         0x92);
+    // Absolute Code Segment Selector
+    populate_gct_entry(
+        &gdt_table[3],
+        0, 0xfffff,
+        0b0000,  // 16-bit protected mode
+        0x9a);
+    // Absolute Data Segment Selector
+    populate_gct_entry(
+        &gdt_table[4],
+        0, 0xfffff,
+        0b0000,  // 16-bit protected mode
+        0x92);
 
-    gdtr.base_address = (int)gdt_table;
-    gdtr.size = (sizeof(gdt_table));
+    gdtr = (struct GDTReference*)_low_get_gdtr_address();
+    gdtr->base_address = (int)gdt_table;
+    gdtr->size = (sizeof(gdt_table));
 
     // Print the table and table addresse.
     move_xy(8,15);
-    print_int((int)&gdtr);
+    print_int((int)gdtr);
     move_xy(8,16);
-    print_int(gdtr.base_address);
+    print_int(gdtr->base_address);
     move_xy(8,17);
-    print_int(gdtr.size);
+    print_int(gdtr->size);
     for(int i=0;i<GDT_TABLE_SIZE;i++) {
         move_xy(8,18+i);
         print_memory_hex(8*i+(char*)&gdt_table, 8);
     }
-    return (int)&gdtr;
 }
 
 void load_kernel() {
@@ -111,22 +116,33 @@ void load_calc() {
     }
 }
 
+void load_static_library() {
+    int err = load_sectors(0x7E00, 0x80, 76, 1);
+    if(err) {
+        print_line("Failed to load calc in memory.");
+        print_int(err);
+        label_exit();
+    } else {
+        print_memory_hex((char*)0x7E00, 16);
+    }
+}
+
 void entry_stage() {
     move_xy(6, 11);
     set_color_bg(C_BLACK);
     set_color_fg(C_GREEN);
-    print_line(message_welcome);
+    print_line("C says 'Hello World'");
     set_color_fg(C_WHITE);
     move_xy(6, 12);
-    print_line(message_kernel_loading);
-    load_kernel();
+    print_line("Loading Static Library....");
+    load_static_library();
     move_xy(6, 13);
-    print_line(message_calc_loading);
-    load_calc();
+    print_line("Loading Kernel....");
+    load_kernel();
     move_xy(6, 14);
-    print_line(message_protected_mode);
-    int gdtr_address = populate_gdt_table();
+    print_line("Enabling Protected Mode...");
+    populate_gdt_table();
     // Enter_protected_mode never returns.
-    enter_protected_mode(gdtr_address);
+    enter_protected_mode();
     // And thus PC should never reach here :)
 }

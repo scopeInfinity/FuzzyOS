@@ -1,5 +1,6 @@
 #include <drivers/display/text_mode.h>
 #include <drivers/keyboard/keyboard.h>
+#include <drivers/disk/disk.h>
 #include <lib/utils/output.h>
 #include <lib/utils/input.h>
 #include <lib/utils/panic.h>
@@ -15,24 +16,27 @@ int call_main(unsigned short cs,unsigned short ip, int argc, char *argv[]) {
 }
 
 void exec(int sector_index, int sector_count){
-    int memory_address = 0x2000;
-    int err = 0;
-    // Load Sectors for proctected mode is not implemented yet.
-    // int err = load_sectors(memory_address, 0x80, 52, 25);
+    int memory_address = 0x20000;
+    int err = load_sectors(memory_address, 0x80, 51, 25);
     if(err) {
-        move_xy(3,4);
+        move_xy(3,8);
         print_line("Failed to load app in memory, Error: ");
         print_int(err);
     } else {
-        call_main(0, memory_address, 0, 0);
-        print_line("App Exited.");
+        move_xy(2,8);
+        print_line("App Loaded: ");
+        print_memory_hex(memory_address-KERNEL_MEMORY_LOCATION, 16);
+        // call_main(0, memory_address, 0, 0);
+        // print_line("App Exited.");
     }
 }
 
-void entry_core() {
+void kernel_core_entry() {
     set_color_bg(C_BLUE);
     set_color_fg(C_WHITE);
     print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
+
+    exec(0, 0);
 
     move_xy(2,2);
     print_line("Initializing Kernel...");
@@ -40,13 +44,13 @@ void entry_core() {
     kernel_enable_interrupts();
     keyboard_init();
 
-    move_xy(2,8);
+    move_xy(2,10);
     print_line("Keyboard: ");
 
     set_color_bg(C_WHITE);
     set_color_fg(C_BLACK);
-    print_rectangle(0, 10, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-2);
-    move_xy(0,10);
+    print_rectangle(0, 12, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-2);
+    move_xy(0,12);
 
     while(1) {
         print_char(getch());

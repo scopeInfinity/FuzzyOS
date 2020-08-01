@@ -7,6 +7,7 @@ SRC_LIB_DS = src/lib/ds
 SRC_LIB_UTILS = src/lib/utils
 SRC_LIB = src/lib
 SRC_APP = src/app
+SRC_REALMODE = src/real_mode
 
 BUILD_BOOTLOADER = build/bootloader
 BUILD_KERNEL = build/kernel
@@ -15,7 +16,7 @@ BUILD_LIB_DS = build/lib/ds
 BUILD_LIB_UTILS = build/lib/utils
 BUILD_LIB = build/lib
 BUILD_APP = build/app
-
+BUILD_REALMODE = build/real_mode
 .PHONY: all clean
 
 # Files
@@ -23,6 +24,7 @@ bt_stage1 = $(BUILD_BOOTLOADER)/stage1
 bt_stage2 = $(BUILD_BOOTLOADER)/stage2
 image_vmdk = $(BUILD_DIR)/image.vmdk
 app_entry = $(BUILD_LIB)/app/entry
+rm_static = $(BUILD_REALMODE)/static_library
 
 # Kernel
 kernel_core = $(BUILD_DIR)/kernel/core
@@ -46,29 +48,34 @@ all: images binaries
 
 images: $(image_vmdk)
 
-binaries: $(bt_stage1) $(bt_stage2) $(kernel_core)
+binaries: $(bt_stage1) $(bt_stage2) $(kernel_core) $(rm_static)
 
-$(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tick_tac_toe)
+$(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tick_tac_toe) $(rm_static)
 	dd bs=512 count=2 if=$(bt_stage1) of=$@
 	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
 	@echo "Stage 1 Size     : " $$(stat -c %s $(bt_stage1))
-	@echo "BT_STAGE2_SECTOR_START : "$$(( 1 + $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "BT_STAGE2_SECTOR_START : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
 	cat $(bt_stage2) >> $@
 	@echo "Stage 2 Size     : " $$(stat -c %s $(bt_stage2))
 	@echo "Want BT_STAGE2_SECTOR_COUNT : 0x"$$(printf "%x\n" $$(( $$(stat -c %s $(bt_stage2)) / 512)) )
 	@echo "Got BT_STAGE2_SECTOR_COUNT  : 0x"$(BT_STAGE2_SECTOR_COUNT)
 
-	@echo "AppCalc Sector Start : "$$(( 1 + $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "AppCalc Sector Start : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
 	cat $(app_calc)  >> $@
 	@echo "AppCalc Sector Count : "$$(( $$(stat -c %s $(app_calc)) / 512))
 	@echo "App Calc Size    : " $$(stat -c %s $(app_calc))
 
-	@echo "App TickTacToe Sector Start : "$$(( 1 + $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "App TickTacToe Sector Start : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
 	cat $(app_tick_tac_toe)  >> $@
 	@echo "App TickTacToe Sector Count : "$$(( $$(stat -c %s $(app_tick_tac_toe)) / 512))
 	@echo "App TickTacToe Size    : " $$(stat -c %s $(app_tick_tac_toe))
 
-	@echo "Kernel Core Sector Start : "$$(( 1 + $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "Static Library Sector Start : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	cat $(rm_static)  >> $@
+	@echo "Static Library Sector Count : "$$(( $$(stat -c %s $(rm_static)) / 512))
+	@echo "Static Library Size    : " $$(stat -c %s $(rm_static))
+
+	@echo "Kernel Core Sector Start : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
 	cat $(kernel_core) >> $@
 	@echo "Kernel Core Sector Count : "$$(( $$(stat -c %s $(kernel_core)) / 512))
 	@echo "Kernel Core Size : " $$(stat -c %s $(kernel_core))
@@ -92,6 +99,9 @@ qemu: $(image_vmdk)
 qemu_debug: $(image_vmdk)
 	qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot -d  cpu,exec,in_asm
 
+qemu_xdebug: $(image_vmdk)
+	qemu-system-x86_64 -S -gdb tcp::9000 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot -d  cpu,exec,in_asm
+
 clean:
 	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."
 
@@ -101,19 +111,24 @@ $(bt_stage1): $(SRC_BOOTLOADER)/stage1.asm $(SRC_BOOTLOADER)/constants.asm $(SRC
 	nasm -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D BT_STAGE2_SECTOR_COUNT=$(BT_STAGE2_SECTOR_COUNT) $<
 	truncate --size=%512 $@
 
-$(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/constants.asm $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios
+$(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_REALMODE)/stub.asm $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	mkdir -p $$(dirname $(bt_stage2))
-	nasm -o $(BUILD_BOOTLOADER)/stage2_asm.o -f elf32 -i $(SRC_BOOTLOADER)/ $(SRC_BOOTLOADER)/stage2.asm
+	nasm -o $(BUILD_BOOTLOADER)/stage2_asm.o -f elf32 -i $(SRC_BOOTLOADER)/ -i $(SRC_REALMODE)/ $(SRC_BOOTLOADER)/stage2.asm
 	gcc -m16 -fno-pie -c -Isrc -D KERNEL_MEMORY_LOCATION=$(KERNEL_MEMORY_LOCATION) -o $(BUILD_BOOTLOADER)/stage2_c.o $(SRC_BOOTLOADER)/stage2.c
-	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios
+	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	truncate --size=%512 $@
 
-$(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essentials.c $(SRC_KERNEL)/interrupts.c $(SRC_KERNEL)/interrupts.asm $(SRC_LIB_UTILS)/output.h $(SRC_DRIVERS)/keyboard/keyboard.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga # And other output.h dependecies -_-
+$(BUILD_REALMODE)/static_library: $(SRC_REALMODE)/static_library.asm $(SRC_REALMODE)/stub.asm
+	mkdir -p $(BUILD_REALMODE)/
+	nasm -o $@ -f bin -i $(SRC_REALMODE)/ $(SRC_REALMODE)/static_library.asm
+	truncate --size=%512 $@
+
+$(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essentials.c $(SRC_REALMODE)/stub.asm $(SRC_KERNEL)/interrupts.c $(SRC_KERNEL)/interrupts.asm $(SRC_LIB_UTILS)/output.h $(SRC_DRIVERS)/keyboard/keyboard.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_DRIVERS)/disk/libdisk # And other output.h dependecies -_-
 	mkdir -p $$(dirname $(kernel_core))
-	nasm -o $(BUILD_KERNEL)/core_asm.o -f elf32 $(SRC_KERNEL)/core.asm
+	nasm -o $(BUILD_KERNEL)/core_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_KERNEL)/core.asm
 	nasm -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 $(SRC_KERNEL)/interrupts.asm
 	gcc -m32 -fno-pie -c -Isrc -D KERNEL_MEMORY_LOCATION=$(KERNEL_MEMORY_LOCATION) -o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
-	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_DS)/libds
+	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_DS)/libds $(BUILD_DRIVERS)/disk/libdisk
 	truncate --size=%512 $(kernel_core)
 
 # Libraries
@@ -141,32 +156,40 @@ $(BUILD_DRIVERS)/keyboard/libkeyboard: $(SRC_DRIVERS)/keyboard/keyboard.c $(SRC_
 	nasm -o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o -f elf32 $(SRC_DRIVERS)/keyboard/keyboard.asm
 	ar rc $@ $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o
 
-$(BUILD_LIB_UTILS)/libutils_16: $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/disk.c $(SRC_LIB_UTILS)/disk.asm $(SRC_LIB_UTILS)/disk.h  $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
+$(BUILD_DRIVERS)/disk/libdisk_16: $(SRC_DRIVERS)/disk/disk_16.c $(SRC_DRIVERS)/disk/disk_16.asm $(SRC_DRIVERS)/disk/disk.h
+	mkdir -p $(BUILD_DRIVERS)/disk/
+	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/disk/disk_16_c.o $(SRC_DRIVERS)/disk/disk_16.c
+	nasm -o $(BUILD_DRIVERS)/disk/disk_16_asm.o -f elf32 $(SRC_DRIVERS)/disk/disk_16.asm
+	ar rc $@ $(BUILD_DRIVERS)/disk/disk_16_c.o $(BUILD_DRIVERS)/disk/disk_16_asm.o
+
+$(BUILD_DRIVERS)/disk/libdisk: $(SRC_DRIVERS)/disk/disk.c $(SRC_DRIVERS)/disk/disk.asm $(SRC_DRIVERS)/disk/disk.h $(SRC_REALMODE)/stub.asm
+	mkdir -p $(BUILD_DRIVERS)/disk/
+	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/disk/disk_c.o $(SRC_DRIVERS)/disk/disk.c
+	nasm -o $(BUILD_DRIVERS)/disk/disk_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_DRIVERS)/disk/disk.asm
+	ar rc $@ $(BUILD_DRIVERS)/disk/disk_c.o $(BUILD_DRIVERS)/disk/disk_asm.o
+
+$(BUILD_LIB_UTILS)/libutils_16: $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
 	mkdir -p $(BUILD_LIB_UTILS)/
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/output.o $(SRC_LIB_UTILS)/output.c
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string.o $(SRC_LIB_UTILS)/string.c
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color.o $(SRC_LIB_UTILS)/color.c
-	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/disk_c.o $(SRC_LIB_UTILS)/disk.c
-	nasm -o $(BUILD_LIB_UTILS)/disk_asm.o -f elf32 $(SRC_LIB_UTILS)/disk.asm
 	gcc -m16 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
 	nasm -o $(BUILD_LIB_UTILS)/panic_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
 	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
 	nasm -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
-	ar rc $@ $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/disk_c.o $(BUILD_LIB_UTILS)/disk_asm.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
+	ar rc $@ $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
 
-$(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.c $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/disk.c $(SRC_LIB_UTILS)/disk.asm $(SRC_LIB_UTILS)/disk.h  $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
+$(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.c $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
 	mkdir -p $(BUILD_LIB_UTILS)/
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/output.o $(SRC_LIB_UTILS)/output.c
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/input.o $(SRC_LIB_UTILS)/input.c
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string.o $(SRC_LIB_UTILS)/string.c
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color.o $(SRC_LIB_UTILS)/color.c
-	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/disk_c.o $(SRC_LIB_UTILS)/disk.c
-	nasm -o $(BUILD_LIB_UTILS)/disk_asm.o -f elf32 $(SRC_LIB_UTILS)/disk.asm
 	gcc -m32 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
 	nasm -o $(BUILD_LIB_UTILS)/panic_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
 	nasm -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
-	ar rc $@ $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/input.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/disk_c.o $(BUILD_LIB_UTILS)/disk_asm.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
+	ar rc $@ $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/input.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
 
 $(BUILD_LIB_DS)/libds: $(SRC_LIB_DS)/queue.h $(SRC_LIB_DS)/queue.c
 	mkdir -p $(BUILD_LIB_DS)/
