@@ -31,12 +31,24 @@ kernel_core = $(BUILD_DIR)/kernel/core
 
 # Apps
 app_calc = $(BUILD_APP)/calc
-app_tick_tac_toe = $(BUILD_APP)/tick_tac_toe
+app_tic_tac_toe = $(BUILD_APP)/tic_tac_toe
 app_dashboard = $(BUILD_APP)/dashboard
 
 # Parameters
-BT_STAGE2_SECTOR_COUNT = 19 # In Hex
-KERNEL_MEMORY_LOCATION = 0xC000 # 16 bit for now
+SECTOR_START_BT_STAGE2 = 2
+SECTOR_COUNT_BT_STAGE2 = 19 # In Hex
+SECTOR_START_SHARED_LIBRARY = 1
+SECTOR_COUNT_SHARED_LIBRARY = 1
+SECTOR_START_KERNEL = 27
+SECTOR_COUNT_KERNEL = 33
+SECTOR_START_APP_TTT = 60
+SECTOR_COUNT_APP_TTT = 25
+SECTOR_START_APP_CALC = 85
+SECTOR_COUNT_APP_CALC= 25
+
+MEMORY_LOCATION_KERNEL = 0xC000
+MEMORY_LOCATION_APP = 0x20000
+
 SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_unstaged')\""
 
 # General Assumptions
@@ -50,35 +62,51 @@ images: $(image_vmdk)
 
 binaries: $(bt_stage1) $(bt_stage2) $(kernel_core) $(rm_static)
 
-$(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tick_tac_toe) $(rm_static)
+$(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tic_tac_toe) $(rm_static)
 	dd bs=512 count=2 if=$(bt_stage1) of=$@
 	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
 	@echo "Stage 1 Size     : " $$(stat -c %s $(bt_stage1))
-	@echo "BT_STAGE2_SECTOR_START : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
-	cat $(bt_stage2) >> $@
-	@echo "Stage 2 Size     : " $$(stat -c %s $(bt_stage2))
-	@echo "Want BT_STAGE2_SECTOR_COUNT : 0x"$$(printf "%x\n" $$(( $$(stat -c %s $(bt_stage2)) / 512)) )
-	@echo "Got BT_STAGE2_SECTOR_COUNT  : 0x"$(BT_STAGE2_SECTOR_COUNT)
 
-	@echo "AppCalc Sector Start : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
-	cat $(app_calc)  >> $@
-	@echo "AppCalc Sector Count : "$$(( $$(stat -c %s $(app_calc)) / 512))
-	@echo "App Calc Size    : " $$(stat -c %s $(app_calc))
-
-	@echo "App TickTacToe Sector Start : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
-	cat $(app_tick_tac_toe)  >> $@
-	@echo "App TickTacToe Sector Count : "$$(( $$(stat -c %s $(app_tick_tac_toe)) / 512))
-	@echo "App TickTacToe Size    : " $$(stat -c %s $(app_tick_tac_toe))
-
-	@echo "Static Library Sector Start : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "Static Library"
+	@echo "  Got  SECTOR_START_SHARED_LIBRARY  : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "  Want SECTOR_START_SHARED_LIBRARY  : "$(SECTOR_START_SHARED_LIBRARY)
 	cat $(rm_static)  >> $@
-	@echo "Static Library Sector Count : "$$(( $$(stat -c %s $(rm_static)) / 512))
-	@echo "Static Library Size    : " $$(stat -c %s $(rm_static))
+	@echo "  Got  SECTOR_COUNT_SHARED_LIBRARY  : "$$(( $$(stat -c %s $(rm_static)) / 512))
+	@echo "  Want SECTOR_COUNT_SHARED_LIBRARY  : "$(SECTOR_COUNT_SHARED_LIBRARY)
+	@echo "  Size : " $$(stat -c %s $(rm_static))
 
-	@echo "Kernel Core Sector Start : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "Boot Loader Stage 2"
+	@echo "  Got  SECTOR_START_BT_STAGE2   : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "  Want SECTOR_COUNT_BT_STAGE2   : "$(SECTOR_START_BT_STAGE2)
+	cat $(bt_stage2) >> $@
+	@echo "  Got  SECTOR_COUNT_BT_STAGE2   : 0x"$$(printf "%x\n" $$(( $$(stat -c %s $(bt_stage2)) / 512)) )
+	@echo "  Want SECTOR_COUNT_BT_STAGE2   : 0x"$(SECTOR_COUNT_BT_STAGE2)
+	@echo "  Size : " $$(stat -c %s $(bt_stage2))
+
+	@echo "Kernel"
+	@echo "  Got  SECTOR_START_KERNEL     : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "  Want SECTOR_START_KERNEL     : "$(SECTOR_START_KERNEL)
 	cat $(kernel_core) >> $@
-	@echo "Kernel Core Sector Count : "$$(( $$(stat -c %s $(kernel_core)) / 512))
-	@echo "Kernel Core Size : " $$(stat -c %s $(kernel_core))
+	@echo "  Got  SECTOR_COUNT_KERNEL     : "$$(( $$(stat -c %s $(kernel_core)) / 512))
+	@echo "  Want SECTOR_COUNT_KERNEL     : "$(SECTOR_COUNT_KERNEL)
+	@echo "  Size : " $$(stat -c %s $(kernel_core))
+
+	@echo "App TicTacToe"
+	@echo "  Got  SECTOR_START_APP_TTT    : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "  Want SECTOR_START_APP_TTT    : "$(SECTOR_START_APP_TTT)
+	cat $(app_tic_tac_toe)  >> $@
+	@echo "  Got  SECTOR_COUNT_APP_TTT    : "$$(( $$(stat -c %s $(app_tic_tac_toe)) / 512))
+	@echo "  Want SECTOR_COUNT_APP_TTT    : "$(SECTOR_COUNT_APP_TTT)
+	@echo "  Size    : " $$(stat -c %s $(app_tic_tac_toe))
+
+	@echo "App Calc"
+	@echo "  Got  SECTOR_START_APP_CALC    : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "  Want SECTOR_START_APP_CALC    : "$(SECTOR_START_APP_CALC)
+	cat $(app_calc)  >> $@
+	@echo "  Got  SECTOR_COUNT_APP_CALC    : "$$(( $$(stat -c %s $(app_calc)) / 512))
+	@echo "  Want SECTOR_COUNT_APP_CALC    : "$(SECTOR_COUNT_APP_CALC)
+	@echo "  Size    : " $$(stat -c %s $(app_calc))
+
 	@echo "Image Size       : " $$(stat -c %s $@)
 
 debug_stage1: $(bt_stage1)
@@ -108,13 +136,20 @@ clean:
 # Fuzzy OS
 $(bt_stage1): $(SRC_BOOTLOADER)/stage1.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/disk.asm
 	mkdir -p $$(dirname $(bt_stage1))
-	nasm -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D BT_STAGE2_SECTOR_COUNT=$(BT_STAGE2_SECTOR_COUNT) $<
+	nasm -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D SECTOR_START_BT_STAGE2=$$((1+SECTOR_START_BT_STAGE2)) -D SECTOR_COUNT_BT_STAGE2=$(SECTOR_COUNT_BT_STAGE2) $<
 	truncate --size=%512 $@
 
 $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_REALMODE)/stub.asm $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	mkdir -p $$(dirname $(bt_stage2))
 	nasm -o $(BUILD_BOOTLOADER)/stage2_asm.o -f elf32 -i $(SRC_BOOTLOADER)/ -i $(SRC_REALMODE)/ $(SRC_BOOTLOADER)/stage2.asm
-	gcc -m16 -fno-pie -c -Isrc -D KERNEL_MEMORY_LOCATION=$(KERNEL_MEMORY_LOCATION) -o $(BUILD_BOOTLOADER)/stage2_c.o $(SRC_BOOTLOADER)/stage2.c
+	gcc -m16 -fno-pie -c -Isrc \
+		-D SECTOR_START_SHARED_LIBRARY=$(SECTOR_START_SHARED_LIBRARY) \
+		-D SECTOR_COUNT_SHARED_LIBRARY=$(SECTOR_COUNT_SHARED_LIBRARY) \
+		-D SECTOR_START_KERNEL=$(SECTOR_START_KERNEL) \
+		-D SECTOR_COUNT_KERNEL=$(SECTOR_COUNT_KERNEL) \
+		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
+		-D MEMORY_LOCATION_APP=$(MEMORY_LOCATION_APP) \
+		-o $(BUILD_BOOTLOADER)/stage2_c.o $(SRC_BOOTLOADER)/stage2.c
 	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	truncate --size=%512 $@
 
@@ -127,7 +162,12 @@ $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essent
 	mkdir -p $$(dirname $(kernel_core))
 	nasm -o $(BUILD_KERNEL)/core_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_KERNEL)/core.asm
 	nasm -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 $(SRC_KERNEL)/interrupts.asm
-	gcc -m32 -fno-pie -c -Isrc -D KERNEL_MEMORY_LOCATION=$(KERNEL_MEMORY_LOCATION) -o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
+	gcc -m32 -fno-pie -c -Isrc \
+		-D SECTOR_START_APP_TTT=$(SECTOR_START_APP_TTT) \
+		-D SECTOR_COUNT_APP_TTT=$(SECTOR_COUNT_APP_TTT) \
+		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
+		-D MEMORY_LOCATION_APP=$(MEMORY_LOCATION_APP) \
+		-o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
 	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_DS)/libds $(BUILD_DRIVERS)/disk/libdisk
 	truncate --size=%512 $(kernel_core)
 
@@ -183,13 +223,14 @@ $(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h
 	mkdir -p $(BUILD_LIB_UTILS)/
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/output.o $(SRC_LIB_UTILS)/output.c
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/input.o $(SRC_LIB_UTILS)/input.c
+	nasm -o $(BUILD_LIB_UTILS)/input_asm.o -f elf32 $(SRC_LIB_UTILS)/input.asm
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string.o $(SRC_LIB_UTILS)/string.c
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color.o $(SRC_LIB_UTILS)/color.c
 	gcc -m32 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
 	nasm -o $(BUILD_LIB_UTILS)/panic_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
 	nasm -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
-	ar rc $@ $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/input.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
+	ar rc $@ $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/input_asm.o $(BUILD_LIB_UTILS)/input.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
 
 $(BUILD_LIB_DS)/libds: $(SRC_LIB_DS)/queue.h $(SRC_LIB_DS)/queue.c
 	mkdir -p $(BUILD_LIB_DS)/
@@ -203,8 +244,8 @@ $(app_calc): $(app_entry) $(SRC_APP)/calc.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_
 	ld --oformat binary -m elf_i386 -Ttext 0x2000 --strip-all -o $@ $(app_entry) $(BUILD_APP)/calc.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
 	truncate --size=%512 $@
 
-$(app_tick_tac_toe): $(app_entry) $(SRC_APP)/tic_tac_toe.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga # And dependecies :/
-	mkdir -p $$(dirname $(app_tick_tac_toe))
-	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_APP)/tic_tac_toe.o $(SRC_APP)/tic_tac_toe.c
-	ld --oformat binary -m elf_i386 -Ttext 0x2000 --strip-all -o $@ $(app_entry) $(BUILD_APP)/tic_tac_toe.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
+$(app_tic_tac_toe): $(app_entry) $(SRC_APP)/tic_tac_toe.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga # And dependecies :/
+	mkdir -p $$(dirname $(app_tic_tac_toe))
+	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/tic_tac_toe.o $(SRC_APP)/tic_tac_toe.c
+	ld --oformat binary -m elf_i386 -Ttext 0x0 --strip-all -o $@ $(app_entry) $(BUILD_APP)/tic_tac_toe.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
 	truncate --size=%512 $@

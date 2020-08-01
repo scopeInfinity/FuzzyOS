@@ -3,7 +3,7 @@
 #include <lib/utils/output.h>
 #include <lib/utils/time.h>
 
-#define GDT_TABLE_SIZE 5
+#define GDT_TABLE_SIZE 7
 
 #pragma pack(push, 1)
 struct GDTReference {
@@ -45,21 +45,19 @@ void populate_gdt_table() {
     // Assumption DS = 0
     // Populate simple overlapping code and data segment.
 
-    // Kernel Memory Location: 0x100000
-
     populate_gct_entry(
         &gdt_table[0],
         0,0,0,0);
     // Kernel Code Segment Selector
     populate_gct_entry(
         &gdt_table[1],
-        KERNEL_MEMORY_LOCATION, 0x0fffffff,
+        MEMORY_LOCATION_KERNEL, MEMORY_LOCATION_KERNEL+0xFFFF,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Kernel Data Segment Selector
     populate_gct_entry(
         &gdt_table[2],
-        KERNEL_MEMORY_LOCATION, 0x0fffffff,
+        MEMORY_LOCATION_KERNEL, MEMORY_LOCATION_KERNEL+0xFFFF,
         0b0100,  // 32-bit protected mode
         0x92);
     // Absolute Code Segment Selector
@@ -74,6 +72,19 @@ void populate_gdt_table() {
         0, 0xfffff,
         0b0000,  // 16-bit protected mode
         0x92);
+    // Application Code Segment Selector
+    populate_gct_entry(
+        &gdt_table[5],
+        MEMORY_LOCATION_APP, MEMORY_LOCATION_APP+0xFFFF,
+        0b0100,  // 32-bit protected mode
+        0x9a);
+    // Application Data Segment Selector
+    populate_gct_entry(
+        &gdt_table[6],
+        MEMORY_LOCATION_APP, MEMORY_LOCATION_APP+0xFFFF,
+        0b0100,  // 32-bit protected mode
+        0x92);
+
 
     gdtr = (struct GDTReference*)_low_get_gdtr_address();
     gdtr->base_address = (int)gdt_table;
@@ -94,14 +105,14 @@ void populate_gdt_table() {
 
 void load_kernel() {
     // As we are in real mode with DS as 0
-    // KERNEL_MEMORY_LOCATION should be within 16 bit for now.
-    int err = load_sectors(KERNEL_MEMORY_LOCATION, 0x80, DISK_KERNEL_SECTOR_START, DISK_KERNEL_SECTOR_COUNT);
+    // MEMORY_LOCATION_KERNEL should be within 16 bit for now.
+    int err = load_sectors(MEMORY_LOCATION_KERNEL, 0x80, SECTOR_START_KERNEL, SECTOR_COUNT_KERNEL);
     if(err) {
         print_line("Failed to load kernel in memory: ");
         print_int(err);
         label_exit();
     } else {
-        print_memory_hex((char*)KERNEL_MEMORY_LOCATION, 16);
+        print_memory_hex((char*)MEMORY_LOCATION_KERNEL, 16);
     }
 }
 
@@ -117,7 +128,7 @@ void load_calc() {
 }
 
 void load_static_library() {
-    int err = load_sectors(0x7E00, 0x80, 76, 1);
+    int err = load_sectors(0x7E00, 0x80, SECTOR_START_SHARED_LIBRARY, SECTOR_COUNT_SHARED_LIBRARY);
     if(err) {
         print_line("Failed to load calc in memory.");
         print_int(err);

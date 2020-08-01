@@ -2,13 +2,10 @@
 #define BUILD_FOR_FUZZY
 #ifndef BUILD_FOR_FUZZY
 #else
+#include <lib/utils/input.h>
 #include <lib/utils/output.h>
 #include <lib/utils/time.h>
 #include <lib/utils/string.h>
-char getch() {
-    // Not Implemented.
-    // Migrate binary to 32-bit.
-}
 #endif
 
 void console_init() {
