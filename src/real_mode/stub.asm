@@ -1,6 +1,7 @@
 ; 0x7F00 : 6  bytes   ; GDTR Address
 ; 0x7F08 : 4  bytes   ; Protected mode entry point
 ; 0x7F0C : 8  bytes   ; Protected mode shelved ebp and esp registers
+; 0x7F04 : 12 bytes   ; FREE
 ; 0x7F64 : -          ; Shelved data values
 ; Notes:
 ; - Defined macros tries to avoid dependency on stack while in real mode.
@@ -35,7 +36,8 @@
 %endmacro
 
 ; Should be called from protected mode only.
-%macro  unshelve_protected_mode_jump_entry_address_fpm 0
+%macro  unshelve_protected_mode_and_ret_entry_address 0
+        ; Out: (eax: entry_address)
         mov cx, ds
         mov ax, 0x20    ; Absolute Data Segment Selector
         mov ds, ax
@@ -46,10 +48,9 @@
         mov ebx, [0x7F10] ; Get esp
         mov esp, ebx
 
-        mov ebx, [0x7F08] ; Get entry point
+        mov eax, [0x7F08] ; Get entry point
 
         mov ds, cx
-        jmp ebx
 %endmacro
 
 ; Should be called from protected mode only.

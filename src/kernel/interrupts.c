@@ -1,7 +1,8 @@
 #define IDT_SIZE 128
+#include <drivers/keyboard/keyboard.h>
 
 extern void interrupt_nohup();
-extern void load_idt_table(unsigned int idtr_address);
+extern void load_idt_table_low(unsigned int idtr_address);
 
 #pragma pack(push, 1)
 struct IDTEntry {
@@ -62,13 +63,22 @@ void syscall_interrupt_handler() {
     x++;
 }
 
+extern int syscall_interrupt_keyboard_getch_low();
+int z = 0;
+
+int syscall_interrupt_keyboard_getch() {
+    return keyboard_get_key_pressed_blocking();
+}
+
+
 void populate_and_load_idt_table() {
     for (int i = 0; i < IDT_SIZE; ++i) {
         populate_idt_entry_32bit(i, (unsigned int)interrupt_nohup, 0, 1);
     }
+    populate_idt_entry_32bit(0x60, (unsigned int)syscall_interrupt_keyboard_getch_low, 0, 1);
     populate_idt_entry_32bit(0x64, (unsigned int)syscall_interrupt_handler_low, 0, 1);
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
-    idtr.base_address = ((int)idt_table + KERNEL_MEMORY_LOCATION);
+    idtr.base_address = ((int)idt_table + MEMORY_LOCATION_KERNEL);
 
     move_xy(4,4);
     print_line("IDT Reference: ");
@@ -80,6 +90,10 @@ void populate_and_load_idt_table() {
     print_hex_int(idtr.base_address);
     print_char(' ');
     print_hex_int(idtr.size);
+    reload_idt_table();
+}
 
-    load_idt_table(idtr_address);
+void reload_idt_table() {
+    int idtr_address = (int)&idtr;
+    load_idt_table_low(idtr_address);
 }

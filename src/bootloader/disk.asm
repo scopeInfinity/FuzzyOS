@@ -1,3 +1,4 @@
+; Not: sector is 1 based indexing here.
 %macro  disk_read 6
         ; Args: (sector_count, drive 8bit, cylinder 10bit, head 8bit, sector 6bit, write_add)
         ; check es

@@ -1,12 +1,9 @@
-#include <drivers/keyboard/keyboard.h>
 #include <lib/utils/input.h>
 #include <lib/utils/string.h>
 
 static char buffer_num[20];
 
-char getch() {
-    return keyboard_get_key_pressed_blocking();
-}
+extern char getch();
 
 void read_line(char *str) {
     int i = 0;

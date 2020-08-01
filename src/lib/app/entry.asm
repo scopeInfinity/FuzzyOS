@@ -1,7 +1,11 @@
 ; All user application entry point
-[BITS 16]
+[BITS 32]
 
 extern main
 
 [SECTION .text]
-        jmp main
+_start:
+        call main
+        retf
+
+

@@ -11,13 +11,10 @@
 
 extern void kernel_enable_interrupts();
 
-int call_main(unsigned short cs,unsigned short ip, int argc, char *argv[]) {
-    return ((int (*) (int, char *[]))(unsigned int)ip)(argc, argv);
-}
+extern int call_main(int argc, char *argv[]);
 
 void exec(int sector_index, int sector_count){
-    int memory_address = 0x20000;
-    int err = load_sectors(memory_address, 0x80, 51, 25);
+    int err = load_sectors(MEMORY_LOCATION_APP, 0x80, SECTOR_START_APP_TTT, SECTOR_COUNT_APP_TTT);
     if(err) {
         move_xy(3,8);
         print_line("Failed to load app in memory, Error: ");
@@ -25,9 +22,10 @@ void exec(int sector_index, int sector_count){
     } else {
         move_xy(2,8);
         print_line("App Loaded: ");
-        print_memory_hex(memory_address-KERNEL_MEMORY_LOCATION, 16);
-        // call_main(0, memory_address, 0, 0);
-        // print_line("App Exited.");
+        print_memory_hex((char*)(MEMORY_LOCATION_APP-MEMORY_LOCATION_KERNEL), 16);
+        int exit_code = call_main(0, 0);
+        print_line("App Exited: ");
+        print_int(exit_code);
     }
 }
 
@@ -36,7 +34,6 @@ void kernel_core_entry() {
     set_color_fg(C_WHITE);
     print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
 
-    exec(0, 0);
 
     move_xy(2,2);
     print_line("Initializing Kernel...");
@@ -52,6 +49,7 @@ void kernel_core_entry() {
     print_rectangle(0, 12, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-2);
     move_xy(0,12);
 
+    exec(0, 0);
     while(1) {
         print_char(getch());
     }

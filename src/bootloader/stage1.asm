@@ -24,7 +24,7 @@
         print_string_ext bls1, bls1_len, 04, 04, C_WHITE, C_BLACK, 0
 
         ; Attempt to load Bootloader Stage 2 in Memory
-        disk_read BT_STAGE2_SECTOR_COUNT, 80, 00, 00, 02, 8000
+        disk_read SECTOR_COUNT_BT_STAGE2, 80, 00, 00, SECTOR_START_BT_STAGE2, 8000
         disk_success 80
         JNC label_bts2_loaded
         print_string_ext bls2_load_fail, bls2_load_fail_len, 06, 06, C_RED, C_BLACK, 0
