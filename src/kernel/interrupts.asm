@@ -40,10 +40,20 @@ extern syscall_interrupt_keyboard_getch
         iret
 
     syscall_interrupt_keyboard_getch_low:
+        ; Not saving SS
         push ds
+        push es
+        push fs
+        push gs
         mov bx, 0x10
         mov ds, bx
+        mov es, bx
+        mov fs, bx
+        mov gs, bx
         call syscall_interrupt_keyboard_getch
+        pop gs
+        pop fs
+        pop es
         pop ds
         iret
 

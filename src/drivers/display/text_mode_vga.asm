@@ -8,9 +8,8 @@ global _low_vga_copy_step
         push ebp
         mov ebp, esp
         push ds
-        mov eax, 0
-        mov ds, eax                 ; memory address mapping is absolute
-
+        mov eax, 0x20
+        mov ds, eax                 ; Absolute memory address
 
         mov ebx,[ebp + 0x10]        ; (ROW_WIDTH*y+x)
         shl ebx, 1
@@ -28,8 +27,8 @@ global _low_vga_copy_step
         push ebp
         mov ebp, esp
         push ds
-        mov eax, 0
-        mov ds, eax                 ; memory address mapping is absolute
+        mov eax, 0x20
+        mov ds, eax                 ; Absolute memory address
 
         ; Copy char+colors in Row Order Format
         mov eax,[ebp + 0x8]    ; (ROW_WIDTH*y1+x1)
