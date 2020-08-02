@@ -40,10 +40,10 @@ SECTOR_COUNT_BT_STAGE2 = 19 # In Hex
 SECTOR_START_SHARED_LIBRARY = 1
 SECTOR_COUNT_SHARED_LIBRARY = 1
 SECTOR_START_KERNEL = 27
-SECTOR_COUNT_KERNEL = 33
-SECTOR_START_APP_TTT = 60
+SECTOR_COUNT_KERNEL = 41
+SECTOR_START_APP_TTT = 68
 SECTOR_COUNT_APP_TTT = 25
-SECTOR_START_APP_CALC = 85
+SECTOR_START_APP_CALC = 93
 SECTOR_COUNT_APP_CALC= 25
 
 MEMORY_LOCATION_KERNEL = 0xC000
@@ -167,6 +167,8 @@ $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essent
 		-D SECTOR_COUNT_APP_TTT=$(SECTOR_COUNT_APP_TTT) \
 		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
 		-D MEMORY_LOCATION_APP=$(MEMORY_LOCATION_APP) \
+		-D SECTOR_START_APP_CALC=$(SECTOR_START_APP_CALC) \
+		-D SECTOR_COUNT_APP_CALC=$(SECTOR_COUNT_APP_CALC) \
 		-o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
 	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_DS)/libds $(BUILD_DRIVERS)/disk/libdisk
 	truncate --size=%512 $(kernel_core)
@@ -240,8 +242,8 @@ $(BUILD_LIB_DS)/libds: $(SRC_LIB_DS)/queue.h $(SRC_LIB_DS)/queue.c
 # User Applications
 $(app_calc): $(app_entry) $(SRC_APP)/calc.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga  # And dependecies :/
 	mkdir -p $$(dirname $(app_calc))
-	gcc -m16 -fno-pie -c -Isrc -o $(BUILD_APP)/calc.o $(SRC_APP)/calc.c
-	ld --oformat binary -m elf_i386 -Ttext 0x2000 --strip-all -o $@ $(app_entry) $(BUILD_APP)/calc.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
+	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/calc.o $(SRC_APP)/calc.c
+	ld --oformat binary -m elf_i386 -Ttext 0x0 --strip-all -o $@ $(app_entry) $(BUILD_APP)/calc.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga
 	truncate --size=%512 $@
 
 $(app_tic_tac_toe): $(app_entry) $(SRC_APP)/tic_tac_toe.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga # And dependecies :/

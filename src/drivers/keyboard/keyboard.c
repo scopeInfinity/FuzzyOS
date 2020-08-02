@@ -170,7 +170,8 @@ char keyboard_get_key_pressed_blocking() {
     while(!keyboard_scanner_ascii_is_available()) {
         keyboard_scanner_step();
     }
-    return keyboard_scanner_ascii_get();
+    char c = keyboard_scanner_ascii_get();
+    return c;
 }
 
 void keyboard_init() {

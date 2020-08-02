@@ -14,7 +14,7 @@ extern void kernel_enable_interrupts();
 extern int call_main(int argc, char *argv[]);
 
 void exec(int sector_index, int sector_count){
-    int err = load_sectors(MEMORY_LOCATION_APP, 0x80, SECTOR_START_APP_TTT, SECTOR_COUNT_APP_TTT);
+    int err = load_sectors(MEMORY_LOCATION_APP, 0x80, SECTOR_START_APP_CALC, SECTOR_COUNT_APP_CALC);
     if(err) {
         move_xy(3,8);
         print_line("Failed to load app in memory, Error: ");

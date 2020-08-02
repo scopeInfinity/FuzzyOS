@@ -158,6 +158,20 @@ static const unsigned char KEYBOARD_ASCII_MAPH_09[] = {
     KEYBOARD_SC_RPF0_9
 };
 
+static const unsigned char KEYBOARD_ASCII_MAPH_KEYPAD_09[] = {
+    KEYBOARD_SC_RPF0_keypad_0,
+    KEYBOARD_SC_RPF0_keypad_1,
+    KEYBOARD_SC_RPF0_keypad_2,
+    KEYBOARD_SC_RPF0_keypad_3,
+    KEYBOARD_SC_RPF0_keypad_4,
+    KEYBOARD_SC_RPF0_keypad_5,
+    KEYBOARD_SC_RPF0_keypad_6,
+    KEYBOARD_SC_RPF0_keypad_7,
+    KEYBOARD_SC_RPF0_keypad_8,
+    KEYBOARD_SC_RPF0_keypad_9
+};
+
+
 // Key ScanCode and ASCII code are listed alternatively in the next list.
 static const unsigned char KEYBOARD_ASCII_MAPH_OTHERS[] = {
     KEYBOARD_SC_RPF0_space, ' ',
@@ -168,7 +182,15 @@ static const unsigned char KEYBOARD_ASCII_MAPH_OTHERS[] = {
     KEYBOARD_SC_RPF0_quotation, '\'',
     KEYBOARD_SC_RPF0_brace_sq_o, '[',
     KEYBOARD_SC_RPF0_brace_sq_c, ']',
-    KEYBOARD_SC_RPF0_blackslash, '\\'
+    KEYBOARD_SC_RPF0_blackslash, '\\',
+
+    KEYBOARD_SC_RPF0_enter,  '\n',
+    KEYBOARD_SC_RPF0_keypad_dot, '.',
+    KEYBOARD_SC_RPF0_keypad_minus, '-',
+    KEYBOARD_SC_RPF0_keypad_mul, '*',
+    KEYBOARD_SC_RPF0_keypad_plus, '+',
+    KEYBOARD_SC_PE0_RPF0_keypad_enter  , '\n'
+
 };
 
 static unsigned char KEYBOARD_ASCII_MAPPING[256];
@@ -204,7 +226,11 @@ void keyboard_scanner_handler_init() {
         unsigned char c = '0'+i;
         KEYBOARD_ASCII_MAPPING[code]=c;
     }
-    if(last_ascii_available) return 1;
+    for(int i = 0;i<sizeof(KEYBOARD_ASCII_MAPH_KEYPAD_09);i++) {
+        unsigned char code = KEYBOARD_ASCII_MAPH_KEYPAD_09[i];
+        unsigned char c = '0'+i;
+        KEYBOARD_ASCII_MAPPING[code]=c;
+    }
     for(int i = 0;i<sizeof(KEYBOARD_ASCII_MAPH_OTHERS);i+=2) {
         unsigned char code = KEYBOARD_ASCII_MAPH_OTHERS[i];
         unsigned char c = KEYBOARD_ASCII_MAPH_OTHERS[i+1];

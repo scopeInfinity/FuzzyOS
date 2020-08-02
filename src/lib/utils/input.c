@@ -1,15 +1,24 @@
 #include <lib/utils/input.h>
+#include <lib/utils/output.h>
 #include <lib/utils/string.h>
 
 static char buffer_num[20];
 
-extern char getch();
+extern int getch_low();
+
+char getch() {
+    return getch_low();
+}
 
 void read_line(char *str) {
     int i = 0;
     while(1) {
-        str[i]=getch();
-        if(str[i]=='\r') {
+        // Bug: Wierd hack to mitigate another hack.
+        // Using following instead of str[i]=getch();
+        char z = getch();
+        str[i] = z;
+
+        if(str[i]=='\r' || str[i]=='\n') {
             str[i]='\0';
             print_char('\n');
             break;

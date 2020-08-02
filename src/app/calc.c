@@ -12,13 +12,10 @@ void print_int(int x) {
     printf("%d", x);
 }
 #else
+#include <lib/utils/input.h>
 #include <lib/utils/output.h>
 #include <lib/utils/time.h>
 #include <lib/utils/string.h>
-void read_line(char *s) {
-    // Not Implemented.
-    // Migrate binary to 32-bit.
-}
 #endif
 
 int err;
@@ -86,11 +83,11 @@ char expr[100];
 int result;
 
 int handle_expression(char str[]) {
-    if(strcmp(str, "HELP")==0) {
+    if(strcmpi(str, "HELP")==0) {
         show_usage();
         return 1;
     }
-    if(strcmp(str, "EXIT")==0) {
+    if(strcmpi(str, "EXIT")==0) {
         return 0;
     }
     result = solve(str);
