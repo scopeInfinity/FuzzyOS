@@ -17,7 +17,7 @@ void move_xy_diff(unsigned char dx, unsigned char dy);
 void print_rectangle(unsigned char x1,unsigned char y1,
                      unsigned char x2, unsigned char y2);
 
-void scroll(unsigned char count,
+void scroll(char count,
             unsigned char x1,unsigned char y1,
             unsigned char x2, unsigned char y2);
 
@@ -29,6 +29,9 @@ void print_hex_int(unsigned int x);
 void print_line(const char *str);
 void print_memory_hex(const char *str,unsigned short count);
 void print_int(int x);
+
+void printf_low(const char *strfmt, int* va_base);
+void printf(const char *strfmt, ...);
 
 #ifdef __cplusplus
 }

@@ -39,13 +39,13 @@ global _low_read_char
         push ebp
         mov ebp, esp
 
-        mov ah, 0x06                  ; (scroll)
         mov al, [ebp + 0x08]          ; (line count)
         mov bh, [ebp + 0x0c]          ; (attribute)
         mov cl, [ebp + 0x10]          ; (window top-left x)
         mov ch, [ebp + 0x14]          ; (window top-left y)
         mov dl, [ebp + 0x18]          ; (window bottom-right x)
         mov dh, [ebp + 0x1c]          ; (window bottom-right y)
+        mov ah, [ebp + 0x20]          ; (scroll up:0x06, down:0x07)
         int 0x10
 
         mov esp, ebp

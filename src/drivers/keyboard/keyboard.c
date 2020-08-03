@@ -1,10 +1,13 @@
 #include <drivers/keyboard/keyboard.h>
 #include <lib/ds/queue.h>
+#include <lib/utils/logging.h>
 #include <lib/utils/output.h>
 #include <lib/utils/time.h>
 #include <lib/utils/panic.h>
 
 #include "scancode_handler.c"
+
+#define LOG_PREFIX "[drivers][keyboard] "
 
 #define DRIVERS_KEYBOARD_PORT_DATA      0x60
 #define DRIVERS_KEYBOARD_PORT_STATUS    0x64
@@ -21,17 +24,6 @@ extern void port_write(unsigned short port, unsigned char value);
 extern unsigned char port_read(unsigned short port);
 void __stack_chk_fail(void) {
     PANIC(0, "Kernel stack overflow!!!");
-}
-
-void print_status(const char *message, int status) {
-    move_xy(0, TEXT_WINDOW_HEIGHT-1);
-    print_line(message);
-    print_int(status);
-    int left = TEXT_WINDOW_WIDTH - get_display_text_x();
-    while(left>0) {
-        print_char(' ');
-        left--;
-    }
 }
 
 void sleep_mini(int s) {
@@ -176,10 +168,6 @@ char keyboard_get_key_pressed_blocking() {
 
 void keyboard_init() {
     unsigned char original_colors =  get_color_fgbg();
-
-    set_color_bg(C_LIGHT_GRAY);
-    set_color_fg(C_BLACK);
-
     sleep_mini(3000000);
 
     unsigned char out;
@@ -196,7 +184,7 @@ void keyboard_init() {
     if (out & (0b10000)) {
         dual_ps2_controller = 1;
     }
-    print_status("Maybe dual PS2 Controller", dual_ps2_controller);
+    print_log("Init: Maybe dual PS2 Controller", dual_ps2_controller);
     ps2_controller_send_command_with_data(0x60, out, 0);
 
 
@@ -210,7 +198,7 @@ void keyboard_init() {
         out = ps2_controller_send_command(0X20, 1);
         if (!(out & (0b10000))) {
             dual_ps2_controller = 0;
-            print_status("Enabling PS2 port failed, thus disabling dual_ps2_controller", 0);
+            print_log("Init: Enabling PS2 port failed, thus disabling dual_ps2_controller");
         } else {
             // disabling second port again.
             ps2_controller_send_command(0xA7, 0);
@@ -228,7 +216,7 @@ void keyboard_init() {
         }
     }
 
-    print_status("Dual PS2 Controller: ", dual_ps2_controller);
+    print_log("Init: Dual PS2 Controller: %d", dual_ps2_controller);
 
     // enable first port
     ps2_controller_send_command(0xAE, 0);

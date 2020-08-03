@@ -1,6 +1,7 @@
 #include <lib/utils/color.h>
 #include <drivers/disk/disk.h>
 #include <lib/utils/output.h>
+#include <lib/utils/logging.h>
 #include <lib/utils/time.h>
 
 #define GDT_TABLE_SIZE 7
@@ -42,9 +43,9 @@ extern void enter_protected_mode();
 extern void label_exit();
 
 void populate_gdt_table() {
-    // Assumption DS = 0
-    // Populate simple overlapping code and data segment.
+    print_log("Populating GDT Table at 0x%d", gdt_table);
 
+    // NULL selector
     populate_gct_entry(
         &gdt_table[0],
         0,0,0,0);
@@ -91,50 +92,36 @@ void populate_gdt_table() {
     gdtr->size = (sizeof(gdt_table));
 
     // Print the table and table addresse.
-    move_xy(8,15);
-    print_int((int)gdtr);
-    move_xy(8,16);
-    print_int(gdtr->base_address);
-    move_xy(8,17);
-    print_int(gdtr->size);
-    for(int i=0;i<GDT_TABLE_SIZE;i++) {
-        move_xy(8,18+i);
-        print_memory_hex(8*i+(char*)&gdt_table, 8);
+    print_log("GDTR: 0x%x; base address: 0x%x, size: %d",
+        (int)gdtr, gdtr->base_address, gdtr->size);
+    int gdt_entries = gdtr->size/sizeof(struct GDTEntry);
+    for(int i=0;i<gdt_entries;i++) {
+        print_log("  GDT Entry %d: %x%x",
+            i,
+            *(int*)(8*i+(int)gdt_table),
+            *(int*)(8*i+4+(int)gdt_table));
     }
 }
 
 void load_kernel() {
-    // As we are in real mode with DS as 0
-    // MEMORY_LOCATION_KERNEL should be within 16 bit for now.
+    print_log("Loading Kernel");
     int err = load_sectors(MEMORY_LOCATION_KERNEL, 0x80, SECTOR_START_KERNEL, SECTOR_COUNT_KERNEL);
     if(err) {
-        print_line("Failed to load kernel in memory: ");
-        print_int(err);
+        print_log("Failed to load kernel in memory: %d", err);
         label_exit();
     } else {
-        print_memory_hex((char*)MEMORY_LOCATION_KERNEL, 16);
-    }
-}
-
-void load_calc() {
-    int err = load_sectors(0x2000, 0x80, 27, 25);
-    if(err) {
-        print_line("Failed to load calc in memory.");
-        print_int(err);
-        label_exit();
-    } else {
-        print_memory_hex((char*)0x2000, 16);
+        print_log("Kernel loaded at 0x%x: %x...", MEMORY_LOCATION_KERNEL, *(int*)MEMORY_LOCATION_KERNEL);
     }
 }
 
 void load_static_library() {
-    int err = load_sectors(0x7E00, 0x80, SECTOR_START_SHARED_LIBRARY, SECTOR_COUNT_SHARED_LIBRARY);
+    print_log("Loading Static Library");
+    int err = load_sectors(MEMORY_STATIC_LIBRARY, 0x80, SECTOR_START_SHARED_LIBRARY, SECTOR_COUNT_SHARED_LIBRARY);
     if(err) {
-        print_line("Failed to load calc in memory.");
-        print_int(err);
+        print_log("Failed to load static library in memory: %d", err);
         label_exit();
     } else {
-        print_memory_hex((char*)0x7E00, 16);
+        print_log("Static library loaded at 0x%x: %x...", MEMORY_STATIC_LIBRARY, *(int*)MEMORY_STATIC_LIBRARY);
     }
 }
 
@@ -144,16 +131,14 @@ void entry_stage() {
     set_color_fg(C_GREEN);
     print_line("C says 'Hello World'");
     set_color_fg(C_WHITE);
-    move_xy(6, 12);
-    print_line("Loading Static Library....");
+
+    print_log("");
     load_static_library();
-    move_xy(6, 13);
-    print_line("Loading Kernel....");
     load_kernel();
-    move_xy(6, 14);
-    print_line("Enabling Protected Mode...");
     populate_gdt_table();
+
     // Enter_protected_mode never returns.
+    print_log("Entering protected mode");
     enter_protected_mode();
     // And thus PC should never reach here :)
 }
