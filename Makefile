@@ -35,8 +35,9 @@ app_tic_tac_toe = $(BUILD_APP)/tic_tac_toe
 app_dashboard = $(BUILD_APP)/dashboard
 
 # Parameters
-SECTOR_START_BT_STAGE2 = 2
-SECTOR_COUNT_BT_STAGE2 = 19 # In Hex
+# 1-byte hex and 1-based indexing for BT STAGE 2 ONLY
+SECTOR_START_BT_STAGE2 = 03
+SECTOR_COUNT_BT_STAGE2 = 19
 SECTOR_START_SHARED_LIBRARY = 1
 SECTOR_COUNT_SHARED_LIBRARY = 1
 SECTOR_START_KERNEL = 27
@@ -76,10 +77,10 @@ $(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tic_ta
 	@echo "  Size : " $$(stat -c %s $(rm_static))
 
 	@echo "Boot Loader Stage 2"
-	@echo "  Got  SECTOR_START_BT_STAGE2   : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
-	@echo "  Want SECTOR_COUNT_BT_STAGE2   : "$(SECTOR_START_BT_STAGE2)
+	@echo "  Got  SECTOR_START_BT_STAGE2   : 0x"$$(printf "%02x\n" $$(( $$(stat -c %s $(image_vmdk)) / 512 + 1)) )
+	@echo "  Want SECTOR_START_BT_STAGE2   : 0x"$(SECTOR_START_BT_STAGE2)
 	cat $(bt_stage2) >> $@
-	@echo "  Got  SECTOR_COUNT_BT_STAGE2   : 0x"$$(printf "%x\n" $$(( $$(stat -c %s $(bt_stage2)) / 512)) )
+	@echo "  Got  SECTOR_COUNT_BT_STAGE2   : 0x"$$(printf "%02x\n" $$(( $$(stat -c %s $(bt_stage2)) / 512)) )
 	@echo "  Want SECTOR_COUNT_BT_STAGE2   : 0x"$(SECTOR_COUNT_BT_STAGE2)
 	@echo "  Size : " $$(stat -c %s $(bt_stage2))
 
@@ -136,7 +137,7 @@ clean:
 # Fuzzy OS
 $(bt_stage1): $(SRC_BOOTLOADER)/stage1.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/disk.asm
 	mkdir -p $$(dirname $(bt_stage1))
-	nasm -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D SECTOR_START_BT_STAGE2=$$((1+SECTOR_START_BT_STAGE2)) -D SECTOR_COUNT_BT_STAGE2=$(SECTOR_COUNT_BT_STAGE2) $<
+	nasm -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D SECTOR_START_BT_STAGE2=$(SECTOR_START_BT_STAGE2) -D SECTOR_COUNT_BT_STAGE2=$(SECTOR_COUNT_BT_STAGE2) $<
 	truncate --size=%512 $@
 
 $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_REALMODE)/stub.asm $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
