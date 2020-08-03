@@ -1,4 +1,5 @@
 #define IDT_SIZE 128
+#include <lib/utils/logging.h>
 #include <drivers/keyboard/keyboard.h>
 
 extern void interrupt_nohup();
@@ -72,28 +73,23 @@ int syscall_interrupt_keyboard_getch() {
 
 
 void populate_and_load_idt_table() {
+    print_log("Populating IDT Table");
     for (int i = 0; i < IDT_SIZE; ++i) {
         populate_idt_entry_32bit(i, (unsigned int)interrupt_nohup, 0, 1);
     }
+    print_log("  Placed %d no-hub interrupts", IDT_SIZE);
     populate_idt_entry_32bit(0x60, (unsigned int)syscall_interrupt_keyboard_getch_low, 0, 1);
     populate_idt_entry_32bit(0x64, (unsigned int)syscall_interrupt_handler_low, 0, 1);
+    print_log("  Placed custom interrupts (if any)");
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
     idtr.base_address = ((int)idt_table + MEMORY_LOCATION_KERNEL);
-
-    move_xy(4,4);
-    print_line("IDT Reference: ");
-    int idtr_address = (int)&idtr;
-    print_hex_int(idtr_address);
-
-    move_xy(4,5);
-    print_line("IDT Table: ");
-    print_hex_int(idtr.base_address);
-    print_char(' ');
-    print_hex_int(idtr.size);
+    print_log("IDTR: 0x%x; base address: 0x%x, size: %d",
+        (int)&idtr, idtr.base_address, idtr.size);
     reload_idt_table();
 }
 
 void reload_idt_table() {
+    print_log("Loading IDT Table");
     int idtr_address = (int)&idtr;
     load_idt_table_low(idtr_address);
 }

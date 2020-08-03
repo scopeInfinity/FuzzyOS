@@ -34,21 +34,25 @@ void print_rectangle(unsigned char x1,unsigned char y1,
     io_low_scroll_screen(0, get_color_fgbg(), x1, y1, x2, y2);
 }
 
-void scroll(unsigned char count,
+void scroll(char count,
             unsigned char x1,unsigned char y1,
             unsigned char x2, unsigned char y2) {
     io_low_scroll_screen(count, get_color_fgbg(), x1, y1, x2, y2);
 }
 
+void move_to_next_line() {
+    if (get_display_text_y()>=TEXT_WINDOW_HEIGHT-1) {
+        scroll(1, 0, 0, TEXT_WINDOW_WIDTH, TEXT_WINDOW_HEIGHT);
+    } else {
+        move_y_diff(1);
+    }
+    move_x(0);
+}
+
 void print_char(char c) {
     switch(c) {
         case '\n':
-            if (get_display_text_y()>TEXT_WINDOW_HEIGHT) {
-                scroll(1, 0,0,TEXT_WINDOW_WIDTH, TEXT_WINDOW_HEIGHT);
-            } else {
-                move_y_diff(1);
-            }
-            move_x(0);
+            move_to_next_line();
             break;
         default:
             io_low_put_char(c, get_color_fgbg());
@@ -126,4 +130,37 @@ void print_int(int x) {
         print_char('0');
         tailing_zero--;
     }
+}
+
+void printf_low(const char *fmt, int *va_base) {
+    int va_index = 0;
+    for(;(*fmt)!='\0' ; fmt++) {
+        if((*fmt)=='%') {
+            fmt++;
+            if((*fmt)=='\0') break;
+            switch(*fmt) {
+                case '%':
+                    print_char('%');
+                    break;
+                case 's':
+                    print_line(get_va_arg(va_base, const char *, va_index++));
+                    break;
+                case 'd':
+                    print_int(get_va_arg(va_base, const int, va_index++));
+                    break;
+                case 'x':
+                    print_hex_int(get_va_arg(va_base, const int, va_index++));
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            print_char(*fmt);
+        }
+    }
+}
+
+void printf(const char *strfmt, ...) {
+    int *va_base = va_args_first_adress();
+    printf_low(strfmt, va_base+1);
 }

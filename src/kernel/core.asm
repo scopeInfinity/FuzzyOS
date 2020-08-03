@@ -4,7 +4,6 @@
 
 extern kernel_core_entry
 extern reload_idt_table
-global __low_va_args
 global call_main
 
 [SECTION .text]
@@ -29,14 +28,6 @@ global call_main
         pop eax
         jmp eax
 
-
-    __low_va_args:
-
-        mov esi, [esp + 0x4]     ; (index)
-        shl esi, 2
-        add esi, 4
-        mov eax, [ebp + esi]
-        ret
 
     call_main:
         push ebp
