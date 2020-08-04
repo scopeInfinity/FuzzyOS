@@ -24,7 +24,6 @@ void process_handler_init() {
 
 int process_reserve_new_id() {
     // Only one process can at a time for now.
-    return 0;
     // id: application id, 0-based
     for (int i = 0; i < MAX_PROCESS; ++i) {
         if(process_availability[i]) {
@@ -40,10 +39,10 @@ int process_free_id(int id) {
 }
 
 int process_new_allocated_memory(int id) {
-    return MEMORY_LOCATION_APP+0x10000;
+    return MEMORY_LOCATION_APP+0x10000*id;
 }
 
-extern int call_main(int argc, char *argv[]);
+extern int call_main(int cs, int ds, int argc, char *argv[]);
 
 int process_exec(int sector_index, int sector_count) {
     int id = process_reserve_new_id();
@@ -78,9 +77,17 @@ int process_exec(int sector_index, int sector_count) {
 
     int relative_address = memory_location-MEMORY_LOCATION_KERNEL;
     print_log("App loaded at 0x%x, relative_address: 0x%x: %x...",
-        MEMORY_LOCATION_APP, relative_address,
+        memory_location, relative_address,
         *(int*)relative_address);
-    int exit_code = call_main(0, 0);
+
+    int code_segment = idt_cs_entry*sizeof(struct GDTEntry);
+    int data_segment = idt_ds_entry*sizeof(struct GDTEntry);
+    int argc = 0;
+    int argv = 0;
+    print_log("call_main(0x%x, 0x%x, %d, %d)", code_segment, data_segment, argc, argv);
+
+    int exit_code = call_main(code_segment, data_segment, argc, argv);
+
     process_free_id(id);
     io_low_flush();
     return exit_code;

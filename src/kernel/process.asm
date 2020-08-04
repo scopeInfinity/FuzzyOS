@@ -8,24 +8,33 @@ global call_main
         push ebp
         mov ebp, esp
 
-        mov eax, [ebp + 0x8]         ; (argc)
-        mov ebx, [ebp + 0xc]         ; (argv)
+        mov eax, [ebp + 0x10]         ; (argc)
+        mov eax, [ebp + 0x14]         ; (argv)
+
+        ; bx and cx are used below.
+        mov ebx, [ebp + 0x08]         ; (CS)
+        mov ecx, [ebp + 0x0c]         ; (DS)
 
         mov eax, esp
         mov [kernel_saved_stack_top], eax
 
+
         ; Preparing for exec.
 
-        mov ax, 0x30
-        mov es, ax
-        mov ss, ax
-        mov ds, ax
-        mov fs, ax
-        mov gs, ax
+        ; Assigning DS and stuff.
+        mov es, cx
+        mov ss, cx
+        mov ds, cx
+        mov fs, cx
+        mov gs, cx
 
         mov eax, 0xFFFF
-        mov esp, eax
-        call 0x28:0x0000
+
+        ; far jump to main()
+        mov [farjmp_location+4], bx
+        xor ebx, ebx
+        mov [farjmp_location], ebx
+        call far [farjmp_location]
         ; eax should contain the program return value.
 
         ; Returned from exec.
@@ -46,3 +55,5 @@ global call_main
 
 [SECTION .data]
     kernel_saved_stack_top  db  '    '
+    farjmp_location dd 0
+                    dw 0
