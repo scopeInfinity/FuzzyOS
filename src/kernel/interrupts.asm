@@ -6,10 +6,8 @@ global kernel_enable_interrupts
 global kernel_disable_interrupts
 global idt_table
 
-global syscall_interrupt_handler_low
-extern syscall_interrupt_handler
-global syscall_interrupt_keyboard_getch_low
-extern syscall_interrupt_keyboard_getch
+global syscall_selector_low
+extern syscall_selector
 
 [SECTION .text]
 
@@ -35,25 +33,28 @@ extern syscall_interrupt_keyboard_getch
         CLI
         ret
 
-    syscall_interrupt_handler_low:
-        call syscall_interrupt_handler
-        iret
-
-    syscall_interrupt_keyboard_getch_low:
+    syscall_selector_low:
         ; Not saving SS
         push ds
         push es
         push fs
         push gs
+        push ebx
         mov bx, 0x10
         mov ds, bx
         mov es, bx
         mov fs, bx
         mov gs, bx
-        call syscall_interrupt_keyboard_getch
+        pop ebx
+        push esi
+        push edx
+        push ecx
+        push ebx
+        push eax
+        call syscall_selector
+        add esp, 20
         pop gs
         pop fs
         pop es
         pop ds
         iret
-

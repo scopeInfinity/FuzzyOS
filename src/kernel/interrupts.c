@@ -1,6 +1,8 @@
-#define IDT_SIZE 128
 #include <lib/utils/logging.h>
-#include <drivers/keyboard/keyboard.h>
+
+#include "syscall.c"
+
+#define IDT_SIZE 128
 
 extern void interrupt_nohup();
 extern void load_idt_table_low(unsigned int idtr_address);
@@ -55,22 +57,11 @@ void populate_idt_entry_32bit(int id,
         );
 }
 
-extern void syscall_interrupt_handler_low();
-int x = 0;
-void syscall_interrupt_handler() {
-    move_xy(4,7);
-    print_line("Wierd syscall interrupt 0x64!!!! ");
-    print_int(x);
-    x++;
+extern int syscall_selector_low();
+extern int SYSCALL_TABLE[];
+int syscall_selector(int id, int arg0, int arg1,int arg2,int arg3) {
+    return ((int(*)(int,int,int,int))(SYSCALL_TABLE[id]))(arg0, arg1, arg2, arg3);
 }
-
-extern int syscall_interrupt_keyboard_getch_low();
-int z = 0;
-
-int syscall_interrupt_keyboard_getch() {
-    return keyboard_get_key_pressed_blocking();
-}
-
 
 void populate_and_load_idt_table() {
     print_log("Populating IDT Table");
@@ -78,9 +69,10 @@ void populate_and_load_idt_table() {
         populate_idt_entry_32bit(i, (unsigned int)interrupt_nohup, 0, 1);
     }
     print_log("  Placed %d no-hub interrupts", IDT_SIZE);
-    populate_idt_entry_32bit(0x60, (unsigned int)syscall_interrupt_keyboard_getch_low, 0, 1);
-    populate_idt_entry_32bit(0x64, (unsigned int)syscall_interrupt_handler_low, 0, 1);
+    populate_idt_entry_32bit(0x32, (unsigned int)syscall_selector_low, 0, 1);
+
     print_log("  Placed custom interrupts (if any)");
+    register_syscalls();
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
     idtr.base_address = ((int)idt_table + MEMORY_LOCATION_KERNEL);
     print_log("IDTR: 0x%x; base address: 0x%x, size: %d",

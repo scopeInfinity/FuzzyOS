@@ -1,3 +1,4 @@
+#include <lib/syscall/syscall.h>
 #include <lib/utils/input.h>
 #include <lib/utils/output.h>
 #include <lib/utils/string.h>
@@ -7,7 +8,7 @@ static char buffer_num[20];
 extern int getch_low();
 
 char getch() {
-    return getch_low();
+    return SYSCALL_A0(SYSCALL_KEYBOARD);
 }
 
 void read_line(char *str) {
