@@ -6,28 +6,17 @@
 #include <lib/utils/input.h>
 #include <lib/utils/panic.h>
 #include <lib/utils/time.h>
+#include <lib/syscall/syscall.h>
 
 #include "kernel/essentials.c"
 #include "kernel/interrupts.c"
+#include "kernel/process.c"
 
 extern void kernel_enable_interrupts();
 
-extern int call_main(int argc, char *argv[]);
-
-void exec(int sector_index, int sector_count){
-    print_log("Exec is loading app in memory.");
-
-    int err = load_sectors(MEMORY_LOCATION_APP, 0x80, SECTOR_START_APP_TTT, SECTOR_COUNT_APP_TTT);
-    if(err) {
-        print_log("Failed to load app in memory, Error: ", err);
-    } else {
-        int relative_address = MEMORY_LOCATION_APP-MEMORY_LOCATION_KERNEL;
-        print_log("App loaded at 0x%x, relative_address: 0x%x: %x...",
-            MEMORY_LOCATION_APP, relative_address,
-            *(int*)relative_address);
-        int exit_code = call_main(0, 0);
-        print_log("App exit_code: %d", exit_code);
-    }
+char command[30];
+int send_int(int a,int b) {
+    asm("int $0x61");
 }
 
 void kernel_core_entry() {
@@ -41,15 +30,46 @@ void kernel_core_entry() {
     kernel_enable_interrupts();
     keyboard_init();
 
-    move_xy(0,10);
-    print_line("Typewriter: ");
-    set_color_bg(C_WHITE);
-    set_color_fg(C_BLACK);
-    print_rectangle(0, 12, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-2);
-    move_xy(0,12);
+    process_handler_init();
+    int need_to_clear_hack = 1;
     while(1) {
-        print_char(getch());
+        if(need_to_clear_hack) {
+            move_xy(0,10);
+            print_line("Typewriter: ");
+            set_color_bg(C_WHITE);
+            set_color_fg(C_BLACK);
+            print_rectangle(0, 12, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-2);
+            move_xy(0,12);
+            print_line("Suppored Commands: run ttt, run calculator, exit\n");
+            need_to_clear_hack = 0;
+        }
+        read_line(command);
+        int run = 0;
+        int sector_start, sector_count;
+        print_log("Command: '%s'", command);
+        if(strcmpi(command, "run ttt")==0) {
+            sector_start = SECTOR_START_APP_TTT;
+            sector_count = SECTOR_COUNT_APP_TTT;
+            run = 1;
+        } else if(strcmpi(command, "run calculator")==0) {
+            sector_start = SECTOR_START_APP_CALC;
+            sector_count = SECTOR_COUNT_APP_CALC;
+            run = 1;
+        } else if(strcmpi(command, "exit")==0) {
+            PANIC(0, "No Panic, it's a normal exit.");
+        }
+
+        if(run)  {
+            need_to_clear_hack = 1;
+            int exit_code = syscall(1, sector_start, sector_count, 0,0);
+            if(exit_code<0) {
+                print_log("Failed to execute the process.");
+            } else {
+                print_log("App exit_code: %d", exit_code);
+            }
+        } else {
+            print_log("Invalid Command!");
+        }
     }
-    exec(0, 0);
     PANIC(501, "Kernel is under development!!!");
 }
