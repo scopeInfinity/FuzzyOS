@@ -1,5 +1,6 @@
 #pragma once
 #include <lib/utils/logging.h>
+#include <lib/utils/output.h>
 
 #include "memmgr/tables/gdt.c"
 
@@ -81,5 +82,6 @@ int process_exec(int sector_index, int sector_count) {
         *(int*)relative_address);
     int exit_code = call_main(0, 0);
     process_free_id(id);
+    io_low_flush();
     return exit_code;
 }

@@ -7,6 +7,7 @@ extern "C" {
 #include <lib/utils/color.h>
 #include <drivers/display/text_mode.h>
 
+void flush_screen();
 void move_x(unsigned char x);
 void move_y(unsigned char y);
 void move_xy(unsigned char x, unsigned char y);

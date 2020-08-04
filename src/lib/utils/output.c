@@ -3,6 +3,10 @@
 #include <lib/utils/output.h>
 #include <drivers/display/text_mode.h>
 
+void flush_screen() {
+    io_low_flush();
+}
+
 void move_x(unsigned char x) {
     set_display_text_x(x);
 }

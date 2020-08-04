@@ -4,10 +4,13 @@ extern void _low_put_char(char c, unsigned char color, unsigned int xy);
 
 extern void _low_vga_copy_step(unsigned int xy1, unsigned int xy2, unsigned int count);
 
+extern _low_flush(unsigned short *buffer, int count);
+
 static int location_xy = 0;
 
 int IO_CURRENT_X = 0;
 int IO_CURRENT_Y = 0;
+unsigned short buffer[TEXT_WINDOW_HEIGHT*TEXT_WINDOW_WIDTH] = {0};
 
 int get_display_text_x() {
     return IO_CURRENT_X;
@@ -38,40 +41,40 @@ void io_low_scroll_screen(char count, unsigned char color,
                           int x2, int y2) {
     if (count == 0) {
         for (int r = y1; r <= y2; ++r) {
-            int index = r*TEXT_WINDOW_WIDTH;
-            for (int c = x1; c <= x2; ++c, index++) {
-                _low_put_char(' ', color, index);
+            int d_index = r*TEXT_WINDOW_WIDTH+x1;
+            for (int c = x1; c <= x2; ++c) {
+                buffer[d_index++]=(color<<8)|' ';
             }
         }
     } else if (count > 0) {
         // Not yet tested.
         int width = x2-x1+1;
-        for (int r1=y1,r2 = y1+count; r2 <= y2; r1++,r2++) {
-            _low_vga_copy_step(
-                r2*TEXT_WINDOW_WIDTH + x1,
-                r1*TEXT_WINDOW_WIDTH + x1,
-                width
-                );
-            io_low_scroll_screen(0,color,
-                x1, y2-count,
-                x2, y2);
+        for (int r_dest=y1,r_src = y1+count; r_src <= y2; r_src++,r_dest++) {
+            int s_index = r_src*TEXT_WINDOW_WIDTH+x1;
+            int d_index = r_dest*TEXT_WINDOW_WIDTH+x1;
+            for (int j = x1; j <= x2; ++j) {
+                buffer[d_index++]=buffer[s_index++];
+            }
         }
     } else {
         // Not yet tested.
         int width = x2-x1+1;
-        for (int r1=y2,r2 = y2+count; r2 >= y1; r1--,r2--) {
-            _low_vga_copy_step(
-                r2*TEXT_WINDOW_WIDTH + x1,
-                r1*TEXT_WINDOW_WIDTH + x1,
-                width
-                );
-            io_low_scroll_screen(0,color,
-                x1, y1,
-                x2, y1+count);
+        for (int r_dest=y2,r_src = y2+count; r_src >= y1; r_src--,r_dest--) {
+            int s_index = r_src*TEXT_WINDOW_WIDTH+x1;
+            int d_index = r_dest*TEXT_WINDOW_WIDTH+x1;
+            for (int j = x1; j <= x2; ++j) {
+                buffer[d_index++]=buffer[s_index++];
+            }
         }
     }
+    io_low_flush();
 }
 
 void io_low_put_char(char c, unsigned char color) {
     _low_put_char(c,color, location_xy);
+    buffer[location_xy]=(color<<8)|c;
+}
+
+void io_low_flush() {
+    _low_flush(buffer, sizeof(buffer)/2);
 }

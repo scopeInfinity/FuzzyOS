@@ -2,6 +2,7 @@
 
 global _low_put_char
 global _low_vga_copy_step
+global _low_flush
 
 [SECTION .text]
     _low_put_char:
@@ -45,6 +46,25 @@ global _low_vga_copy_step
         loop _low_vga_copy_step_internal
 
         pop ds
+        mov esp, ebp
+        pop ebp
+        ret
+
+    _low_flush:
+        push ebp
+        mov ebp, esp
+        push es
+        mov eax, 0x20
+        mov es, eax                 ; Absolute memory address
+
+        mov esi,[ebp + 0x8]    ; (buffer)
+        mov cx, [ebp + 0xc]    ; (count)
+        mov edi, 0xb8000
+
+        cld
+        rep movsw
+
+        pop es
         mov esp, ebp
         pop ebp
         ret

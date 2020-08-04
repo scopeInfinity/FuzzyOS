@@ -14,3 +14,5 @@ void io_low_scroll_screen(char count, unsigned char color,
                           int x2, int y2);
 
 void io_low_put_char(char c, unsigned char color);
+
+void io_low_flush();

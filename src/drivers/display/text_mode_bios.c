@@ -52,5 +52,9 @@ void io_low_scroll_screen(char count, unsigned char color,
 }
 
 void io_low_put_char(char c, unsigned char color) {
-    _low_put_chars(c, 1, color);
+  _low_put_chars(c, 1, color);
+}
+
+void io_low_flush() {
+  // Not implemented, as it's not required.
 }
