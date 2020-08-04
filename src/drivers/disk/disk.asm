@@ -25,7 +25,6 @@ global _low_disk_read_sectors_real
         execute_real_mode_0x13
 
     _low_disk_read_sectors_i1:
-
         mov ah, 0x01                 ; (get status of last drive operation)
         shelve_values_from_protected_mode 1, eax
 

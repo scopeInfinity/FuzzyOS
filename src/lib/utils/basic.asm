@@ -1,10 +1,10 @@
 [BITS 32]
 
-global va_args_first_adress
+global va_args_first_address
 
 [SECTION .text]
 
-    va_args_first_adress:
+    va_args_first_address:
 
         mov eax, ebp
         add eax, 8

@@ -15,9 +15,8 @@ global call_main
         mov ebx, [ebp + 0x08]         ; (CS)
         mov ecx, [ebp + 0x0c]         ; (DS)
 
-        mov eax, esp
-        mov [kernel_saved_stack_top], eax
-
+        ; edx is used below.
+        mov edx, ebp
 
         ; Preparing for exec.
 
@@ -28,16 +27,19 @@ global call_main
         mov fs, cx
         mov gs, cx
 
-        mov eax, 0xFFFF
 
         ; far jump to main()
-        mov [farjmp_location+4], bx
+        ; stores IP32:CS16 on the very top of the stack
+        mov eax, 0xFFFF
+        mov esp, eax
+        push ebx
         xor ebx, ebx
-        mov [farjmp_location], ebx
-        call far [farjmp_location]
+        push ebx
+        ; Temporarily pushing Kernel EBP on user stack.
+        push edx
+        call far [0xFFF7]
         ; eax should contain the program return value.
-
-        ; Returned from exec.
+        pop edx
 
         mov bx, 0x10
         mov es, bx
@@ -46,14 +48,9 @@ global call_main
         mov fs, bx
         mov gs, bx
 
-        mov ebx, [kernel_saved_stack_top]
-        mov esp, ebx
+        mov ebp, edx
 
         mov esp, ebp
+        ; kernal stack is valid again
         pop ebp
         ret
-
-[SECTION .data]
-    kernel_saved_stack_top  db  '    '
-    farjmp_location dd 0
-                    dw 0

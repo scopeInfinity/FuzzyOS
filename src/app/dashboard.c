@@ -1,17 +1,13 @@
-#include <app/calc.c>
+#include <lib/utils/input.h>
 #include <lib/utils/output.h>
 #include <lib/utils/time.h>
 #include <lib/utils/color.h>
-#include <lib/utils/disk.h>
+#include <lib/utils/process.h>
 #include <lib/utils/string.h>
-
-void read_line(char *s) {
-    // Not Implemented.
-    // Migrate binary to 32-bit.
-}
 
 char query_app_number[] = "Enter Application Number: ";
 char application_list[5][15] = {"Calculator", "Sample 2", "Sample 3", "Sample 4", "Sample 5"};
+
 void print_applications(unsigned char x, unsigned char y, char *list, unsigned char count, unsigned char max_strlen) {
     for(int i=1;i<=count;i++) {
         move_xy(x,y+i);
@@ -27,13 +23,13 @@ void print_applications(unsigned char x, unsigned char y, char *list, unsigned c
 void print_board() {
     set_color_bg(C_DARK_GRAY);
     set_color_fg(C_WHITE);
-    print_rectangle(0, 0, WINDOW_WIDTH-1, WINDOW_HEIGHT-1);
+    print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
     move_xy(1,0);
     print_line("Fuzzy OS");
 
     set_color_bg(C_LIGHT_GRAY);
     set_color_fg(C_BLACK);
-    print_rectangle(1, 1, WINDOW_WIDTH-2, WINDOW_HEIGHT-2);
+    print_rectangle(1, 1, TEXT_WINDOW_WIDTH-2, TEXT_WINDOW_HEIGHT-2);
     move_xy(3,3);
 
     print_line(query_app_number);
@@ -50,26 +46,24 @@ int main(int argc,char **argv) {
         move_xy(3+sizeof(query_app_number)-1,3);
         int num = read_int();
 
-        // Load and launch calculator
-        // int err = load_sectors(0xC000, 0x80, 27, 25);
-        int err = load_sectors(0xC000, 0x80, 52, 25);
-        if(err) {
+        char *argv[] = {"argv1, argv2", "argv3"};
+        int return_status = exec(SECTOR_START_APP_TTT, SECTOR_COUNT_APP_TTT);
+        if(return_status<0) {
             set_color_bg(C_DARK_GRAY);
-            move_xy(2,WINDOW_HEIGHT-1);
+            move_xy(2,TEXT_WINDOW_HEIGHT-1);
             print_line("Failed to load app in memory, Error: ");
-            print_int(err);
-            sleep(1000);
+            print_int(return_status);
+            getch();
             continue;
         }
-        char *argv[] = {"argv1, argv2", "argv3"};
-        int return_status = call_main(0x0C00,0x0000, 3, argv);
 
         print_board();
         set_color_bg(C_DARK_GRAY);
-        move_xy(2,WINDOW_HEIGHT-1);
+        move_xy(2, TEXT_WINDOW_HEIGHT-1);
         print_line("Program Exited: ");
         print_int(return_status);
-        sleep(1000);
+        print_line(". Press any key to continue.");
+        getch();
     }
     return 0;
 }

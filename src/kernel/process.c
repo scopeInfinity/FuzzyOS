@@ -5,17 +5,19 @@
 #include "memmgr/tables/gdt.c"
 
 #define GDT_TABLE_SIZE 25
-struct GDTEntry gdt_table[GDT_TABLE_SIZE];
-struct GDTReference gdtr;
+struct GDTEntry gdt_table[GDT_TABLE_SIZE]={0};
+struct GDTReference gdtr={0};
 
 #define MAX_PROCESS 10
-int process_availability[MAX_PROCESS];
+int process_availability[MAX_PROCESS]={0};
 
 void process_handler_init() {
     print_log("Process handler init");
     for (int i = 0; i < MAX_PROCESS; ++i) {
         process_availability[i]=1;
     }
+    // Might use 0 for kernel in future.
+    process_availability[0] = 0;
     populate_gdt_table(
         &gdtr, gdt_table, GDT_TABLE_SIZE,
         MEMORY_LOCATION_KERNEL);
@@ -39,7 +41,7 @@ int process_free_id(int id) {
 }
 
 int process_new_allocated_memory(int id) {
-    return MEMORY_LOCATION_APP+0x10000*id;
+    return MEMORY_LOCATION_APP_START+MEMORY_LOCATION_APP_ESIZE*id;
 }
 
 extern int call_main(int cs, int ds, int argc, char *argv[]);
@@ -52,6 +54,8 @@ int process_exec(int sector_index, int sector_count) {
     }
     int memory_location = process_new_allocated_memory(id);
 
+    // TODO(scopeinfinity): Fix print_log when exec is coming from user
+    // application.
     print_log("Starting process exec for sector: %d count: %d as id: %d",
         sector_index, sector_count, id);
 
@@ -62,16 +66,17 @@ int process_exec(int sector_index, int sector_count) {
     }
     int idt_cs_entry = (id<<1)+5;
     int idt_ds_entry = (id<<1)+6;
+
     // Application Code Segment Selector
     populate_gct_entry(
         &gdt_table[idt_cs_entry],
-        memory_location, memory_location+0xFFFF,
+        memory_location, memory_location+MEMORY_LOCATION_APP_ESIZE,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Application Data Segment Selector
     populate_gct_entry(
         &gdt_table[idt_ds_entry],
-        memory_location, memory_location+0xFFFF,
+        memory_location, memory_location+MEMORY_LOCATION_APP_ESIZE,
         0b0100,  // 32-bit protected mode
         0x92);
 
@@ -79,12 +84,11 @@ int process_exec(int sector_index, int sector_count) {
     print_log("App loaded at 0x%x, relative_address: 0x%x: %x...",
         memory_location, relative_address,
         *(int*)relative_address);
-
     int code_segment = idt_cs_entry*sizeof(struct GDTEntry);
     int data_segment = idt_ds_entry*sizeof(struct GDTEntry);
     int argc = 0;
     int argv = 0;
-    print_log("call_main(0x%x, 0x%x, %d, %d)", code_segment, data_segment, argc, argv);
+    print_log("call_main(0x%x:0, 0x%x:0, %d, %d)", code_segment, data_segment, argc, argv);
 
     int exit_code = call_main(code_segment, data_segment, argc, argv);
 

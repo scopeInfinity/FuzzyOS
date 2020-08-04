@@ -35,7 +35,7 @@ global label_exit
         get_gdtr_address
         lgdt [eax]
 
-        ; Enter Protected mode
+        ; Enter protected mode and start kernel
         set_protected_mode_entry_address_frm 0
         mov eax, cr0
         or eax, 0x00000001

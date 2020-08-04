@@ -15,8 +15,13 @@
 [SECTION .text]
 
         CLI
-        MOV ax, 0x0000
-        MOV es, ax                  ; es := 0
+        MOV ax, 0
+        MOV es, ax
+        MOV ss, ax
+        MOV ds, ax
+        MOV fs, ax
+        MOV gs, ax
+        MOV esp, 0xFFFC
 
         set_blinking 0
         clear_screen C_WHITE, C_BLACK

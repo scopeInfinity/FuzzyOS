@@ -48,11 +48,15 @@ SECTOR_COUNT_KERNEL = 41
 SECTOR_START_APP_TTT = 68
 SECTOR_COUNT_APP_TTT = 25
 SECTOR_START_APP_CALC = 93
-SECTOR_COUNT_APP_CALC= 25
+SECTOR_COUNT_APP_CALC = 25
+SECTOR_START_APP_DASHBOARD = 118
+SECTOR_COUNT_APP_DASHBOARD = 25
 
 MEMORY_STATIC_LIBRARY = 0x7E00
-MEMORY_LOCATION_KERNEL = 0xC000
-MEMORY_LOCATION_APP = 0x20000
+MEMORY_LOCATION_KERNEL = 0x10000
+MEMORY_LOCATION_KERNEL_SIZE = 0xFFFF
+MEMORY_LOCATION_APP_START = 0x20000
+MEMORY_LOCATION_APP_ESIZE  = 0x10000
 
 SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_unstaged')\""
 
@@ -67,7 +71,7 @@ images: $(image_vmdk)
 
 binaries: $(bt_stage1) $(bt_stage2) $(kernel_core) $(rm_static)
 
-$(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tic_tac_toe) $(rm_static)
+$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tic_tac_toe) $(app_dashboard)
 	dd bs=512 count=2 if=$(bt_stage1) of=$@
 	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
 	@echo "Stage 1 Size     : " $$(stat -c %s $(bt_stage1))
@@ -112,6 +116,14 @@ $(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tic_ta
 	@echo "  Want SECTOR_COUNT_APP_CALC    : "$(SECTOR_COUNT_APP_CALC)
 	@echo "  Size    : " $$(stat -c %s $(app_calc))
 
+	@echo "App Dashboard"
+	@echo "  Got  SECTOR_START_APP_DASHBOARD    : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
+	@echo "  Want SECTOR_START_APP_DASHBOARD    : "$(SECTOR_START_APP_DASHBOARD)
+	cat $(app_dashboard)  >> $@
+	@echo "  Got  SECTOR_COUNT_APP_DASHBOARD    : "$$(( $$(stat -c %s $(app_dashboard)) / 512))
+	@echo "  Want SECTOR_COUNT_APP_DASHBOARD    : "$(SECTOR_COUNT_APP_DASHBOARD)
+	@echo "  Size    : " $$(stat -c %s $(app_dashboard))
+
 	@echo "Image Size       : " $$(stat -c %s $@)
 
 debug_stage1: $(bt_stage1)
@@ -154,7 +166,7 @@ $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_MEMM
 		-D SECTOR_COUNT_KERNEL=$(SECTOR_COUNT_KERNEL) \
 		-D MEMORY_STATIC_LIBRARY=$(MEMORY_STATIC_LIBRARY) \
 		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
-		-D MEMORY_LOCATION_APP=$(MEMORY_LOCATION_APP) \
+		-D MEMORY_LOCATION_KERNEL_SIZE=$(MEMORY_LOCATION_KERNEL_SIZE) \
 		-o $(BUILD_BOOTLOADER)/stage2_c.o $(SRC_BOOTLOADER)/stage2.c
 	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	truncate --size=%512 $@
@@ -170,10 +182,14 @@ $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essent
 	nasm -o $(BUILD_KERNEL)/process_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_KERNEL)/process.asm
 	nasm -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 $(SRC_KERNEL)/interrupts.asm
 	gcc -m32 -fno-pie -c -Isrc \
+		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
+		-D MEMORY_LOCATION_KERNEL_SIZE=$(MEMORY_LOCATION_KERNEL_SIZE) \
+		-D MEMORY_LOCATION_APP_START=$(MEMORY_LOCATION_APP_START) \
+		-D MEMORY_LOCATION_APP_ESIZE=$(MEMORY_LOCATION_APP_ESIZE) \
+		-D SECTOR_START_APP_DASHBOARD=$(SECTOR_START_APP_DASHBOARD) \
+		-D SECTOR_COUNT_APP_DASHBOARD=$(SECTOR_COUNT_APP_DASHBOARD) \
 		-D SECTOR_START_APP_TTT=$(SECTOR_START_APP_TTT) \
 		-D SECTOR_COUNT_APP_TTT=$(SECTOR_COUNT_APP_TTT) \
-		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
-		-D MEMORY_LOCATION_APP=$(MEMORY_LOCATION_APP) \
 		-D SECTOR_START_APP_CALC=$(SECTOR_START_APP_CALC) \
 		-D SECTOR_COUNT_APP_CALC=$(SECTOR_COUNT_APP_CALC) \
 		-o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
@@ -231,7 +247,7 @@ $(BUILD_LIB_UTILS)/libutils_16: $(SRC_LIB_UTILS)/basic.c $(SRC_LIB_UTILS)/basic_
 	nasm -o $(BUILD_LIB_UTILS)/time_16_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
 	ar rc $@ $(BUILD_LIB_UTILS)/basic_16_asm.o $(BUILD_LIB_UTILS)/basic_16_c.o $(BUILD_LIB_UTILS)/logging_16.o $(BUILD_LIB_UTILS)/output_16.o $(BUILD_LIB_UTILS)/string_16.o $(BUILD_LIB_UTILS)/color_16.o $(BUILD_LIB_UTILS)/panic_16_c.o $(BUILD_LIB_UTILS)/panic_16_asm.o $(BUILD_LIB_UTILS)/time_16_c.o $(BUILD_LIB_UTILS)/time_16_asm.o
 
-$(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/basic.c $(SRC_LIB_UTILS)/basic.asm $(SRC_LIB_UTILS)/logging.c $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.c $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
+$(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/basic.c $(SRC_LIB_UTILS)/basic.asm $(SRC_LIB_UTILS)/logging.c $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/process.c $(SRC_LIB_UTILS)/process.h $(SRC_LIB_UTILS)/input.c $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
 	mkdir -p $(BUILD_LIB_UTILS)/
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/basic_c.o $(SRC_LIB_UTILS)/basic.c
 	nasm -o $(BUILD_LIB_UTILS)/basic_asm.o -f elf32 $(SRC_LIB_UTILS)/basic.asm
@@ -240,11 +256,12 @@ $(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/basic.c $(SRC_LIB_UTILS)/basic.asm
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/input.o $(SRC_LIB_UTILS)/input.c
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string.o $(SRC_LIB_UTILS)/string.c
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color.o $(SRC_LIB_UTILS)/color.c
+	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/process.o $(SRC_LIB_UTILS)/process.c
 	gcc -m32 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
 	nasm -o $(BUILD_LIB_UTILS)/panic_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
 	nasm -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
-	ar rc $@ $(BUILD_LIB_UTILS)/basic_asm.o $(BUILD_LIB_UTILS)/basic_c.o $(BUILD_LIB_UTILS)/logging.o $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/input.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
+	ar rc $@ $(BUILD_LIB_UTILS)/basic_asm.o $(BUILD_LIB_UTILS)/basic_c.o $(BUILD_LIB_UTILS)/logging.o $(BUILD_LIB_UTILS)/process.o $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/input.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
 
 $(BUILD_LIB_DS)/libds: $(SRC_LIB_DS)/queue.h $(SRC_LIB_DS)/queue.c
 	mkdir -p $(BUILD_LIB_DS)/
@@ -254,7 +271,8 @@ $(BUILD_LIB_DS)/libds: $(SRC_LIB_DS)/queue.h $(SRC_LIB_DS)/queue.c
 $(BUILD_LIB_SYSCALL)/libsyscall: $(SRC_LIB_SYSCALL)/syscall.h $(SRC_LIB_SYSCALL)/syscall.asm
 	mkdir -p $(BUILD_LIB_SYSCALL)/
 	nasm -o $(BUILD_LIB_SYSCALL)/syscall_asm.o -f elf32 $(SRC_LIB_SYSCALL)/syscall.asm
-	ar rc $@ $(BUILD_LIB_SYSCALL)/syscall_asm.o
+	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_SYSCALL)/syscall_c.o $(SRC_LIB_SYSCALL)/syscall.c
+	ar rc $@ $(BUILD_LIB_SYSCALL)/syscall_asm.o $(BUILD_LIB_SYSCALL)/syscall_c.o
 
 # User Applications
 $(app_calc): $(app_entry) $(SRC_APP)/calc.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
@@ -267,4 +285,15 @@ $(app_tic_tac_toe): $(app_entry) $(SRC_APP)/tic_tac_toe.c $(SRC_LIB_UTILS)/outpu
 	mkdir -p $$(dirname $(app_tic_tac_toe))
 	gcc -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/tic_tac_toe.o $(SRC_APP)/tic_tac_toe.c
 	ld --oformat binary -m elf_i386 -Ttext 0x0 --strip-all -o $@ $(app_entry) $(BUILD_APP)/tic_tac_toe.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
+	truncate --size=%512 $@
+
+$(app_dashboard): $(app_entry) $(SRC_APP)/dashboard.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
+	mkdir -p $$(dirname $(app_tic_tac_toe))
+	gcc -m32 -fno-pie -c -Isrc \
+		-D SECTOR_START_APP_TTT=$(SECTOR_START_APP_TTT) \
+		-D SECTOR_COUNT_APP_TTT=$(SECTOR_COUNT_APP_TTT) \
+		-D SECTOR_START_APP_CALC=$(SECTOR_START_APP_CALC) \
+		-D SECTOR_COUNT_APP_CALC=$(SECTOR_COUNT_APP_CALC) \
+		-o $(BUILD_APP)/dashboard.o $(SRC_APP)/dashboard.c
+	ld --oformat binary -m elf_i386 -Ttext 0x0 --strip-all -o $@ $(app_entry) $(BUILD_APP)/dashboard.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
 	truncate --size=%512 $@

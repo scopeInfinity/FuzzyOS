@@ -39,6 +39,7 @@ extern syscall_selector
         push es
         push fs
         push gs
+
         push ebx
         mov bx, 0x10
         mov ds, bx
@@ -46,6 +47,7 @@ extern syscall_selector
         mov fs, bx
         mov gs, bx
         pop ebx
+
         push esi
         push edx
         push ecx
@@ -53,6 +55,7 @@ extern syscall_selector
         push eax
         call syscall_selector
         add esp, 20
+
         pop gs
         pop fs
         pop es
