@@ -75,7 +75,7 @@ void interrupts_pic_init() {
     // As we are using BIOS default PIC mapping.
     populate_idt_entry_32bit(0x08, (unsigned int)irq0_interrupt_timer_handler_low, 0, 0);
     pic_init();
-    pic_timer_set_counter(PIC_PIT_MAX_COUNTER/1000);
+    pic_timer_set_counter(PIC_PIT_FREQ/100);  // 10ms
     pic_irq_enable(PIC_IRQ_PIT);
 }
 

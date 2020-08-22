@@ -28,12 +28,12 @@ void kernel_core_entry() {
     print_log("Initializing Kernel");
 
     populate_and_load_idt_table();
-    print_log("Kernel enabling interrupts");
     keyboard_init();
     process_handler_init();
+    print_log("Kernel enabling interrupts");
     kernel_enable_interrupts();
-    asm("int $0x08");
-    while(1);
+    // asm("int $0x08");
+    // while(1);
 
     int need_to_clear_hack = 1;
     while(1) {
