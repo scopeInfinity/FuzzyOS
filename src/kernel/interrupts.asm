@@ -43,6 +43,8 @@ extern syscall_selector
         ; TODO: Fix the hack to get some better solution
         ; for obtaining the kernel stack and clean up space
         ; in memory_layout.md.
+        ; Bug: Nested interrupts works because of this hack.
+        ; For ex. getch() inside an exec() won't work.
         mov esp, 0xFFFC
         push ebp    ; save old ebp
         push edi    ; save old esp
