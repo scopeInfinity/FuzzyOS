@@ -15,8 +15,9 @@ global call_main
         mov ebx, [ebp + 0x08]         ; (CS)
         mov ecx, [ebp + 0x0c]         ; (DS)
 
-        ; edx is used below.
+        ; edx and si is used below to preserve ebp and ss.
         mov edx, ebp
+        mov si, ss
 
         ; Preparing for exec.
 
@@ -30,27 +31,29 @@ global call_main
 
         ; far jump to main()
         ; stores IP32:CS16 on the very top of the stack
-        mov eax, 0xFFFF
+        mov eax, 0xFFFC
         mov esp, eax
         push ebx
         xor ebx, ebx
         push ebx
-        ; Temporarily pushing Kernel EBP on user stack.
+        ; Temporarily pushing Kernel EBP and SS on user stack.
         push edx
-        call far [0xFFF7]
+        push esi
+        call far [0xFFF4]
         ; eax should contain the program return value.
+        pop esi
         pop edx
 
         mov bx, 0x10
         mov es, bx
-        mov ss, bx
         mov ds, bx
         mov fs, bx
         mov gs, bx
 
+        mov ss, si
         mov ebp, edx
 
         mov esp, ebp
-        ; kernal stack is valid again
+        ; kernal/in-interrupt stack is valid again
         pop ebp
         ret

@@ -24,7 +24,7 @@ extern reload_idt_table
         jmp reenter_protected_mode
 
     kernel_core_init:
-        mov esp, 0xFFFC
+        mov esp, 0xB000
         jmp kernel_core_entry
 
     reenter_protected_mode:

@@ -54,8 +54,6 @@ int process_exec(int sector_index, int sector_count) {
     }
     int memory_location = process_new_allocated_memory(id);
 
-    // TODO(scopeinfinity): Fix print_log when exec is coming from user
-    // application.
     print_log("Starting process exec for sector: %d count: %d as id: %d",
         sector_index, sector_count, id);
 
@@ -70,13 +68,13 @@ int process_exec(int sector_index, int sector_count) {
     // Application Code Segment Selector
     populate_gct_entry(
         &gdt_table[idt_cs_entry],
-        memory_location, memory_location+MEMORY_LOCATION_APP_ESIZE,
+        memory_location, memory_location+MEMORY_LOCATION_APP_ESIZE-1,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Application Data Segment Selector
     populate_gct_entry(
         &gdt_table[idt_ds_entry],
-        memory_location, memory_location+MEMORY_LOCATION_APP_ESIZE,
+        memory_location, memory_location+MEMORY_LOCATION_APP_ESIZE-1,
         0b0100,  // 32-bit protected mode
         0x92);
 

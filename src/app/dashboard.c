@@ -4,6 +4,7 @@
 #include <lib/utils/color.h>
 #include <lib/utils/process.h>
 #include <lib/utils/string.h>
+#include <lib/utils/logging.h>
 
 char query_app_number[] = "Enter Application Number: ";
 char application_list[5][15] = {"Calculator", "Sample 2", "Sample 3", "Sample 4", "Sample 5"};

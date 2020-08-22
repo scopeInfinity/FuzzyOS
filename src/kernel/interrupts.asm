@@ -34,19 +34,28 @@ extern syscall_selector
         ret
 
     syscall_selector_low:
-        ; Not saving SS
+        ; Assumes SS and DS to remain same.
+
+        ; save caller stack and load kernel stack.
+        mov di, 0x10
+        mov ss, di
+        mov edi, esp
+        ; TODO: Fix the hack to get some better solution
+        ; for obtaining the kernel stack and clean up space
+        ; in memory_layout.md.
+        mov esp, 0xFFFC
+        push ebp    ; save old ebp
+        push edi    ; save old esp
+
         push ds
         push es
         push fs
         push gs
-
-        push ebx
-        mov bx, 0x10
-        mov ds, bx
-        mov es, bx
-        mov fs, bx
-        mov gs, bx
-        pop ebx
+        mov di, 0x10
+        mov ds, di
+        mov es, di
+        mov fs, di
+        mov gs, di
 
         push esi
         push edx
@@ -60,4 +69,12 @@ extern syscall_selector
         pop fs
         pop es
         pop ds
+        pop ebx
+        pop ebp
+
+        ; restore caller stack
+        mov di, ds
+        mov ss, di  ; assumption ss == ds
+        mov esp, ebx
+
         iret
