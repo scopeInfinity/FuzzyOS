@@ -4,6 +4,42 @@ global call_main
 
 [SECTION .text]
 
+    _process_scheduler:
+        ; Does something great!!!
+
+
+    _low_delegate_to_process_scheduler:
+        ; TODO: do something
+        ; eax: exit code
+        ; ebx: ds  ; for process id reverse lookup.
+        hlt
+        mov cx, 0x10
+        mov es, cx
+        mov ds, cx
+        mov ss, cx
+        mov fs, cx
+        mov gs, cx
+        pop ebp
+        ret
+
+
+    _low_process_jmp_running:
+        push ebp
+        mov ebp, esp
+
+        mov eax, [ebp + 0x08]         ; (CS)
+        mov ebx, [ebp + 0x0c]         ; (DS)
+        mov ecx, [ebp + 0x10]         ; (IP)
+        mov edx, [ebp + 0x14]         ; (SP)
+        mov esi, [ebp + 0x18]         ; (BP)
+
+        ; TODO: do something
+        ; eax: exit code
+        ; ebx: ds  ; for process id reverse lookup.
+        xor ebx, ebx
+        mov bx, ds
+        jmp _low_delegate_to_process_scheduler
+
     call_main:
         push ebp
         mov ebp, esp
