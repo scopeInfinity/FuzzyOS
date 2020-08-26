@@ -4,6 +4,7 @@ global pic_init_low
 global pic_timer_configure
 global pic_end_of_interrupt
 global pic_timer_set_counter
+global pic_timer_get_counter
 global pic_timer_reload_counter
 global pic_writemask
 global pic_readmask
@@ -66,6 +67,11 @@ global pic_readmask
         call pic_timer_reload_counter
 
         pop ebp
+        ret
+
+    pic_timer_get_counter:
+        xor eax, eax
+        mov ax, [pic_timer_counter]
         ret
 
     pic_timer_reload_counter:

@@ -7,6 +7,7 @@ extern void pic_timer_configure();
 extern void pic_end_of_interrupt();
 
 extern void pic_timer_set_counter(unsigned short counter);
+extern unsigned short pic_timer_get_counter();
 extern void pic_timer_reload_counter();
 
 extern unsigned short pic_readmask();

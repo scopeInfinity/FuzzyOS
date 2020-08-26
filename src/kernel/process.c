@@ -46,6 +46,11 @@ int process_new_allocated_memory(int id) {
 
 extern int call_main(int cs, int ds, int argc, char *argv[]);
 
+void process_handler_step() {
+    // called at regular intervals from PIC IRQ0.
+
+}
+
 int process_exec(int sector_index, int sector_count) {
     int id = process_reserve_new_id();
     if(id<0) {

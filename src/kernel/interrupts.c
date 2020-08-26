@@ -1,6 +1,7 @@
 #include <drivers/pic/pic.h>
 #include <lib/utils/logging.h>
 
+#include "interrupts/timer.c"
 #include "syscall.c"
 
 #define IDT_SIZE 128
@@ -58,16 +59,10 @@ void populate_idt_entry_32bit(int id,
         );
 }
 
-extern void enable_timer_interrupt();
-int counter = 0;
 extern void irq0_interrupt_timer_handler_low();
 void irq0_interrupt_timer_handler() {
-    if(counter == 0) {
-        print_log(">> Interrupt called!");
-        // 1 second interval
-        counter = PIC_PIT_FREQ/PIC_PIT_MAX_COUNTER;
-    }
-    counter--;
+    // called every millisecond.
+    interrupt_ticks_step(pic_timer_get_counter());
 }
 
 extern int syscall_selector_low();
@@ -80,7 +75,7 @@ void interrupts_pic_init() {
     // As we are using BIOS default PIC mapping.
     populate_idt_entry_32bit(0x08, (unsigned int)irq0_interrupt_timer_handler_low, 0, 0);
     pic_init();
-    pic_timer_set_counter(PIC_PIT_MAX_COUNTER);
+    pic_timer_set_counter(PIC_PIT_MAX_COUNTER/1000);
     pic_irq_enable(PIC_IRQ_PIT);
 }
 

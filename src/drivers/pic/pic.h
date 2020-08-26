@@ -11,6 +11,7 @@ void pic_timer_configure();
 void pic_end_of_interrupt();
 
 void pic_timer_set_counter(unsigned short counter);
+unsigned short pic_timer_get_counter();
 void pic_timer_reload_counter();
 
 void pic_irq_enable(int irq);
