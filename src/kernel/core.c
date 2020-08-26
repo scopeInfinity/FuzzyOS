@@ -20,6 +20,7 @@ int send_int(int a,int b) {
     asm("int $0x61");
 }
 
+int HACK_WAIT = 0;
 void kernel_core_entry() {
     set_color_bg(C_BLUE);
     set_color_fg(C_WHITE);
@@ -28,9 +29,11 @@ void kernel_core_entry() {
 
     populate_and_load_idt_table();
     print_log("Kernel enabling interrupts");
-    kernel_enable_interrupts();
     keyboard_init();
     process_handler_init();
+    kernel_enable_interrupts();
+    asm("int $0x08");
+    while(1);
 
     int need_to_clear_hack = 1;
     while(1) {

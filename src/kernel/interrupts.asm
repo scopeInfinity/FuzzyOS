@@ -6,8 +6,14 @@ global kernel_enable_interrupts
 global kernel_disable_interrupts
 global idt_table
 
+global irq0_interrupt_timer_handler_low
+extern irq0_interrupt_timer_handler
+
 global syscall_selector_low
 extern syscall_selector
+
+extern pic_end_of_interrupt
+extern pic_timer_reload_counter
 
 [SECTION .text]
 
@@ -32,6 +38,13 @@ extern syscall_selector
     kernel_disable_interrupts:
         CLI
         ret
+
+    irq0_interrupt_timer_handler_low:
+        call irq0_interrupt_timer_handler
+        call pic_end_of_interrupt
+        call pic_timer_reload_counter
+        iret
+
 
     syscall_selector_low:
         ; Assumes SS and DS to remain same.
