@@ -54,9 +54,12 @@ extern irq0_interrupt_timer_handler_low_unshelved
         ; Using process_unshelve as label instead
         ; of function to avoid use of stack.
         ; int should have pushed cs:ip on stack.
-        pushfw
+        ; TODO: Fix pushfl complains.
+        ;pushfl
         pushad
-        push ds
+        xor eax, eax
+        mov ax, ds
+        push eax  ; push ds
 
         mov ax, 0x10
         mov es, ax
@@ -83,19 +86,21 @@ extern irq0_interrupt_timer_handler_low_unshelved
         mov esp, eax
         mov bx, [process_ss]
         mov ss, bx
+        mov [0x4600], bx
 
         ; Expects process SS:ESP to be loaded.
-        pop ds
-        mov ax, ds
+        pop eax  ; pop ds
+        mov ds, ax
         mov es, ax
         mov fs, ax
         mov gs, ax
         popad
-        popfw
+        ;popfl
         ; iret can pop cs:ip appropriately.
         jmp irq0_interrupt_timer_handler_low_unshelved
 
     process_prepare_new:
+        ; returns user program stack
         push ebp
         mov ebp, esp
         mov dx, ss  ; saving ss and esp temporarily.
@@ -108,13 +113,15 @@ extern irq0_interrupt_timer_handler_low_unshelved
         mov esp, 0xFFF0  ; keeping some buffer for extras.
         mov ss, ax
 
-        push cx     ; similar to push cs within int $x
+        push ecx     ; similar to push cs within int $x
         xor ecx, ecx
         push ecx    ; push IP as 0
 
-        pushfw
+        ;pushfl
         pushad
-        push bx  ; equivalent to push ds
+        push ebx  ; equivalent to push ds
+
+        mov eax, esp  ; Top of user program stack
 
         mov ss, dx   ; restoring ss
         mov esp, ebp ; restoring esp

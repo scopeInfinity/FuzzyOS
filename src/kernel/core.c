@@ -47,6 +47,13 @@ void kernel_core_entry() {
             print_line("Suppored Commands: run ttt, run calculator, run dashboard, exit\n");
             need_to_clear_hack = 0;
         }
+        // char zzz[] = "run ttt";
+        // int i;
+        // for (i = 0;; ++i)
+        // {
+        //     command[i]=zzz[i];
+        //     if(!zzz[i]) break;
+        // }
         read_line(command);
         int run = 0;
         int sector_start, sector_count;

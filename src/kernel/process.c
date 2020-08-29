@@ -27,7 +27,7 @@ struct Process processes[MAX_PROCESS] = {0};
 
 extern void process_shelve();
 extern void process_unshelve();
-extern void process_prepare_new(unsigned short cs, unsigned short ds, unsigned short ss);
+extern int process_prepare_new(unsigned short cs, unsigned short ds, unsigned short ss);
 extern unsigned int process_manager_esp;
 extern unsigned int process_esp;
 extern unsigned short process_ss;
@@ -76,8 +76,17 @@ int reverse_process_id_lookup(int ss) {
 }
 
 int process_scheduler_get_next_pid(int lastpid) {
-    // TODO: Implement.
-    return lastpid;
+    // Round Robin Scheduler.
+    int best_id = lastpid;
+    for (int i = 1; i < MAX_PROCESS; ++i) {
+        int nid = (lastpid+i)%MAX_PROCESS;
+        struct Process *process = process_get(nid);
+        if (process->state == PROCESS_STATE_READY) {
+            best_id = nid;
+            break;
+        }
+    }
+    return best_id;
 }
 
 void process_handler_step() {
@@ -136,7 +145,7 @@ int process_create(int sector_index, int sector_count) {
     process->ds = idt_ds_entry*sizeof(struct GDTEntry);
     process->ss = idt_ds_entry*sizeof(struct GDTEntry);
 
-    process_prepare_new(process->cs, process->ds, process->ss);
+    process->esp = process_prepare_new(process->cs, process->ds, process->ss);
     print_log("[process_%d] App loaded at 0x%x, relative_address: 0x%x: %x...",
         id, memory_location, relative_address,
         *(int*)relative_address);
@@ -181,6 +190,7 @@ void process_handler_init() {
 
 int _process_reserve_new_id() {
     // id: application id, 0-based
+
     for (int i = 0; i < MAX_PROCESS; ++i) {
         struct Process *process = process_get(i);
         if (process->state == PROCESS_STATE_COLD) {
