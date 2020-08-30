@@ -13,9 +13,10 @@ global process_edi
 
 [SECTION .data]
     process_manager_esp  dd 0
+; Following values gets INT locked and only one ISR can use them
+; at a time.
     process_esp          dd 0
     process_ss           dw 0
-
     process_eax          dd 0
     process_ebx          dd 0
     process_ecx          dd 0
@@ -25,6 +26,10 @@ global process_edi
 %endmacro
 
 %macro  PROCESS_MACRO_USER 0
+
+; High Level process shelver and unshelver
+extern process_shelve_context
+extern process_unshelve_context
 
 extern process_esp
 extern process_ss
@@ -38,7 +43,8 @@ extern process_edi
 
 %endmacro
 
-%macro  PROCESS_SHELVE 0
+%macro  PROCESS_SHELVE 1
+        ; Args: (is_blocking)
         CLI
         ; TODO: Fix as this may not work under nested conditions.
         ; Using process_unshelve as label instead
@@ -80,11 +86,16 @@ extern process_edi
         mov [process_esp], ebx
         mov bx, ss
         mov [process_ss], bx
+        ; TODO: Why are we using process manager stack for SYSCALL?
         ; load progress manager SS:ESP.
         mov ax, 0x30    ; Process Manager SS
         mov ss, ax
         mov ebx, 0xFFFC ; [process_manager_esp]
         mov esp, ebx
+
+        push %1
+        call process_shelve_context
+        add esp, 4
 
         ; load original general purpose register value from memory.
         mov eax, [process_eax]
@@ -102,7 +113,7 @@ extern process_edi
         ; This should preserve the value of eax
         CLI
         mov [process_eax], eax
-
+        call process_unshelve_context
 
         mov eax, [process_esp]
         mov esp, eax
