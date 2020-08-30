@@ -46,8 +46,11 @@ PROCESS_MACRO_USER
 
     irq0_interrupt_timer_handler_low:
         pushfd
+        ; No one should interrupt IRQ0 as for now.
+        ; Search for IRQ0-UNNESTEDNESS before removing CLI.
+        CLI
         pushad
-        PROCESS_SHELVE
+        PROCESS_SHELVE 0
         call irq0_interrupt_timer_handler
         call pic_end_of_interrupt
         call pic_timer_reload_counter
@@ -60,12 +63,12 @@ PROCESS_MACRO_USER
     syscall_selector_low:
         ; Assumes SS and DS to remain same.
         pushfd
-        PROCESS_SHELVE
+        PROCESS_SHELVE 1
         ; TODO: CLI makes getch() to block IRQ0
         ; Added CLI because process_shelve stores
         ; nested process_shelve esp, ss in a same variable
         ; thus breaking nested calls.
-        CLI
+        ;CLI
 
         push esi
         push edx

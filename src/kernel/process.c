@@ -20,14 +20,18 @@ struct Process {
 };
 struct Process processes[MAX_PROCESS] = {0};
 
-#define PROCESS_STATE_COLD     0
-#define PROCESS_STATE_READY    1
-#define PROCESS_STATE_RUNNING  2
-#define PROCESS_STATE_EXIT     3
+#define PROCESS_STATE_COLD      0
+#define PROCESS_STATE_READY     1
+#define PROCESS_STATE_RUNNING   2
+#define PROCESS_STATE_BLOCKING  3
+#define PROCESS_STATE_EXIT      4
 
 extern void process_shelve();
 extern void process_unshelve();
 extern int process_prepare_new(unsigned short cs, unsigned short ds, unsigned short ss);
+
+// Following variables MUST not be used outside
+// process_{,un}shelve_context().
 extern unsigned int process_manager_esp;
 extern unsigned int process_esp;
 extern unsigned short process_ss;
@@ -105,22 +109,42 @@ int _process_new_allocated_memory(int id) {
     return MEMORY_LOCATION_APP_START+MEMORY_LOCATION_APP_ESIZE*id;
 }
 
-void process_handler_step() {
-    // called at regular intervals from PIC IRQ0.
+// TODO: Use stack data structure library.
+int current_pids[40];
+int current_pid_top = -1;
+
+void process_shelve_context(int is_blocking) {
     int ss = process_ss;
     int pid = reverse_process_id_lookup(ss);
     struct Process *process = process_get(pid);
     process->ss = ss;
     process->esp = process_esp;
-    process->state = PROCESS_STATE_READY;
+    if(is_blocking) {
+        process->state = PROCESS_STATE_BLOCKING;
+    } else {
+        process->state = PROCESS_STATE_READY;
+    }
 
-    // maybe get a new process id.
-    pid = process_scheduler_get_next_pid(pid);
+    current_pids[++current_pid_top] = pid;
+}
 
-    process = process_get(pid);
+void process_unshelve_context() {
+    int pid = current_pids[current_pid_top--];
+    struct Process *process = process_get(pid);
     process->state = PROCESS_STATE_RUNNING;
     process_ss = process->ss;
     process_esp = process->esp;
+}
+
+void process_handler_step() {
+    // called at regular intervals by PIC IRQ0.
+    // logically sandwitched between
+    // process_shelve_context() and
+    // process_unshelve_context().
+
+    // Following is locked by IRQ0-UNNESTEDNESS.
+    int *pid = &current_pids[current_pid_top];
+    *pid = process_scheduler_get_next_pid(*pid);
 }
 
 int process_fork() {
