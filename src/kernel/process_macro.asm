@@ -4,11 +4,24 @@ global process_manager_esp
 global process_esp
 global process_ss
 
+global process_eax
+global process_ebx
+global process_ecx
+global process_edx
+global process_esi
+global process_edi
+
 [SECTION .data]
     process_manager_esp  dd 0
     process_esp          dd 0
     process_ss           dw 0
 
+    process_eax          dd 0
+    process_ebx          dd 0
+    process_ecx          dd 0
+    process_edx          dd 0
+    process_esi          dd 0
+    process_edi          dd 0
 %endmacro
 
 %macro  PROCESS_MACRO_USER 0
@@ -16,15 +29,25 @@ global process_ss
 extern process_esp
 extern process_ss
 
+extern process_eax
+extern process_ebx
+extern process_ecx
+extern process_edx
+extern process_esi
+extern process_edi
+
 %endmacro
 
 %macro  PROCESS_SHELVE 0
+        ; NOTE: MAY NOT WORK UNDER NESTED CONDITION.
         ; Using process_unshelve as label instead
         ; of function to avoid use of stack.
         ; int should have pushed cs:ip on stack.
-        ; TODO: Fix pushfl complains.
-        pushfd
+        ; This should preserve the value of eax, ebx, ecx, edx, esi, edi
+
+        ; pushad will get poped before end of macro list it was never pushed
         pushad
+
         xor eax, eax
         mov ax, ds
         push eax  ; push ds
@@ -34,36 +57,62 @@ extern process_ss
         mov ds, ax
         mov fs, ax
         mov gs, ax
+
+        ; Move stack past DS and retrieve register value from stack.
+        ; Temporarily stash general purpose register in memory.
+        add esp, 4
+        popad
+        pushad
+        sub esp, 4
+        mov [process_eax], eax
+        mov [process_ebx], ebx
+        mov [process_ecx], ecx
+        mov [process_edx], edx
+        mov [process_esi], esi
+        mov [process_edi], edi
+        pop eax      ; temporarily get back ds
+        add esp, 32  ; delete pushad from stack
+        push eax     ; push ds back to stack.
+
         ; Save process ESP and
-        ; load progress manager SS:ESP.
         mov ebx, esp
         mov [process_esp], ebx
         mov bx, ss
         mov [process_ss], bx
-
+        ; load progress manager SS:ESP.
         mov ax, 0x30    ; Process Manager SS
         mov ss, ax
         mov ebx, 0xFFFC ; [process_manager_esp]
         mov esp, ebx
+
+        ; load original general purpose register value from memory.
+        mov eax, [process_eax]
+        mov ebx, [process_ebx]
+        mov ecx, [process_ecx]
+        mov edx, [process_edx]
+        mov esi, [process_esi]
+        mov edi, [process_edi]
 %endmacro
 
 %macro  PROCESS_UNSHELVE 0
         ; Using process_unshelve as label instead
         ; of function to avoid use of stack.
+        ; This should preserve the value of eax
+        mov [process_eax], eax
+
+
         mov eax, [process_esp]
         mov esp, eax
         mov bx, [process_ss]
         mov ss, bx
-        mov [0x4600], bx
 
         ; Expects process SS:ESP to be loaded.
-        pop eax  ; pop ds
-        mov ds, ax
-        mov es, ax
-        mov fs, ax
-        mov gs, ax
-        popad
-        popfd
+        pop ebx  ; pop ds
+        mov es, bx
+        mov fs, bx
+        mov gs, bx
+        mov eax, [process_eax]
+        mov ds, bx
         ; iret can pop cs:ip appropriately.
 %endmacro
 

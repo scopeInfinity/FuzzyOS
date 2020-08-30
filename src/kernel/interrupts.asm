@@ -45,15 +45,20 @@ PROCESS_MACRO_USER
         ret
 
     irq0_interrupt_timer_handler_low:
+        pushfd
+        pushad
         PROCESS_SHELVE
         call irq0_interrupt_timer_handler
         call pic_end_of_interrupt
         call pic_timer_reload_counter
         PROCESS_UNSHELVE
+        popad
+        popfd
         iret
 
 
     syscall_selector_low:
+
         ; Assumes SS and DS to remain same.
 
         ; save caller stack and load kernel stack.
@@ -98,5 +103,6 @@ PROCESS_MACRO_USER
         mov di, ds
         mov ss, di  ; assumption ss == ds
         mov esp, ebx
+
 
         iret
