@@ -1,3 +1,4 @@
+%include "process_macro.asm"
 [BITS 32]
 
 global interrupt_nohup
@@ -14,11 +15,10 @@ extern irq0_interrupt_timer_handler
 global syscall_selector_low
 extern syscall_selector
 
-extern process_unshelve
-extern process_shelve
-
 extern pic_end_of_interrupt
 extern pic_timer_reload_counter
+
+PROCESS_MACRO_USER
 
 [SECTION .text]
 
@@ -45,13 +45,11 @@ extern pic_timer_reload_counter
         ret
 
     irq0_interrupt_timer_handler_low:
-        jmp process_shelve
-    irq0_interrupt_timer_handler_low_shelved:
+        PROCESS_SHELVE
         call irq0_interrupt_timer_handler
         call pic_end_of_interrupt
         call pic_timer_reload_counter
-        jmp process_unshelve
-    irq0_interrupt_timer_handler_low_unshelved:
+        PROCESS_UNSHELVE
         iret
 
 

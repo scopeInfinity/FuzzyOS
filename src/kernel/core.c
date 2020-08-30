@@ -3,6 +3,7 @@
 #include <drivers/disk/disk.h>
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
+#include <lib/utils/string.h>
 #include <lib/utils/process.h>
 #include <lib/utils/input.h>
 #include <lib/utils/panic.h>
@@ -47,13 +48,7 @@ void kernel_core_entry() {
             print_line("Suppored Commands: run ttt, run calculator, run dashboard, exit\n");
             need_to_clear_hack = 0;
         }
-        // char zzz[] = "run ttt";
-        // int i;
-        // for (i = 0;; ++i)
-        // {
-        //     command[i]=zzz[i];
-        //     if(!zzz[i]) break;
-        // }
+        // strcpy(command, "run ttt");
         read_line(command);
         int run = 0;
         int sector_start, sector_count;

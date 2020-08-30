@@ -84,6 +84,12 @@ void interrupts_syscall_init() {
     register_syscalls();
 }
 
+void reload_idt_table() {
+    print_log("Loading IDT Table");
+    int idtr_address = (int)&idtr;
+    load_idt_table_low(idtr_address);
+}
+
 void populate_and_load_idt_table() {
     print_log("Populating IDT Table");
     for (int i = 0; i < IDT_SIZE; ++i) {
@@ -98,10 +104,4 @@ void populate_and_load_idt_table() {
     print_log("IDTR: 0x%x; base address: 0x%x, size: %d",
         (int)&idtr, idtr.base_address, idtr.size);
     reload_idt_table();
-}
-
-void reload_idt_table() {
-    print_log("Loading IDT Table");
-    int idtr_address = (int)&idtr;
-    load_idt_table_low(idtr_address);
 }

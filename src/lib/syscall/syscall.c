@@ -15,3 +15,7 @@ int syscall_process_state(int id) {
 int syscall_process_exitcode(int id) {
     return SYSCALL_A1(SYSCALL_PROCESS_EXITCODE, id);
 }
+
+int syscall_process_fork() {
+    return SYSCALL_A0(SYSCALL_PROCESS_FORK);
+}

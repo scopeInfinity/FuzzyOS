@@ -1,3 +1,4 @@
+#include <lib/syscall/syscall.h>
 #include <lib/utils/logging.h>
 #include <lib/utils/process.h>
 
@@ -17,6 +18,10 @@ int exec(int sector_start, int sector_count) {
         }
         process_yield();
     }
+}
+
+int fork() {
+    return syscall_process_fork();
 }
 
 void process_yield() {

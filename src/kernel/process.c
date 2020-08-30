@@ -36,12 +36,12 @@ struct Process* process_get(int id) {
     return &processes[id];
 }
 
-void process_free(id) {
+void process_free(int id) {
     struct Process *process = process_get(id);
     process->state = PROCESS_STATE_COLD;
 }
 
-int get_idt_cs_entry(process_id) {
+int get_idt_cs_entry(int process_id) {
     if(process_id == 0) {
         // kernel core
         return 1;
@@ -49,7 +49,7 @@ int get_idt_cs_entry(process_id) {
     return (process_id<<1)+5;
 }
 
-int get_idt_ds_entry(process_id) {
+int get_idt_ds_entry(int process_id) {
      if(process_id == 0) {
         // kernel core
         return 2;
@@ -89,6 +89,22 @@ int process_scheduler_get_next_pid(int lastpid) {
     return best_id;
 }
 
+int _process_reserve_new_id() {
+    // id: application id, 0-based
+
+    for (int i = 0; i < MAX_PROCESS; ++i) {
+        struct Process *process = process_get(i);
+        if (process->state == PROCESS_STATE_COLD) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int _process_new_allocated_memory(int id) {
+    return MEMORY_LOCATION_APP_START+MEMORY_LOCATION_APP_ESIZE*id;
+}
+
 void process_handler_step() {
     // called at regular intervals from PIC IRQ0.
     int ss = process_ss;
@@ -98,12 +114,21 @@ void process_handler_step() {
     process->esp = process_esp;
     process->state = PROCESS_STATE_READY;
 
-    // Do something.
+    // maybe get a new process id.
     pid = process_scheduler_get_next_pid(pid);
+
     process = process_get(pid);
     process->state = PROCESS_STATE_RUNNING;
     process_ss = process->ss;
     process_esp = process->esp;
+}
+
+int process_fork() {
+    int id = _process_reserve_new_id();
+    if (id < 0) {
+        return id;
+    }
+
 }
 
 int process_create(int sector_index, int sector_count) {
@@ -186,22 +211,6 @@ void process_handler_init() {
         &gdtr, gdt_table, GDT_TABLE_SIZE,
         MEMORY_LOCATION_KERNEL);
     load_gdt_table(&gdtr);
-}
-
-int _process_reserve_new_id() {
-    // id: application id, 0-based
-
-    for (int i = 0; i < MAX_PROCESS; ++i) {
-        struct Process *process = process_get(i);
-        if (process->state == PROCESS_STATE_COLD) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int _process_new_allocated_memory(int id) {
-    return MEMORY_LOCATION_APP_START+MEMORY_LOCATION_APP_ESIZE*id;
 }
 
 extern int call_main(int cs, int ds, int argc, char *argv[]);

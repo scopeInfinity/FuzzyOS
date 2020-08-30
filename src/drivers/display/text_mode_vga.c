@@ -4,7 +4,7 @@ extern void _low_put_char(char c, unsigned char color, unsigned int xy);
 
 extern void _low_vga_copy_step(unsigned int xy1, unsigned int xy2, unsigned int count);
 
-extern _low_flush(unsigned short *buffer, int count);
+extern void _low_flush(unsigned short *buffer, int count);
 
 static int location_xy = 0;
 

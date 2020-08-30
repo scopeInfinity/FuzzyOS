@@ -50,3 +50,12 @@ int strcmpi(char *l, char *r) {
     }
     return -1;
 }
+
+void strcpy(char *dst, char *src) {
+    while(*dst) {
+        *src=*dst;
+        src++;
+        dst++;
+    }
+    *src = '\0';
+}

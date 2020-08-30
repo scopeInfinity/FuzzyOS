@@ -1,3 +1,5 @@
+extern void process_handler_step();
+
 // Max world_ticks goes to ~29 mins before overflowing.
 #define INT_MAX_VALUE 0x7FFFFFFF
 
