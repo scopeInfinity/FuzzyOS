@@ -39,7 +39,8 @@ extern process_edi
 %endmacro
 
 %macro  PROCESS_SHELVE 0
-        ; NOTE: MAY NOT WORK UNDER NESTED CONDITION.
+        CLI
+        ; TODO: Fix as this may not work under nested conditions.
         ; Using process_unshelve as label instead
         ; of function to avoid use of stack.
         ; int should have pushed cs:ip on stack.
@@ -92,12 +93,14 @@ extern process_edi
         mov edx, [process_edx]
         mov esi, [process_esi]
         mov edi, [process_edi]
+        STI
 %endmacro
 
 %macro  PROCESS_UNSHELVE 0
         ; Using process_unshelve as label instead
         ; of function to avoid use of stack.
         ; This should preserve the value of eax
+        CLI
         mov [process_eax], eax
 
 
@@ -114,6 +117,7 @@ extern process_edi
         mov eax, [process_eax]
         mov ds, bx
         ; iret can pop cs:ip appropriately.
+        STI
 %endmacro
 
 %macro PROCESS_MACRO_PREPARE_NEW 0

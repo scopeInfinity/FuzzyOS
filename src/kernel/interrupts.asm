@@ -58,31 +58,14 @@ PROCESS_MACRO_USER
 
 
     syscall_selector_low:
-
         ; Assumes SS and DS to remain same.
-
-        ; save caller stack and load kernel stack.
-        mov di, 0x10
-        mov ss, di
-        mov edi, esp
-        ; TODO: Fix the hack to get some better solution
-        ; for obtaining the kernel stack and clean up space
-        ; in memory_layout.md.
-        ; Bug: Nested interrupts works because of this hack.
-        ; For ex. getch() inside an exec() won't work.
-        mov esp, 0xFFFC
-        push ebp    ; save old ebp
-        push edi    ; save old esp
-
-        push ds
-        push es
-        push fs
-        push gs
-        mov di, 0x10
-        mov ds, di
-        mov es, di
-        mov fs, di
-        mov gs, di
+        pushfd
+        PROCESS_SHELVE
+        ; TODO: CLI makes getch() to block IRQ0
+        ; Added CLI because process_shelve stores
+        ; nested process_shelve esp, ss in a same variable
+        ; thus breaking nested calls.
+        CLI
 
         push esi
         push edx
@@ -92,17 +75,6 @@ PROCESS_MACRO_USER
         call syscall_selector
         add esp, 20
 
-        pop gs
-        pop fs
-        pop es
-        pop ds
-        pop ebx
-        pop ebp
-
-        ; restore caller stack
-        mov di, ds
-        mov ss, di  ; assumption ss == ds
-        mov esp, ebx
-
-
+        PROCESS_UNSHELVE
+        popfd
         iret

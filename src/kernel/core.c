@@ -32,6 +32,8 @@ void kernel_core_entry() {
     keyboard_init();
     process_handler_init();
     print_log("Kernel enabling interrupts");
+
+    // Don't even try to use software or hardware int before this STI.
     kernel_enable_interrupts();
     // asm("int $0x08");
     // while(1);
