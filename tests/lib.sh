@@ -8,6 +8,43 @@ QEMU_SCREENSHOT="/tmp/qemu.ppm"
 
 
 ##########################################
+# Raise error.
+# Arguments:
+#   line number
+#   error message
+# Output:
+#   error to stderr
+##########################################
+function err() {
+    echo -e "\e[01;31m[`basename $0`:$1] error\e[0m: $2" >&1
+    exit -1
+}
+
+
+##########################################
+# Resolves filename from build target.
+# Arguments:
+#   build target
+# Output:
+#   filename
+##########################################
+function build_filename() {
+    echo "${BUILD_TEST_DIR:?}/${1}"
+}
+
+##########################################
+# Prints first 8 hex bytes of given file.
+# Arguments:
+#   build target
+# Output:
+#   first 8 byte
+##########################################
+function build_8hexbyte() {
+    xxd -p -g1 -l 8 -u "`build_filename $1`"
+}
+
+
+##########################################
 # Activate Code for testing within source.
 # Arguments:
 #   Filename

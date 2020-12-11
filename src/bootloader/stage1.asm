@@ -31,7 +31,7 @@
         JMP label_exit
 
 label_bts2_loaded:
-        move_xy 06, 07, 00
+        print_string_ext bls2_loaded, bls2_loaded_len, 06, 07, C_WHITE, C_BLACK, 0
         print_hex_string_ext 0x8000, 10, C_WHITE, 0
         ; __TEST_INJECT_BT1__: mov eax, 0x9A11C824
         ; __TEST_INJECT_BT1__: HLT
@@ -47,7 +47,7 @@ label_exit:
     bl_welcome_len         equ       ($-bl_welcome)
     bls1                   db      "Bootloader: Stage 1"
     bls1_len               equ       ($-bls1)
-    bls2_loaded            db      "Stage 2 Loaded. Trying to launch..."
+    bls2_loaded            db      "Stage 2 Loaded: "
     bls2_loaded_len        equ       ($-bls2_loaded)
     bls2_load_fail         db      "Stage 2 Load Failed!"
     bls2_load_fail_len     equ       ($-bls2_load_fail)
