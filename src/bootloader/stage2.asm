@@ -40,6 +40,9 @@ global label_exit
         mov eax, cr0
         or eax, 0x00000001
         mov cr0, eax
+
+        ; __TEST_INJECT_BT2__: mov eax, 0x198A65C3
+        ; __TEST_INJECT_BT2__: HLT
         jmp 0x08:0x0000     ; address of smart kernel init
 
     label_exit:
