@@ -71,6 +71,7 @@ function os_test_up() {
     COMMAND_OUTPUT=""
     echo "Sending commands to QEMU and polling for the magic word '$1' every second."
     while true; do
+        sleep 1m;  # temporarily mitigation.
         COMMAND_OUTPUT="$(echo -e 'screendump '${QEMU_SCREENSHOT:?}'\nprint $eax\nquit' | \
                         nc 127.0.0.1 ${MONITOR_PORT:?} | tr -d '\0')"
         echo "$COMMAND_OUTPUT" | \
