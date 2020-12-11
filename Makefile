@@ -130,7 +130,7 @@ debug_kernel: $(kernel_core)
 	xxd $<
 
 qemu: $(image_vmdk)
-	cpulimit -f -l 100 -- qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) $(QEMU_EXTRA_FLAGS)
+	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) $(QEMU_EXTRA_FLAGS)
 
 qemu_debug: $(image_vmdk)
 	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm

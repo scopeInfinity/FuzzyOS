@@ -19,7 +19,9 @@ QEMU_SCREENSHOT="/tmp/qemu.ppm"
 ###################################################
 function os_up() {
     # Turn up QEMU in background
-    make qemu "SRC_DIR=${SRC_TEST_DIR:?}" QEMU_SHUT_FLAGS="" QEMU_EXTRA_FLAGS=" -monitor telnet:127.0.0.1:${MONITOR_PORT:?},server,nowait" &
+    make qemu SRC_DIR="${SRC_TEST_DIR:?}" \
+              QEMU_SHUT_FLAGS="" \
+            QEMU_EXTRA_FLAGS="-nographic -monitor telnet:127.0.0.1:${MONITOR_PORT:?},server,nowait" &
     QEMU_PID=$!
 
     while ! nc -z localhost ${MONITOR_PORT:?}; do
@@ -35,8 +37,12 @@ function os_up() {
     COMMAND_OUTPUT=""
     while true; do
         echo "Sending commands to QEMU."
-        COMMAND_OUTPUT="$(echo -e 'screendump '${QEMU_SCREENSHOT:?}'\nprint $eax\nquit' | nc 127.0.0.1 ${MONITOR_PORT:?})"
-        echo "$COMMAND_OUTPUT" | grep -i "$TEST_MAGIC_WANT" && echo "Magic Word Found! Continuing the test..." && break
+        COMMAND_OUTPUT="$(echo -e 'screendump '${QEMU_SCREENSHOT:?}'\nprint $eax\nquit' | \
+                        nc 127.0.0.1 ${MONITOR_PORT:?})"
+        echo "$COMMAND_OUTPUT" | \
+            grep -i "$TEST_MAGIC_WANT" && \
+            echo "Magic Word Found! Continuing the test..." && \
+            break
         echo "Magic word not found! Got: $COMMAND_OUTPUT"
     done
 

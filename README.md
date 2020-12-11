@@ -6,7 +6,7 @@ Experimental OS
 #### Prerequisite
 
 ```
-sudo apt install make nasm gcc cpulimit qemu-system-x86
+bash before_install.sh
 ```
 
 #### Usage
