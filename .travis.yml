@@ -9,6 +9,8 @@ addons:
     update: true
 
 before_install:
-  - sudo apt-get -y install nasm
+  - sudo bash before_install.sh
 
-script: make
+script:
+  - make
+  - bash tests/run.sh
