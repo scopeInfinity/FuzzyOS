@@ -3,6 +3,12 @@ Experimental OS
 
 - Not yet ready.
 
+#### Prerequisite
+
+```
+sudo apt install make nasm gcc cpulimit qemu-system-x86
+```
+
 #### Usage
 - Use make to build binaries and image files.
   - `make`
