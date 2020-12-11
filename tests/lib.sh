@@ -2,6 +2,7 @@
 
 SRC_DIR="src/"
 SRC_TEST_DIR="src_test/"
+BUILD_TEST_DIR="build_test/"
 MONITOR_PORT=55555
 QEMU_SCREENSHOT="/tmp/qemu.ppm"
 
@@ -50,9 +51,11 @@ function os_test_up() {
     sync_to_src_test "$1"
 
     # Turn up QEMU in background
-    make qemu SRC_DIR="${SRC_TEST_DIR:?}" \
-              QEMU_SHUT_FLAGS="" \
-            QEMU_EXTRA_FLAGS="-nographic -monitor telnet:127.0.0.1:${MONITOR_PORT:?},server,nowait" &
+    make qemu \
+        SRC_DIR="${SRC_TEST_DIR:?}" \
+        BUILD_DIR="${BUILD_TEST_DIR:?}" \
+        QEMU_SHUT_FLAGS="" \
+        QEMU_EXTRA_FLAGS="-nographic -monitor telnet:127.0.0.1:${MONITOR_PORT:?},server,nowait" &
     QEMU_PID=$!
 
     while ! nc -z localhost ${MONITOR_PORT:?}; do

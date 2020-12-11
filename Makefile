@@ -14,15 +14,15 @@ SRC_MEMMGR = $(SRC_DIR)/memmgr
 SRC_APP = $(SRC_DIR)/app
 SRC_REALMODE = $(SRC_DIR)/real_mode
 
-BUILD_BOOTLOADER = build/bootloader
-BUILD_KERNEL = build/kernel
-BUILD_DRIVERS = build/drivers
-BUILD_LIB_DS = build/lib/ds
-BUILD_LIB_SYSCALL = build/lib/syscall
-BUILD_LIB_UTILS = build/lib/utils
-BUILD_LIB = build/lib
-BUILD_APP = build/app
-BUILD_REALMODE = build/real_mode
+BUILD_BOOTLOADER = $(BUILD_DIR)/bootloader
+BUILD_KERNEL = $(BUILD_DIR)/kernel
+BUILD_DRIVERS = $(BUILD_DIR)/drivers
+BUILD_LIB_DS = $(BUILD_DIR)/lib/ds
+BUILD_LIB_SYSCALL = $(BUILD_DIR)/lib/syscall
+BUILD_LIB_UTILS = $(BUILD_DIR)/lib/utils
+BUILD_LIB = $(BUILD_DIR)/lib
+BUILD_APP = $(BUILD_DIR)/app
+BUILD_REALMODE = $(BUILD_DIR)/real_mode
 .PHONY: all clean
 
 # Files
