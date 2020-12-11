@@ -34,13 +34,13 @@ function sync_to_src_test() {
 
 
 ###################################################
-# Turn up OS in QEMU and wait for $TEST_MAGIC_WANT.
+# Turn up OS in QEMU and wait for Magic Word
 # Globals:
-#   TEST_MAGIC_WANT
 #   COMMAND_OUTPUT
 #   SCREEN_CONTENT
 #   QEMU_PID
 # Arguments:
+#   Magic Word
 #   Inject Keyword
 # Outputs:
 #   Logs
@@ -48,7 +48,10 @@ function sync_to_src_test() {
 #   0 on success, non-zero on error.
 ###################################################
 function os_test_up() {
-    sync_to_src_test "$1"
+    magic_word="$1"
+    test_inject_keyword="$2"
+
+    sync_to_src_test "${test_inject_keyword:?}"
 
     # Turn up QEMU in background
     make qemu \
@@ -69,13 +72,13 @@ function os_test_up() {
 
     # Keep polling QEMU monitor until we get our magic word!
     COMMAND_OUTPUT=""
-    echo "Sending commands to QEMU and polling for the magic word '$1' every second."
+    echo "Sending commands to QEMU and polling for the magic word '${magic_word:?}' every second."
     while true; do
-        sleep 1m;  # temporarily mitigation.
         COMMAND_OUTPUT="$(echo -e 'screendump '${QEMU_SCREENSHOT:?}'\nprint $eax\nquit' | \
                         nc 127.0.0.1 ${MONITOR_PORT:?} | tr -d '\0')"
+        echo "QEMU monitor response: ${COMMAND_OUTPUT:?}"
         echo "$COMMAND_OUTPUT" | \
-            grep -i "$TEST_MAGIC_WANT" && \
+            grep -i "${magic_word:?}" && \
             echo "Magic Word Found! Continuing the test..." && \
             break
         sleep 1s

@@ -5,7 +5,7 @@ TEST_MAGIC_WANT="198A65C3"
 
 source tests/lib.sh
 
-os_test_up "${TEST_INJECT_WORD:?}" || exit -1
+os_test_up "${TEST_MAGIC_WANT:?}" "${TEST_INJECT_WORD:?}" || exit -1
 
 # Test
 set -e
