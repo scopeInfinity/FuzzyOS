@@ -33,8 +33,8 @@
 label_bts2_loaded:
         move_xy 06, 07, 00
         print_hex_string_ext 0x8000, 10, C_WHITE, 0
-        ; __TEST_INJECT__: mov eax, 0x9A11C824
-        ; __TEST_INJECT__: HLT
+        ; __TEST_INJECT_BT1__: mov eax, 0x9A11C824
+        ; __TEST_INJECT_BT1__: HLT
         JMP 0x8000
         JMP label_exit
 
