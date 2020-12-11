@@ -2,7 +2,7 @@
 
 SRC_DIR="src/"
 SRC_TEST_DIR="src_test/"
-BUILD_TEST_DIR="build_test/"
+BUILD_TEST_DIR="build_test"
 MONITOR_PORT=55555
 QEMU_SCREENSHOT="/tmp/qemu.ppm"
 
@@ -73,16 +73,20 @@ function os_test_up() {
     # Keep polling QEMU monitor until we get our magic word!
     COMMAND_OUTPUT=""
     echo "Sending commands to QEMU and polling for the magic word '${magic_word:?}' every second."
+
     while true; do
-        COMMAND_OUTPUT="$(echo -e 'screendump '${QEMU_SCREENSHOT:?}'\nprint $eax\nquit' | \
-                        nc 127.0.0.1 ${MONITOR_PORT:?} | tr -d '\0')"
-        echo "QEMU monitor response: ${COMMAND_OUTPUT:?}"
-        echo "$COMMAND_OUTPUT" | \
+        COMMAND_OUTPUT="$(./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "print \$eax")"
+        echo "QEMU monitor response: '${COMMAND_OUTPUT:?}'"
+        echo "${COMMAND_OUTPUT:?}" | \
             grep -i "${magic_word:?}" && \
             echo "Magic Word Found! Continuing the test..." && \
             break
         sleep 1s
     done
+
+    sleep 5s
+    ./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "screendump ${QEMU_SCREENSHOT:?}"
+    ./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "quit"
 
     if [ ! -f ${QEMU_SCREENSHOT:?} ]; then
         echo "Magic word found but no screenshot found! :( " >&2
