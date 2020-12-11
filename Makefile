@@ -1,15 +1,18 @@
 BUILD_DIR = build
+SRC_DIR = src
+QEMU_SHUT_FLAGS= -no-shutdown -no-reboot
+QEMU_EXTRA_FLAGS=
 
-SRC_BOOTLOADER = src/bootloader
-SRC_KERNEL = src/kernel
-SRC_DRIVERS = src/drivers
-SRC_LIB_DS = src/lib/ds
-SRC_LIB_SYSCALL = src/lib/syscall
-SRC_LIB_UTILS = src/lib/utils
-SRC_LIB = src/lib
-SRC_MEMMGR = src/memmgr
-SRC_APP = src/app
-SRC_REALMODE = src/real_mode
+SRC_BOOTLOADER = $(SRC_DIR)/bootloader
+SRC_KERNEL = $(SRC_DIR)/kernel
+SRC_DRIVERS = $(SRC_DIR)/drivers
+SRC_LIB_DS = $(SRC_DIR)/lib/ds
+SRC_LIB_SYSCALL = $(SRC_DIR)/lib/syscall
+SRC_LIB_UTILS = $(SRC_DIR)/lib/utils
+SRC_LIB = $(SRC_DIR)/lib
+SRC_MEMMGR = $(SRC_DIR)/memmgr
+SRC_APP = $(SRC_DIR)/app
+SRC_REALMODE = $(SRC_DIR)/real_mode
 
 BUILD_BOOTLOADER = build/bootloader
 BUILD_KERNEL = build/kernel
@@ -127,13 +130,13 @@ debug_kernel: $(kernel_core)
 	xxd $<
 
 qemu: $(image_vmdk)
-	cpulimit -f -l 100 -- qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot
+	cpulimit -f -l 100 -- qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) $(QEMU_EXTRA_FLAGS)
 
 qemu_debug: $(image_vmdk)
-	qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot -d  cpu,exec,in_asm
+	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
 
 qemu_xdebug: $(image_vmdk)
-	qemu-system-x86_64 -S -gdb tcp::9000 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot -d  cpu,exec,in_asm
+	qemu-system-x86_64 -S -gdb tcp::9000 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
 
 clean:
 	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."
