@@ -13,6 +13,7 @@
 #include "kernel/process.c"
 
 extern void kernel_enable_interrupts();
+extern void kernel_core_entry_asm();
 
 char command[30];
 int send_int(int a,int b) {
@@ -26,6 +27,9 @@ void kernel_core_entry() {
     print_log("Initializing Kernel");
 
     populate_and_load_idt_table();
+
+    kernel_core_entry_asm();
+
     print_log("Kernel enabling interrupts");
     kernel_enable_interrupts();
     keyboard_init();
