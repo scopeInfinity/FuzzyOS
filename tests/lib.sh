@@ -25,7 +25,6 @@ export -f inject_test_code
 #   Inject Keyword
 ##########################################
 function sync_to_src_test() {
-    echo "HEREEEEEE!"
     # Prepare source code directory for tests.
     rsync -r "${SRC_DIR:?}" "${SRC_TEST_DIR:?}"
 
@@ -67,15 +66,14 @@ function os_test_up() {
 
     # Keep polling QEMU monitor until we get our magic word!
     COMMAND_OUTPUT=""
+    echo "Sending commands to QEMU and polling for the magic word '$1' every second."
     while true; do
-        echo "Sending commands to QEMU."
         COMMAND_OUTPUT="$(echo -e 'screendump '${QEMU_SCREENSHOT:?}'\nprint $eax\nquit' | \
-                        nc 127.0.0.1 ${MONITOR_PORT:?})"
+                        nc 127.0.0.1 ${MONITOR_PORT:?} | tr -d '\0')"
         echo "$COMMAND_OUTPUT" | \
             grep -i "$TEST_MAGIC_WANT" && \
             echo "Magic Word Found! Continuing the test..." && \
             break
-        echo "Magic word not found! Got: $COMMAND_OUTPUT"
         sleep 1s
     done
 
