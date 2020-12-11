@@ -14,3 +14,18 @@ before_install:
 script:
   - make
   - bash tests/run.sh
+
+before_deploy:
+      - git config --local user.name "Gagan Kumar"
+      - git config --local user.email "gagan1kumar.cs@gmail.com"
+      - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+      - git tag $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "iBp8F7ujeOrf0lLY2QZQZaf1rM2wnu4aLNrHSfHqGqkKjlx0DsKsYZpiNfcCHM9NMePDnXzci01HJRP+9GS6jiWvfWnnIj4TJoW/KS8fwrmZ8yl/VxJkFd3En1iB88DolTbLoQNX7QLK8vD7ThXWXfOZRb3VhPS+wisS4I5XZaMIp9NQubp8YhjFlQdOKB8b8iKG35/y6ZONWe+J5sQ/0m99aXq9eJXH3asgaGbv0L75SNMGKK58ouepm58YzbD8pXn3HBfKj/7vGA0seBYykRbTUW4nGT+Wp1qce2wTXxEKOEhdYA1A/Rx8P1O1X16KNSP/QKfQoPsFNHNOlR6/GjTQxXtbe4wUy2xaalUnPEc4d1NI09Fvr5nt/uqXEffmE4FueQb7ZW5OVu7gosFvHICRxmmegLLzVJImYazydStafIb4sKU8Mp/ZU9rSL14cUsR8/wZLR8ifYUYzQpacloO8mjf7PNBUlmaE8hsUhohT3iPVzymejZaNCaGkfvPQreIELGZLUH3gd7lUnaMAkKN6Pf2PVxnoBopG2/oj1dr5zO4TcLTQuzBnCfIe4w0c9fVnTg+DZTuoTkYG5Uuc8H//6ku3RPKyjrd0m8odGK2q7yv8jluGMeLCxIQ5Uib2P+QBvyJPuFgQE9/1c1lcC5pjrsR2A8UrnL05MFRPARg="
+  file: "build/image.vmdk"
+  skip_cleanup: true
+  on:
+    tags: true

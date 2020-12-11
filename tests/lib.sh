@@ -68,6 +68,7 @@ function os_test_up() {
     # Keep polling QEMU monitor until we get our magic word!
     COMMAND_OUTPUT=""
     while true; do
+        sleep 1m;  # temporarily mitigation.
         echo "Sending commands to QEMU."
         COMMAND_OUTPUT="$(echo -e 'screendump '${QEMU_SCREENSHOT:?}'\nprint $eax\nquit' | \
                         nc 127.0.0.1 ${MONITOR_PORT:?})"
