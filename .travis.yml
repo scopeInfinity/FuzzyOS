@@ -15,16 +15,10 @@ script:
   - make
   - bash tests/run.sh
 
-before_deploy:
-      - git config --local user.name "Gagan Kumar"
-      - git config --local user.email "gagan1kumar.cs@gmail.com"
-      - export TRAVIS_TAG=${TRAVIS_TAG:-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
-      - git tag $TRAVIS_TAG
-
 deploy:
   provider: releases
   api_key:
-    secure: "iBp8F7ujeOrf0lLY2QZQZaf1rM2wnu4aLNrHSfHqGqkKjlx0DsKsYZpiNfcCHM9NMePDnXzci01HJRP+9GS6jiWvfWnnIj4TJoW/KS8fwrmZ8yl/VxJkFd3En1iB88DolTbLoQNX7QLK8vD7ThXWXfOZRb3VhPS+wisS4I5XZaMIp9NQubp8YhjFlQdOKB8b8iKG35/y6ZONWe+J5sQ/0m99aXq9eJXH3asgaGbv0L75SNMGKK58ouepm58YzbD8pXn3HBfKj/7vGA0seBYykRbTUW4nGT+Wp1qce2wTXxEKOEhdYA1A/Rx8P1O1X16KNSP/QKfQoPsFNHNOlR6/GjTQxXtbe4wUy2xaalUnPEc4d1NI09Fvr5nt/uqXEffmE4FueQb7ZW5OVu7gosFvHICRxmmegLLzVJImYazydStafIb4sKU8Mp/ZU9rSL14cUsR8/wZLR8ifYUYzQpacloO8mjf7PNBUlmaE8hsUhohT3iPVzymejZaNCaGkfvPQreIELGZLUH3gd7lUnaMAkKN6Pf2PVxnoBopG2/oj1dr5zO4TcLTQuzBnCfIe4w0c9fVnTg+DZTuoTkYG5Uuc8H//6ku3RPKyjrd0m8odGK2q7yv8jluGMeLCxIQ5Uib2P+QBvyJPuFgQE9/1c1lcC5pjrsR2A8UrnL05MFRPARg="
+    secure: "LAXKpTPXlyv9pfhEDzmon80mZf9/4Sm8aNrNmNiVW+znxL+hAJJETXTtwkvNrBON1jjFIfBHi/Walp1y0mAMmlFGHFvBvqfRakQn8yLSkZCgkBj/pmd4tDSZQFtOFmfBUrUR/5x+NVE0592c9K4fwkS8L0eOAO3bLdt2GGVdlUt5qDhiyHwTMm6wlklpWC/+w1ZuG89NJywx33VpAUJManuRyKHLEis252Kil20XaQp2aVWoIuhizcn+KdFqdqgjxR9vS8KeJVEBOu8mmDCERuoobISvpuG6OF4x0FFt7mHDBSxJgULqXKaj8+izcXA14ut2H3VXKXpTcIDFpAZ8U7J7bLkwsJq/OcjoJZUTHqE6NwGn5/CX0HQUiMO8AbuOtSNbgTwI//TYhkYX19zi02wG4nXugg9QqH1lKOD4MH13wajRMjvdI09n+RwIAx4d8irUILyiQUffbW6qvLDUqr3QawfhvXUO9EZVm2ytnCumA9Zs7xdB8zbl6Kp253Nfm5tQY7tvVyZx3Q/CiNNxbkS/U4/g/SZYi94dGNejZHs+Zee1y20eGm6HVFhpqwMB62xPr7xfG7xIo/9AsXfzf0yFzdOxD0qKBjrF4HTVgzijbjVJolWoJ0NX52Pcqz/t4TK3Bl6Zx80TrPr5cRMR24rxPcFmFckNWRhKoEzr72E="
   file: "build/image.vmdk"
   skip_cleanup: true
   on:
