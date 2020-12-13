@@ -9,9 +9,24 @@
 #define GDT_TABLE_SIZE 5
 struct GDTEntry gdt_table[GDT_TABLE_SIZE];
 
+char DIGIT_TO_HEX[] = "0123456789ABCDEF";
+
 extern struct GDTReference* _low_get_gdtr_address();
 extern void enter_protected_mode();
 extern void label_exit();
+
+
+char *get_memdump_8byte(void *address) {
+    static char shared_memdump[17];
+    for(int i=0;i<8;i++) {
+        unsigned char byte = *(char*)address;
+        address++;
+        shared_memdump[i<<1]     = DIGIT_TO_HEX[byte/16];
+        shared_memdump[(i<<1)|1] = DIGIT_TO_HEX[byte%16];
+    }
+    shared_memdump[16] = '\0';
+    return shared_memdump;
+}
 
 void load_kernel() {
     print_log("Loading Kernel");
@@ -20,7 +35,7 @@ void load_kernel() {
         print_log("Failed to load kernel in memory: %d", err);
         label_exit();
     } else {
-        print_log("Kernel loaded at 0x%x: %x...", MEMORY_LOCATION_KERNEL, *(int*)MEMORY_LOCATION_KERNEL);
+        print_log("Kernel loaded at 0x%x: %s...", MEMORY_LOCATION_KERNEL, get_memdump_8byte(MEMORY_LOCATION_KERNEL));
     }
 }
 
@@ -31,7 +46,7 @@ void load_static_library() {
         print_log("Failed to load static library in memory: %d", err);
         label_exit();
     } else {
-        print_log("Static library loaded at 0x%x: %x...", MEMORY_STATIC_LIBRARY, *(int*)MEMORY_STATIC_LIBRARY);
+        print_log("Static library loaded at 0x%x: %s...", MEMORY_STATIC_LIBRARY, get_memdump_8byte(MEMORY_STATIC_LIBRARY));
     }
 }
 

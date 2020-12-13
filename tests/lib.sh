@@ -25,6 +25,8 @@ function err() {
 # Resolves filename from build target.
 # Arguments:
 #   build target
+# Globals:
+#   BUILD_TEST_DIR
 # Output:
 #   filename
 ##########################################
@@ -43,6 +45,21 @@ function build_8hexbyte() {
     xxd -p -g1 -l 8 -u "`build_filename $1`"
 }
 
+##########################################
+# Test Helper: Check if content is present
+# on screen.
+# Arguments:
+#   line number
+#   content
+# Globals:
+#   test_screen_content
+# Output:
+#   raises error or nothing.
+##########################################
+function test_screen_content() {
+    echo "${SCREEN_CONTENT:?}" | grep "${2:?}" || \
+    err "${1:?}" "Test Failed! Couldn't find '${2:?}' on screen."
+}
 
 ##########################################
 # Activate Code for testing within source.
@@ -121,7 +138,7 @@ function os_test_up() {
         sleep 1s
     done
 
-    sleep 5s
+    sleep 1s
     ./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "screendump ${QEMU_SCREENSHOT:?}"
     ./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "quit"
 
