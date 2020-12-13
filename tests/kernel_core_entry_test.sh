@@ -9,10 +9,10 @@ os_test_up "${TEST_MAGIC_WANT:?}" "${TEST_INJECT_WORD:?}" || exit -1
 
 # Test
 set -e
-echo "${SCREEN_CONTENT:?}" | grep "Initializing Kernel" || \
-    ( echo "Test Failed!" && exit -1 )
-echo "${SCREEN_CONTENT:?}" | grep "Loading IDT Table" || \
-    ( echo "Test Failed!" && exit -1 )
+test_screen_content $LINENO "Initializing Kernel"
+test_screen_content $LINENO "Registering syscalls"
+test_screen_content $LINENO "Loading IDT Table"
+
 
 wait ${QEMU_PID:?}
 echo "$0 passed!!!"
