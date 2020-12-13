@@ -34,6 +34,14 @@ bash before_install.sh
 
 #### Development
 
+##### Tests
+
+At this moment tests works by injecting predefined ASM in the source code which halts
+the execution at the point of interest. After that tests can make use of QEMU monitor
+to verify the current state with expected state.
+
+ - `make test`
+
 ##### Debug
 
 Execute QEMU in debug mode and setup GDB server.

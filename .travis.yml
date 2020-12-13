@@ -13,7 +13,7 @@ before_install:
 
 script:
   - make
-  - bash tests/run.sh
+  - make test
 
 before_deploy:
   - git config --local user.name "scopeinfinity"

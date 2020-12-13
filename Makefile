@@ -63,9 +63,12 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 # General Assumptions
 ## Integer is 4 bytes
 
-rebuild: clean all
+rebuild: clean all_artifacts
 
-all: images binaries
+test: $(image_vmdk) $(wildcard tests/**/*)
+	bash tests/run.sh
+
+all_artifacts: images binaries
 
 images: $(image_vmdk)
 
