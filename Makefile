@@ -2,6 +2,7 @@ BUILD_DIR = build
 SRC_DIR = src
 QEMU_SHUT_FLAGS= -no-shutdown -no-reboot
 QEMU_EXTRA_FLAGS=
+QEMU_GDB_PORT=9000
 
 SRC_BOOTLOADER = $(SRC_DIR)/bootloader
 SRC_KERNEL = $(SRC_DIR)/kernel
@@ -132,11 +133,14 @@ debug_kernel: $(kernel_core)
 qemu: $(image_vmdk)
 	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) $(QEMU_EXTRA_FLAGS)
 
-qemu_debug: $(image_vmdk)
+qemu_vvv: $(image_vmdk)
 	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
 
-qemu_xdebug: $(image_vmdk)
-	qemu-system-x86_64 -S -gdb tcp::9000 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
+qemu_debug: $(image_vmdk)
+	qemu-system-x86_64 -S -gdb tcp::$(QEMU_GDB_PORT) -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
+
+qemu_debug_connect:
+	gdb -ex "target remote :$(QEMU_GDB_PORT)"
 
 clean:
 	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."

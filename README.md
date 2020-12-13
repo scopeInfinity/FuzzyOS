@@ -31,3 +31,13 @@ bash before_install.sh
 ###### Issues on booting from the Flash Drive
 - Try formatting device MBR with a FAT partition.
 - And then burn it again with test image.
+
+#### Development
+
+##### Debug
+
+Execute QEMU in debug mode and setup GDB server.
+ - `make qemu_debug`
+
+And then connect to GDB Server.
+ - `make qemu_debug_connect`
