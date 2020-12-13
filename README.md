@@ -1,4 +1,4 @@
-# FuzzyOS [![Build Status](https://travis-ci.com/scopeInfinity/FuzzyOS.svg?branch=master)](https://travis-ci.com/scopeInfinity/FuzzyOS)
+# FuzzyOS ![Build](https://github.com/scopeInfinity/FuzzyOS/workflows/Build/badge.svg) ![Test](https://github.com/scopeInfinity/FuzzyOS/workflows/Test/badge.svg) 
 Experimental OS
 
 - Not yet ready.
