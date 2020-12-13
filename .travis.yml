@@ -15,6 +15,11 @@ script:
   - make
   - bash tests/run.sh
 
+before_deploy:
+  - git config --local user.name "scopeinfinity"
+  - git config --local user.email "gagan1kumar.cs@gmail.com"
+  - git tag "latest"
+
 deploy:
   provider: releases
   api_key:
@@ -22,4 +27,5 @@ deploy:
   file: "build/image.vmdk"
   skip_cleanup: true
   on:
-    tags: true
+    tags: false
+    branch: master
