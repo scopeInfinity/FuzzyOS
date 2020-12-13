@@ -1,4 +1,4 @@
-# FuzzyOS ![Build](https://github.com/scopeInfinity/FuzzyOS/workflows/Build/badge.svg) ![Test](https://github.com/scopeInfinity/FuzzyOS/workflows/Test/badge.svg) 
+# FuzzyOS [![Build](https://github.com/scopeInfinity/FuzzyOS/workflows/Build/badge.svg)](https://github.com/scopeInfinity/FuzzyOS/actions?query=workflow%3ABuild) [![Test](https://github.com/scopeInfinity/FuzzyOS/workflows/Test/badge.svg)](https://github.com/scopeInfinity/FuzzyOS/actions?query=workflow%3ATest) 
 Experimental OS
 
 - Not yet ready.
