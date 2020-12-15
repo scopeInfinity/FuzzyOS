@@ -21,7 +21,15 @@ jobs:
       run: make
 
     - name: Delete Latest Release
-      id: delete_release
+      id: delete_latest_release
+      run: |
+        curl --request DELETE \
+        --url  https://api.github.com/repos/${{ github.repository }}/releases/latest \
+        --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+        --header 'content-type: application/json'
+         
+    - name: Delete Latest Tag
+      id: delete_latest_tag
       run: |
         curl --request DELETE \
         --url  https://api.github.com/repos/${{ github.repository }}/git/refs/tags/latest \
