@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - master
+      - latest-test
 
 jobs:
   release_latest:
@@ -20,6 +20,14 @@ jobs:
     - name: make
       run: make
 
+    - name: Delete last Latest Release
+      id: delete_release
+      run: |
+        curl \
+        -X DELETE \
+        -H "Accept: application/vnd.github.v3+json" \
+        https://api.github.com/repos/$OWNER/$REPO/git/refs/latest \
+  
     - name: Create Latest Release
       id: create_release
       uses: actions/create-release@v1
