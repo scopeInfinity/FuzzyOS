@@ -4,7 +4,7 @@ SRC_DIR="src/"
 SRC_TEST_DIR="src_test/"
 BUILD_TEST_DIR="build_test"
 MONITOR_PORT=55555
-QEMU_SCREENSHOT="/tmp/qemu.ppm"
+QEMU_SCREENSHOT="/tmp/$(basename $0 .sh).ppm"
 
 
 ##########################################
