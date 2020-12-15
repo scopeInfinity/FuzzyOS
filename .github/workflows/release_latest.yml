@@ -24,7 +24,7 @@ jobs:
       id: delete_release
       run: |
         curl --request DELETE \
-        --url  https://api.github.com/repos/${{ github.repository }}/git/refs/latest \
+        --url  https://api.github.com/repos/${{ github.repository }}/git/refs/tags/latest \
         --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
         --header 'content-type: application/json'
   
