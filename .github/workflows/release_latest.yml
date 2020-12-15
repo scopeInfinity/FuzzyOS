@@ -32,7 +32,7 @@ jobs:
         prerelease: false
         commitish: ${{ github.sha }}
  
-   - name: Upload Release Image
+    - name: Upload Release Image
       uses: actions/upload-release-asset@v1
       id: upload-release-image
       env:
