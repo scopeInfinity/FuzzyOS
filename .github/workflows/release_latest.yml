@@ -5,6 +5,8 @@ on:
     branches:
       - latest-test
 
+  workflow_dispatch: null
+
 jobs:
   release_latest:
     runs-on: ubuntu-latest
@@ -35,8 +37,8 @@ jobs:
         -X PATCH \
         -H "Accept: application/vnd.github.v3+json" \
         -H 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-        https://api.github.com/repos/scopeInfinity/FuzzyOS/releases/${{ steps.fetch_latest_release.outputs.id }}
-        -d "{'body':'yooo', 'commitish': \'${{ github.sha }}\' }'
+        https://api.github.com/repos/scopeInfinity/FuzzyOS/releases/${{ steps.fetch_latest_release.outputs.id }} \
+        -d "{'body':'yooo', 'commitish': \'${{ github.sha }}\' }"
 
     - name: Upload Release Image
       uses: actions/upload-release-asset@v1
