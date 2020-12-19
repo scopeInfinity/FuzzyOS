@@ -1,4 +1,4 @@
-name: Release
+name: Release Latest
 
 on:
   push:
@@ -9,47 +9,23 @@ jobs:
   release_latest:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Prerequisite
-      run: sudo bash before_install.sh
+      - name: Prerequisite
+        run: sudo bash before_install.sh
 
-    - name: make test
-      run: make test
+      - name: make test
+        run: make test
 
-    - name: make
-      run: make
+      - name: make
+        run: make
 
-    - name: Create Latest Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: "latest"
-        release_name: Release Latest
-        draft: false
-        prerelease: false
-        commitish: ${{ github.sha }}
- 
-    - name: Upload Release Image
-      uses: actions/upload-release-asset@v1
-      id: upload-release-image
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/image.vmdk
-        asset_name: image.vmdk
-        asset_content_type: application/x-vmdk
-
-    - name: Upload Release Test Screenshots
-      uses: actions/upload-release-asset@v1
-      id: upload-release-test-screenshots
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: /tmp/test_screenshots.zip
-        asset_name: test_screenshots.zip
-        asset_content_type: application/zip
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+             build/image.vmdk
+             /tmp/test_screenshots.zip
