@@ -4,6 +4,7 @@
 
 extern kernel_core_entry
 extern reload_idt_table
+global kernel_core_entry_asm
 
 [SECTION .text]
        ; protected mode real entry point.
@@ -34,3 +35,9 @@ extern reload_idt_table
         STI
         pop eax
         jmp eax
+
+        ; kernel_core_entry_asm currently exists only for tests.
+    kernel_core_entry_asm:
+        ; __TEST_INJECT_KERNEL_CORE_ENTRY__: mov eax, 0x922E52FF
+        ; __TEST_INJECT_KERNEL_CORE_ENTRY__: HLT
+        ret

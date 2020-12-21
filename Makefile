@@ -1,25 +1,29 @@
 BUILD_DIR = build
+SRC_DIR = src
+QEMU_SHUT_FLAGS= -no-shutdown -no-reboot
+QEMU_EXTRA_FLAGS=
+QEMU_GDB_PORT=9000
 
-SRC_BOOTLOADER = src/bootloader
-SRC_KERNEL = src/kernel
-SRC_DRIVERS = src/drivers
-SRC_LIB_DS = src/lib/ds
-SRC_LIB_SYSCALL = src/lib/syscall
-SRC_LIB_UTILS = src/lib/utils
-SRC_LIB = src/lib
-SRC_MEMMGR = src/memmgr
-SRC_APP = src/app
-SRC_REALMODE = src/real_mode
+SRC_BOOTLOADER = $(SRC_DIR)/bootloader
+SRC_KERNEL = $(SRC_DIR)/kernel
+SRC_DRIVERS = $(SRC_DIR)/drivers
+SRC_LIB_DS = $(SRC_DIR)/lib/ds
+SRC_LIB_SYSCALL = $(SRC_DIR)/lib/syscall
+SRC_LIB_UTILS = $(SRC_DIR)/lib/utils
+SRC_LIB = $(SRC_DIR)/lib
+SRC_MEMMGR = $(SRC_DIR)/memmgr
+SRC_APP = $(SRC_DIR)/app
+SRC_REALMODE = $(SRC_DIR)/real_mode
 
-BUILD_BOOTLOADER = build/bootloader
-BUILD_KERNEL = build/kernel
-BUILD_DRIVERS = build/drivers
-BUILD_LIB_DS = build/lib/ds
-BUILD_LIB_SYSCALL = build/lib/syscall
-BUILD_LIB_UTILS = build/lib/utils
-BUILD_LIB = build/lib
-BUILD_APP = build/app
-BUILD_REALMODE = build/real_mode
+BUILD_BOOTLOADER = $(BUILD_DIR)/bootloader
+BUILD_KERNEL = $(BUILD_DIR)/kernel
+BUILD_DRIVERS = $(BUILD_DIR)/drivers
+BUILD_LIB_DS = $(BUILD_DIR)/lib/ds
+BUILD_LIB_SYSCALL = $(BUILD_DIR)/lib/syscall
+BUILD_LIB_UTILS = $(BUILD_DIR)/lib/utils
+BUILD_LIB = $(BUILD_DIR)/lib
+BUILD_APP = $(BUILD_DIR)/app
+BUILD_REALMODE = $(BUILD_DIR)/real_mode
 .PHONY: all clean
 
 # Files
@@ -62,16 +66,20 @@ MEMORY_LOCATION_APP_ESIZE  = 0x10000
 
 SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_unstaged')\""
 
-CC = gcc
-CFLAGS = -Wno-builtin-declaration-mismatch -Werror
+CC = gcc -Os  -Wno-builtin-declaration-mismatch -Werror
 ASM = nasm
-ASMFLAGS =
 # General Assumptions
 ## Integer is 4 bytes
 
-rebuild: clean all
+# Tools
 
-all: images binaries
+# Targets
+rebuild: clean all_artifacts
+
+test: $(image_vmdk) $(wildcard tests/**/*)
+	bash tests/run.sh
+
+all_artifacts: images binaries
 
 images: $(image_vmdk)
 
@@ -145,13 +153,16 @@ debug_kernel: $(kernel_core)
 	xxd $<
 
 qemu: $(image_vmdk)
-	cpulimit -f -l 100 -- qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot
+	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) $(QEMU_EXTRA_FLAGS)
+
+qemu_vvv: $(image_vmdk)
+	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
 
 qemu_debug: $(image_vmdk)
-	qemu-system-x86_64 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot -d  cpu,exec,in_asm
+	qemu-system-x86_64 -S -gdb tcp::$(QEMU_GDB_PORT) -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
 
-qemu_xdebug: $(image_vmdk)
-	qemu-system-x86_64 -S -gdb tcp::9000 -smp 1 -m 128M -hda $< -no-shutdown -no-reboot -d  cpu,exec,in_asm
+qemu_debug_connect:
+	gdb -ex "target remote :$(QEMU_GDB_PORT)"
 
 clean:
 	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."
@@ -159,13 +170,13 @@ clean:
 # Fuzzy OS
 $(bt_stage1): $(SRC_BOOTLOADER)/stage1.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/disk.asm
 	mkdir -p $$(dirname $(bt_stage1))
-	${ASM} ${ASMFLAGS} -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D SECTOR_START_BT_STAGE2=$(SECTOR_START_BT_STAGE2) -D SECTOR_COUNT_BT_STAGE2=$(SECTOR_COUNT_BT_STAGE2) $<
+	$(ASM) -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D SECTOR_START_BT_STAGE2=$(SECTOR_START_BT_STAGE2) -D SECTOR_COUNT_BT_STAGE2=$(SECTOR_COUNT_BT_STAGE2) $<
 	truncate --size=%512 $@
 
 $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_MEMMGR)/tables/gdt.c $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_REALMODE)/stub.asm $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	mkdir -p $$(dirname $(bt_stage2))
-	${ASM} ${ASMFLAGS} -o $(BUILD_BOOTLOADER)/stage2_asm.o -f elf32 -i $(SRC_BOOTLOADER)/ -i $(SRC_REALMODE)/ $(SRC_BOOTLOADER)/stage2.asm
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc \
+	$(ASM) -o $(BUILD_BOOTLOADER)/stage2_asm.o -f elf32 -i $(SRC_BOOTLOADER)/ -i $(SRC_REALMODE)/ $(SRC_BOOTLOADER)/stage2.asm
+	$(CC) -m16 -fno-pie -c -Isrc \
 		-D SECTOR_START_SHARED_LIBRARY=$(SECTOR_START_SHARED_LIBRARY) \
 		-D SECTOR_COUNT_SHARED_LIBRARY=$(SECTOR_COUNT_SHARED_LIBRARY) \
 		-D SECTOR_START_KERNEL=$(SECTOR_START_KERNEL) \
@@ -181,15 +192,15 @@ $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_MEMM
 
 $(BUILD_REALMODE)/static_library: $(SRC_REALMODE)/static_library.asm $(SRC_REALMODE)/stub.asm
 	mkdir -p $(BUILD_REALMODE)/
-	${ASM} ${ASMFLAGS} -o $@ -f bin -i $(SRC_REALMODE)/ $(SRC_REALMODE)/static_library.asm
+	$(ASM) -o $@ -f bin -i $(SRC_REALMODE)/ $(SRC_REALMODE)/static_library.asm
 	truncate --size=%512 $@
 
 $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essentials.c $(SRC_KERNEL)/interrupts.c $(SRC_KERNEL)/process.asm $(SRC_KERNEL)/syscall.c $(SRC_MEMMGR)/tables/gdt.c $(SRC_REALMODE)/stub.asm $(SRC_KERNEL)/interrupts.c $(SRC_KERNEL)/interrupts.asm $(SRC_LIB_UTILS)/output.h $(SRC_DRIVERS)/keyboard/keyboard.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_DRIVERS)/disk/libdisk $(BUILD_LIB_SYSCALL)/libsyscall $(BUILD_DRIVERS)/pic/libpic # And other output.h dependecies -_-
 	mkdir -p $$(dirname $(kernel_core))
-	${ASM} ${ASMFLAGS} -o $(BUILD_KERNEL)/core_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_KERNEL)/core.asm
-	${ASM} ${ASMFLAGS} -o $(BUILD_KERNEL)/process_asm.o -f elf32 -i $(SRC_KERNEL)/ $(SRC_KERNEL)/process.asm
-	${ASM} ${ASMFLAGS} -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 -i $(SRC_KERNEL)/ $(SRC_KERNEL)/interrupts.asm
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc \
+	$(ASM) -o $(BUILD_KERNEL)/core_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_KERNEL)/core.asm
+	$(ASM) -o $(BUILD_KERNEL)/process_asm.o -f elf32 -i $(SRC_KERNEL)/ $(SRC_KERNEL)/process.asm
+	$(ASM) -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 -i $(SRC_KERNEL)/ $(SRC_KERNEL)/interrupts.asm
+	$(CC) -m32 -fno-pie -c -Isrc \
 		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
 		-D MEMORY_LOCATION_KERNEL_SIZE=$(MEMORY_LOCATION_KERNEL_SIZE) \
 		-D MEMORY_LOCATION_PM=$(MEMORY_LOCATION_PM) \
@@ -210,102 +221,102 @@ $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essent
 
 $(app_entry): $(SRC_LIB)/app/entry.asm
 	mkdir -p $$(dirname $(app_entry))
-	${ASM} ${ASMFLAGS} -o $@ -f elf32 $<
+	$(ASM) -o $@ -f elf32 $<
 
 $(BUILD_DRIVERS)/display/libtm_bios: $(SRC_DRIVERS)/display/text_mode_bios.c $(SRC_DRIVERS)/display/text_mode_bios.asm $(SRC_DRIVERS)/display/text_mode.h
 	# 16 bit mode
 	mkdir -p $(BUILD_DRIVERS)/display/
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/display/text_mode_bios_c.o $(SRC_DRIVERS)/display/text_mode_bios.c
-	${ASM} ${ASMFLAGS} -o $(SRC_DRIVERS)/display/text_mode_bios_asm.o -f elf32 $(SRC_DRIVERS)/display/text_mode_bios.asm
+	$(CC) -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/display/text_mode_bios_c.o $(SRC_DRIVERS)/display/text_mode_bios.c
+	$(ASM) -o $(SRC_DRIVERS)/display/text_mode_bios_asm.o -f elf32 $(SRC_DRIVERS)/display/text_mode_bios.asm
 	ar rc 	$@ $(BUILD_DRIVERS)/display/text_mode_bios_c.o $(SRC_DRIVERS)/display/text_mode_bios_asm.o
 
 $(BUILD_DRIVERS)/display/libtm_vga: $(SRC_DRIVERS)/display/text_mode_vga.c $(SRC_DRIVERS)/display/text_mode_vga.asm $(SRC_DRIVERS)/display/text_mode.h
 	mkdir -p $(BUILD_DRIVERS)/display/
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/display/text_mode_vga_c.o $(SRC_DRIVERS)/display/text_mode_vga.c
-	${ASM} ${ASMFLAGS} -o $(SRC_DRIVERS)/display/text_mode_vga_asm.o -f elf32 $(SRC_DRIVERS)/display/text_mode_vga.asm
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/display/text_mode_vga_c.o $(SRC_DRIVERS)/display/text_mode_vga.c
+	$(ASM) -o $(SRC_DRIVERS)/display/text_mode_vga_asm.o -f elf32 $(SRC_DRIVERS)/display/text_mode_vga.asm
 	ar rc $@ $(BUILD_DRIVERS)/display/text_mode_vga_c.o $(SRC_DRIVERS)/display/text_mode_vga_asm.o
 
 $(BUILD_DRIVERS)/pic/libpic: $(SRC_DRIVERS)/pic/pic.c $(SRC_DRIVERS)/pic/pic.asm $(SRC_DRIVERS)/pic/pic.h
 	mkdir -p $(BUILD_DRIVERS)/pic/
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/pic/pic_c.o $(SRC_DRIVERS)/pic/pic.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_DRIVERS)/pic/pic_asm.o -f elf32 $(SRC_DRIVERS)/pic/pic.asm
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/pic/pic_c.o $(SRC_DRIVERS)/pic/pic.c
+	$(ASM) -o $(BUILD_DRIVERS)/pic/pic_asm.o -f elf32 $(SRC_DRIVERS)/pic/pic.asm
 	ar rc $@ $(BUILD_DRIVERS)/pic/pic_c.o $(BUILD_DRIVERS)/pic/pic_asm.o
 
 $(BUILD_DRIVERS)/keyboard/libkeyboard: $(SRC_DRIVERS)/keyboard/keyboard.c $(SRC_DRIVERS)/keyboard/keyboard.asm $(SRC_DRIVERS)/keyboard/keyboard.h $(SRC_DRIVERS)/keyboard/scancode_handler.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_DS)/queue.h $(BUILD_LIB_DS)/libds
 	mkdir -p $(BUILD_DRIVERS)/keyboard/
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o -f elf32 $(SRC_DRIVERS)/keyboard/keyboard.asm
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard.c
+	$(ASM) -o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o -f elf32 $(SRC_DRIVERS)/keyboard/keyboard.asm
 	ar rc $@ $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o
 
 $(BUILD_DRIVERS)/disk/libdisk_16: $(SRC_DRIVERS)/disk/disk_16.c $(SRC_DRIVERS)/disk/disk_16.asm $(SRC_DRIVERS)/disk/disk.h
 	mkdir -p $(BUILD_DRIVERS)/disk/
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/disk/disk_16_c.o $(SRC_DRIVERS)/disk/disk_16.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_DRIVERS)/disk/disk_16_asm.o -f elf32 $(SRC_DRIVERS)/disk/disk_16.asm
+	$(CC) -m16 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/disk/disk_16_c.o $(SRC_DRIVERS)/disk/disk_16.c
+	$(ASM) -o $(BUILD_DRIVERS)/disk/disk_16_asm.o -f elf32 $(SRC_DRIVERS)/disk/disk_16.asm
 	ar rc $@ $(BUILD_DRIVERS)/disk/disk_16_c.o $(BUILD_DRIVERS)/disk/disk_16_asm.o
 
 $(BUILD_DRIVERS)/disk/libdisk: $(SRC_DRIVERS)/disk/disk.c $(SRC_DRIVERS)/disk/disk.asm $(SRC_DRIVERS)/disk/disk.h $(SRC_REALMODE)/stub.asm
 	mkdir -p $(BUILD_DRIVERS)/disk/
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/disk/disk_c.o $(SRC_DRIVERS)/disk/disk.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_DRIVERS)/disk/disk_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_DRIVERS)/disk/disk.asm
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/disk/disk_c.o $(SRC_DRIVERS)/disk/disk.c
+	$(ASM) -o $(BUILD_DRIVERS)/disk/disk_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_DRIVERS)/disk/disk.asm
 	ar rc $@ $(BUILD_DRIVERS)/disk/disk_c.o $(BUILD_DRIVERS)/disk/disk_asm.o
 
 $(BUILD_LIB_UTILS)/libutils_16: $(SRC_LIB_UTILS)/basic.c $(SRC_LIB_UTILS)/basic_16.asm $(SRC_LIB_UTILS)/logging.c $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
 	mkdir -p $(BUILD_LIB_UTILS)/
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/basic_16_c.o $(SRC_LIB_UTILS)/basic.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_LIB_UTILS)/basic_16_asm.o -f elf32 $(SRC_LIB_UTILS)/basic_16.asm
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/logging_16.o $(SRC_LIB_UTILS)/logging.c
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/output_16.o $(SRC_LIB_UTILS)/output.c
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string_16.o $(SRC_LIB_UTILS)/string.c
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color_16.o $(SRC_LIB_UTILS)/color.c
-	${CC} ${CFLAGS} -m16 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_16_c.o $(SRC_LIB_UTILS)/panic.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_LIB_UTILS)/panic_16_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
-	${CC} ${CFLAGS} -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_16_c.o $(SRC_LIB_UTILS)/time.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_LIB_UTILS)/time_16_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
+	$(CC) -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/basic_16_c.o $(SRC_LIB_UTILS)/basic.c
+	$(ASM) -o $(BUILD_LIB_UTILS)/basic_16_asm.o -f elf32 $(SRC_LIB_UTILS)/basic_16.asm
+	$(CC) -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/logging_16.o $(SRC_LIB_UTILS)/logging.c
+	$(CC) -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/output_16.o $(SRC_LIB_UTILS)/output.c
+	$(CC) -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string_16.o $(SRC_LIB_UTILS)/string.c
+	$(CC) -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color_16.o $(SRC_LIB_UTILS)/color.c
+	$(CC) -m16 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_16_c.o $(SRC_LIB_UTILS)/panic.c
+	$(ASM) -o $(BUILD_LIB_UTILS)/panic_16_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
+	$(CC) -m16 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_16_c.o $(SRC_LIB_UTILS)/time.c
+	$(ASM) -o $(BUILD_LIB_UTILS)/time_16_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
 	ar rc $@ $(BUILD_LIB_UTILS)/basic_16_asm.o $(BUILD_LIB_UTILS)/basic_16_c.o $(BUILD_LIB_UTILS)/logging_16.o $(BUILD_LIB_UTILS)/output_16.o $(BUILD_LIB_UTILS)/string_16.o $(BUILD_LIB_UTILS)/color_16.o $(BUILD_LIB_UTILS)/panic_16_c.o $(BUILD_LIB_UTILS)/panic_16_asm.o $(BUILD_LIB_UTILS)/time_16_c.o $(BUILD_LIB_UTILS)/time_16_asm.o
 
 $(BUILD_LIB_UTILS)/libutils: $(SRC_LIB_UTILS)/basic.c $(SRC_LIB_UTILS)/basic.asm $(SRC_LIB_UTILS)/logging.c $(SRC_LIB_UTILS)/output.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/process.c $(SRC_LIB_UTILS)/process.h $(SRC_LIB_UTILS)/input.c $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/string.c $(SRC_LIB_UTILS)/string.h $(SRC_LIB_UTILS)/panic.c $(SRC_LIB_UTILS)/panic.h $(SRC_LIB_UTILS)/panic.asm $(SRC_LIB_UTILS)/time.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_UTILS)/time.asm $(SRC_LIB_UTILS)/color.c $(SRC_LIB_UTILS)/color.h
 	mkdir -p $(BUILD_LIB_UTILS)/
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/basic_c.o $(SRC_LIB_UTILS)/basic.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_LIB_UTILS)/basic_asm.o -f elf32 $(SRC_LIB_UTILS)/basic.asm
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/logging.o $(SRC_LIB_UTILS)/logging.c
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/output.o $(SRC_LIB_UTILS)/output.c
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/input.o $(SRC_LIB_UTILS)/input.c
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string.o $(SRC_LIB_UTILS)/string.c
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color.o $(SRC_LIB_UTILS)/color.c
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/process.o $(SRC_LIB_UTILS)/process.c
-	${CC} ${CFLAGS} -m32 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_LIB_UTILS)/panic_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
-	${ASM} ${ASMFLAGS} -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/basic_c.o $(SRC_LIB_UTILS)/basic.c
+	$(ASM) -o $(BUILD_LIB_UTILS)/basic_asm.o -f elf32 $(SRC_LIB_UTILS)/basic.asm
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/logging.o $(SRC_LIB_UTILS)/logging.c
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/output.o $(SRC_LIB_UTILS)/output.c
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/input.o $(SRC_LIB_UTILS)/input.c
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/string.o $(SRC_LIB_UTILS)/string.c
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/color.o $(SRC_LIB_UTILS)/color.c
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/process.o $(SRC_LIB_UTILS)/process.c
+	$(CC) -m32 -fno-pie -c -D__SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) -Isrc -o $(BUILD_LIB_UTILS)/panic_c.o $(SRC_LIB_UTILS)/panic.c
+	$(ASM) -o $(BUILD_LIB_UTILS)/panic_asm.o -f elf32 $(SRC_LIB_UTILS)/panic.asm
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_UTILS)/time_c.o $(SRC_LIB_UTILS)/time.c
+	$(ASM) -o $(BUILD_LIB_UTILS)/time_asm.o -f elf32 $(SRC_LIB_UTILS)/time.asm
 	ar rc $@ $(BUILD_LIB_UTILS)/basic_asm.o $(BUILD_LIB_UTILS)/basic_c.o $(BUILD_LIB_UTILS)/logging.o $(BUILD_LIB_UTILS)/process.o $(BUILD_LIB_UTILS)/output.o $(BUILD_LIB_UTILS)/input.o $(BUILD_LIB_UTILS)/string.o $(BUILD_LIB_UTILS)/color.o $(BUILD_LIB_UTILS)/panic_c.o $(BUILD_LIB_UTILS)/panic_asm.o $(BUILD_LIB_UTILS)/time_c.o $(BUILD_LIB_UTILS)/time_asm.o
 
 $(BUILD_LIB_DS)/libds: $(SRC_LIB_DS)/queue.h $(SRC_LIB_DS)/queue.c
 	mkdir -p $(BUILD_LIB_DS)/
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_DS)/queue.o $(SRC_LIB_DS)/queue.c
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_DS)/queue.o $(SRC_LIB_DS)/queue.c
 	ar rc $@ $(BUILD_LIB_DS)/queue.o
 
 $(BUILD_LIB_SYSCALL)/libsyscall: $(SRC_LIB_SYSCALL)/syscall.h $(SRC_LIB_SYSCALL)/syscall.asm
 	mkdir -p $(BUILD_LIB_SYSCALL)/
-	${ASM} ${ASMFLAGS} -o $(BUILD_LIB_SYSCALL)/syscall_asm.o -f elf32 $(SRC_LIB_SYSCALL)/syscall.asm
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_SYSCALL)/syscall_c.o $(SRC_LIB_SYSCALL)/syscall.c
+	$(ASM) -o $(BUILD_LIB_SYSCALL)/syscall_asm.o -f elf32 $(SRC_LIB_SYSCALL)/syscall.asm
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_LIB_SYSCALL)/syscall_c.o $(SRC_LIB_SYSCALL)/syscall.c
 	ar rc $@ $(BUILD_LIB_SYSCALL)/syscall_asm.o $(BUILD_LIB_SYSCALL)/syscall_c.o
 
 # User Applications
 $(app_calc): $(app_entry) $(SRC_APP)/calc.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
 	mkdir -p $$(dirname $(app_calc))
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/calc.o $(SRC_APP)/calc.c
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/calc.o $(SRC_APP)/calc.c
 	ld --oformat binary -m elf_i386 -Ttext 0x0 --strip-all -o $@ $(app_entry) $(BUILD_APP)/calc.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
 	truncate --size=%512 $@
 
 $(app_tic_tac_toe): $(app_entry) $(SRC_APP)/tic_tac_toe.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
 	mkdir -p $$(dirname $(app_tic_tac_toe))
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/tic_tac_toe.o $(SRC_APP)/tic_tac_toe.c
+	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/tic_tac_toe.o $(SRC_APP)/tic_tac_toe.c
 	ld --oformat binary -m elf_i386 -Ttext 0x0 --strip-all -o $@ $(app_entry) $(BUILD_APP)/tic_tac_toe.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
 	truncate --size=%512 $@
 
 $(app_dashboard): $(app_entry) $(SRC_APP)/dashboard.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
 	mkdir -p $$(dirname $(app_tic_tac_toe))
-	${CC} ${CFLAGS} -m32 -fno-pie -c -Isrc \
+	$(CC) -m32 -fno-pie -c -Isrc \
 		-D SECTOR_START_APP_TTT=$(SECTOR_START_APP_TTT) \
 		-D SECTOR_COUNT_APP_TTT=$(SECTOR_COUNT_APP_TTT) \
 		-D SECTOR_START_APP_CALC=$(SECTOR_START_APP_CALC) \

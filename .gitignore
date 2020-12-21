@@ -2,3 +2,5 @@
 *.o
 local_notes/
 build/
+src_test/
+build_test/
