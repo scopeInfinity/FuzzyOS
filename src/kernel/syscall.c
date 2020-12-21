@@ -28,7 +28,7 @@ int syscall_4_process_fork(int a0,int a1,int a2,int a3) {
     return process_fork();
 }
 void register_syscalls() {
-    print_log("Registering syscalls.");
+    print_log(LOG_PREFIX "Registering syscalls.");
     SYSCALL_TABLE[0]=(int)syscall_0_keyboard_getch;
     SYSCALL_TABLE[1]=(int)syscall_1_process_exec;
     SYSCALL_TABLE[2]=(int)syscall_2_process_status;

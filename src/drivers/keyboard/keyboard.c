@@ -7,8 +7,6 @@
 
 #include "scancode_handler.c"
 
-#define LOG_PREFIX "[drivers][keyboard] "
-
 #define DRIVERS_KEYBOARD_PORT_DATA      0x60
 #define DRIVERS_KEYBOARD_PORT_STATUS    0x64
 #define DRIVERS_KEYBOARD_PORT_COMMAND   0x64
@@ -184,7 +182,7 @@ void keyboard_init() {
     if (out & (0b10000)) {
         dual_ps2_controller = 1;
     }
-    print_log("Init: Maybe dual PS2 Controller", dual_ps2_controller);
+    print_log(LOG_PREFIX "Init: Maybe dual PS2 Controller", dual_ps2_controller);
     ps2_controller_send_command_with_data(0x60, out, 0);
 
 
@@ -198,7 +196,7 @@ void keyboard_init() {
         out = ps2_controller_send_command(0X20, 1);
         if (!(out & (0b10000))) {
             dual_ps2_controller = 0;
-            print_log("Init: Enabling PS2 port failed, thus disabling dual_ps2_controller");
+            print_log(LOG_PREFIX "Init: Enabling PS2 port failed, thus disabling dual_ps2_controller");
         } else {
             // disabling second port again.
             ps2_controller_send_command(0xA7, 0);
@@ -216,7 +214,7 @@ void keyboard_init() {
         }
     }
 
-    print_log("Init: Dual PS2 Controller: %d", dual_ps2_controller);
+    print_log(LOG_PREFIX "Init: Dual PS2 Controller: %d", dual_ps2_controller);
 
     // enable first port
     ps2_controller_send_command(0xAE, 0);

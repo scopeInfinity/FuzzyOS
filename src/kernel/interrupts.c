@@ -85,23 +85,23 @@ void interrupts_syscall_init() {
 }
 
 void reload_idt_table() {
-    print_log("Loading IDT Table");
+    print_log(LOG_PREFIX LOG_PREFIX "Loading IDT Table");
     int idtr_address = (int)&idtr;
     load_idt_table_low(idtr_address);
 }
 
 void populate_and_load_idt_table() {
-    print_log("Populating IDT Table");
+    print_log(LOG_PREFIX "Populating IDT Table");
     for (int i = 0; i < IDT_SIZE; ++i) {
         populate_idt_entry_32bit(i, (unsigned int)interrupt_nohup, 0, 1);
     }
-    print_log("Placed %d no-hub interrupts", IDT_SIZE);
+    print_log(LOG_PREFIX "Placed %d no-hub interrupts", IDT_SIZE);
     interrupts_syscall_init();
     interrupts_pic_init();
-    print_log("Placed custom interrupts (if any)");
+    print_log(LOG_PREFIX "Placed custom interrupts (if any)");
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
     idtr.base_address = ((int)idt_table + MEMORY_LOCATION_KERNEL);
-    print_log("IDTR: 0x%x; base address: 0x%x, size: %d",
+    print_log(LOG_PREFIX "IDTR: 0x%x; base address: 0x%x, size: %d",
         (int)&idtr, idtr.base_address, idtr.size);
     reload_idt_table();
 }

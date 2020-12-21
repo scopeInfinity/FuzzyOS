@@ -158,19 +158,19 @@ int process_fork() {
 int process_create(int sector_index, int sector_count) {
     int id = _process_reserve_new_id();
     if (id < 0) {
-        print_log("Failed to reserved a new process ID");
+        print_log(LOG_PREFIX "Failed to reserved a new process ID");
         return -1;
     }
     struct Process *process = process_get(id);
     process->state = PROCESS_STATE_COLD;
     int memory_location = _process_new_allocated_memory(id);
 
-    print_log("[process_%d] Creating process with sector: %d count: %d",
+    print_log(LOG_PREFIX "[process_%d] Creating process with sector: %d count: %d",
         id, sector_index, sector_count);
 
     int err = load_sectors(memory_location, 0x80, sector_index, sector_count);
     if(err) {
-        print_log("[process_%d] Failed to load app in memory, Error: ", id, err);
+        print_log(LOG_PREFIX "[process_%d] Failed to load app in memory, Error: ", id, err);
         return -1;
     }
     int idt_cs_entry = get_idt_cs_entry(id);
@@ -195,7 +195,7 @@ int process_create(int sector_index, int sector_count) {
     process->ss = idt_ds_entry*sizeof(struct GDTEntry);
 
     process->esp = process_prepare_new(process->cs, process->ds, process->ss);
-    print_log("[process_%d] App loaded at 0x%x, relative_address: 0x%x: %x...",
+    print_log(LOG_PREFIX "[process_%d] App loaded at 0x%x, relative_address: 0x%x: %x...",
         id, memory_location, relative_address,
         *(int*)relative_address);
     process->state = PROCESS_STATE_READY;
@@ -226,7 +226,7 @@ void _process_register_kernel() {
 }
 
 void process_handler_init() {
-    print_log("Process handler init");
+    print_log(LOG_PREFIX "Process handler init");
     for (int i = 0; i < MAX_PROCESS; ++i) {
         process_free(i);
     }
@@ -247,7 +247,7 @@ int process_exec(int sector_index, int sector_count) {
     int code_segment = process->cs;
     int data_segment = process->ds;
 
-    // print_log("call_main(0x%x:0, 0x%x:0, %d, %d)", code_segment, data_segment, argc, argv);
+    // print_log(LOG_PREFIX "call_main(0x%x:0, 0x%x:0, %d, %d)", code_segment, data_segment, argc, argv);
     // Expect some one to schedule the process.
     // process_force_move_to_running(id);
     // process_wait_for_completion(id);

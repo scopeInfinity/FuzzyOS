@@ -27,13 +27,15 @@ void kernel_core_entry() {
     set_color_bg(C_BLUE);
     set_color_fg(C_WHITE);
     print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
-    print_log("Initializing Kernel");
+    print_log("skipping....");
+    print_log("skipping....");
+    print_log(LOG_PREFIX "Initializing Kernel");
 
     populate_and_load_idt_table();
 
     keyboard_init();
     process_handler_init();
-    print_log("Kernel enabling interrupts");
+    print_log(LOG_PREFIX "Kernel enabling interrupts");
 
     // Don't even try to use software or hardware int before this STI.
     kernel_enable_interrupts();
@@ -56,7 +58,7 @@ void kernel_core_entry() {
         read_line(command);
         int run = 0;
         int sector_start, sector_count;
-        print_log("Command: '%s'", command);
+        print_log(LOG_PREFIX "Command: '%s'", command);
         if(strcmpi(command, "run ttt")==0) {
             sector_start = SECTOR_START_APP_TTT;
             sector_count = SECTOR_COUNT_APP_TTT;
@@ -76,12 +78,12 @@ void kernel_core_entry() {
             need_to_clear_hack = 1;
             int exit_code = exec(sector_start, sector_count);
             if(exit_code<0) {
-                print_log("Failed to execute the process.");
+                print_log(LOG_PREFIX "Failed to execute the process.");
             } else {
-                print_log("App exit_code: %d", exit_code);
+                print_log(LOG_PREFIX "App exit_code: %d", exit_code);
             }
         } else {
-            print_log("Invalid Command!");
+            print_log(LOG_PREFIX "Invalid Command!");
         }
     }
     PANIC(501, "Kernel is under development!!!");

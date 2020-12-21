@@ -14,7 +14,7 @@ extern unsigned short pic_readmask();
 extern void pic_writemask(unsigned short mask);
 
 void pic_init() {
-    print_log("PIC init.");
+    print_log(LOG_PREFIX "PIC init.");
     pic_init_low();
     pic_timer_configure();
 
