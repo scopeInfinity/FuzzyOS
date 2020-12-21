@@ -5,8 +5,7 @@
 #define LOG_PREFIX ""
 
 void print_log(const char *strfmt, ...) {
-    int *va_base = va_args_first_adress();
-    print_line(LOG_PREFIX);
-    printf_low(strfmt, va_base+1);
+    int *va_base = va_args_first_address(&strfmt);
+    printf_low(strfmt, va_base);
     print_char('\n');
 }

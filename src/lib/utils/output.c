@@ -165,6 +165,6 @@ void printf_low(const char *fmt, int *va_base) {
 }
 
 void printf(const char *strfmt, ...) {
-    int *va_base = va_args_first_adress();
-    printf_low(strfmt, va_base+1);
+    int *va_base = va_args_first_address(&strfmt);
+    printf_low(strfmt, va_base);
 }

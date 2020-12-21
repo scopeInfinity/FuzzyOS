@@ -15,6 +15,17 @@
 %endmacro
 
 ; Should be called from protected mode only.
+%macro  get_protected_mode_entry 0
+        ; Out: (eax)
+        ; Note: entry_point as 0 is magic address for kernel init.
+        mov cx, ds
+        mov ax, 0x20    ; Absolute Data Segment Selector
+        mov ds, ax
+        mov eax, [0x7F08]
+        mov ds, cx
+%endmacro
+
+; Should be called from protected mode only.
 %macro  shelve_protected_mode_with_entry_address_fpm 1
         ; Args: (entry_point)
         ; Note: entry_point as 0 is magic address for kernel init.
@@ -93,17 +104,6 @@
 %macro  unshelve_values_from_real_mode 2
         ; Args: (index, return register)
         mov %2, [0x7F64+(%1)*4]
-%endmacro
-
-; Should be called from protected mode only.
-%macro  get_protected_mode_entry 0
-        ; Out: (eax)
-        ; Note: entry_point as 0 is magic address for kernel init.
-        mov cx, ds
-        mov ax, 0x20    ; Absolute Data Segment Selector
-        mov ds, ax
-        mov eax, [0x7F08]
-        mov ds, cx
 %endmacro
 
 ; Should be called from real mode only.

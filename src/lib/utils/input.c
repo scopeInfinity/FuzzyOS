@@ -8,7 +8,7 @@ static char buffer_num[20];
 extern int getch_low();
 
 char getch() {
-    return SYSCALL_A0(SYSCALL_KEYBOARD);
+    return syscall_keyboard();
 }
 
 void read_line(char *str) {

@@ -12,7 +12,9 @@ global _low_disk_read_sectors
         mov al, [ebp + 0x8]         ; (sector count)
         mov cx, [ebp + 0xc]         ; (cylinder 10bit, sector 6bit)
         mov dx, [ebp + 0x10]        ; (head, drive index)
-        mov bx, [ebp + 0x14]        ; (es:bx as write address)
+        mov bx, [ebp + 0x14]        ; (es)
+        mov es, bx
+        mov bx, [ebp + 0x18]        ; (es:bx is write address)
         int 0x13
 
         mov ah, 0x01                 ; (get status of last drive operation)

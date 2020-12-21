@@ -7,7 +7,9 @@ extern reload_idt_table
 global kernel_core_entry_asm
 
 [SECTION .text]
-        ; protected mode real entry point.
+       ; protected mode real entry point.
+       ; ESP should already be initialized by
+       ; Bootloader stage 2.
         CLI
         mov ax, 0x10
         mov es, ax
@@ -19,8 +21,14 @@ global kernel_core_entry_asm
         ; transfer control to the desired entry point.
         get_protected_mode_entry
         cmp eax, 0
-        je kernel_core_entry
+        je kernel_core_init
+        jmp reenter_protected_mode
 
+    kernel_core_init:
+        mov esp, 0xB000
+        jmp kernel_core_entry
+
+    reenter_protected_mode:
         unshelve_protected_mode_and_ret_entry_address
         push eax
         call reload_idt_table

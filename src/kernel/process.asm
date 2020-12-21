@@ -4,6 +4,42 @@ global call_main
 
 [SECTION .text]
 
+    _process_scheduler:
+        ; Does something great!!!
+
+
+    _low_delegate_to_process_scheduler:
+        ; TODO: do something
+        ; eax: exit code
+        ; ebx: ds  ; for process id reverse lookup.
+        hlt
+        mov cx, 0x10
+        mov es, cx
+        mov ds, cx
+        mov ss, cx
+        mov fs, cx
+        mov gs, cx
+        pop ebp
+        ret
+
+
+    _low_process_jmp_running:
+        push ebp
+        mov ebp, esp
+
+        mov eax, [ebp + 0x08]         ; (CS)
+        mov ebx, [ebp + 0x0c]         ; (DS)
+        mov ecx, [ebp + 0x10]         ; (IP)
+        mov edx, [ebp + 0x14]         ; (SP)
+        mov esi, [ebp + 0x18]         ; (BP)
+
+        ; TODO: do something
+        ; eax: exit code
+        ; ebx: ds  ; for process id reverse lookup.
+        xor ebx, ebx
+        mov bx, ds
+        jmp _low_delegate_to_process_scheduler
+
     call_main:
         push ebp
         mov ebp, esp
@@ -15,9 +51,9 @@ global call_main
         mov ebx, [ebp + 0x08]         ; (CS)
         mov ecx, [ebp + 0x0c]         ; (DS)
 
-        mov eax, esp
-        mov [kernel_saved_stack_top], eax
-
+        ; edx and si is used below to preserve ebp and ss.
+        mov edx, ebp
+        mov si, ss
 
         ; Preparing for exec.
 
@@ -28,32 +64,32 @@ global call_main
         mov fs, cx
         mov gs, cx
 
-        mov eax, 0xFFFF
 
         ; far jump to main()
-        mov [farjmp_location+4], bx
+        ; stores IP32:CS16 on the very top of the stack
+        mov eax, 0xFFFC
+        mov esp, eax
+        push ebx
         xor ebx, ebx
-        mov [farjmp_location], ebx
-        call far [farjmp_location]
+        push ebx
+        ; Temporarily pushing Kernel EBP and SS on user stack.
+        push edx
+        push esi
+        call far [0xFFF4]
         ; eax should contain the program return value.
-
-        ; Returned from exec.
+        pop esi
+        pop edx
 
         mov bx, 0x10
         mov es, bx
-        mov ss, bx
         mov ds, bx
         mov fs, bx
         mov gs, bx
 
-        mov ebx, [kernel_saved_stack_top]
-        mov esp, ebx
+        mov ss, si
+        mov ebp, edx
 
         mov esp, ebp
+        ; kernal/in-interrupt stack is valid again
         pop ebp
         ret
-
-[SECTION .data]
-    kernel_saved_stack_top  db  '    '
-    farjmp_location dd 0
-                    dw 0

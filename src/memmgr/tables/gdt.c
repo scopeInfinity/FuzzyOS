@@ -3,6 +3,9 @@
 // Min GDT_TABLE_SIZE:    5
 // Max GDT_TABLE_SIZE: 8192
 
+#define GDT_ENTRY_KERNEL_CS 1
+#define GDT_ENTRY_KERNEL_DS 1
+
 #pragma pack(push, 1)
 struct GDTReference {
     unsigned short size;
@@ -52,14 +55,14 @@ void populate_gdt_table(
         0,0,0,0);
     // Kernel Code Segment Selector
     populate_gct_entry(
-        &gdt_table[1],
-        MEMORY_LOCATION_KERNEL, MEMORY_LOCATION_KERNEL+0xFFFF,
+        &gdt_table[GDT_ENTRY_KERNEL_CS],
+        MEMORY_LOCATION_KERNEL, MEMORY_LOCATION_KERNEL+MEMORY_LOCATION_KERNEL_SIZE-1,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Kernel Data Segment Selector
     populate_gct_entry(
-        &gdt_table[2],
-        MEMORY_LOCATION_KERNEL, MEMORY_LOCATION_KERNEL+0xFFFF,
+        &gdt_table[GDT_ENTRY_KERNEL_DS],
+        MEMORY_LOCATION_KERNEL, MEMORY_LOCATION_KERNEL+MEMORY_LOCATION_KERNEL_SIZE-1,
         0b0100,  // 32-bit protected mode
         0x92);
     // Absolute Code Segment Selector

@@ -1,6 +1,7 @@
 #pragma once
 
 #define SYSCALL_KEYBOARD 0
+#define SYSCALL_PROCESS  1
 
 #define SYSCALL_A0(id) \
     syscall((id), 0, 0, 0, 0)
