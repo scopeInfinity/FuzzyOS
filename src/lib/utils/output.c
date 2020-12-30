@@ -53,12 +53,19 @@ void move_to_next_line() {
     move_x(0);
 }
 
+void text_wrap_handler() {
+    if (get_display_text_x()==TEXT_WINDOW_WIDTH) {
+        move_to_next_line();
+    }
+}
+
 void print_char(char c) {
     switch(c) {
         case '\n':
             move_to_next_line();
             break;
         default:
+            text_wrap_handler();
             io_low_put_char(c, get_color_fgbg());
             move_xy_diff(1, 0);
     }

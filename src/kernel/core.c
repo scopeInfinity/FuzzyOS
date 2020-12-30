@@ -27,8 +27,8 @@ void kernel_core_entry() {
     set_color_bg(C_BLUE);
     set_color_fg(C_WHITE);
     print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
-    print_log("skipping....");
-    print_log("skipping....");
+    print_log("skipping line...");
+    print_log("skipping line...");
     print_log(LOG_PREFIX "Initializing Kernel");
 
     populate_and_load_idt_table();
