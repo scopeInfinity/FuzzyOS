@@ -26,11 +26,14 @@ void kernel_core_entry() {
     print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
     print_log("Initializing Kernel");
 
+
     populate_and_load_idt_table();
 
     kernel_core_entry_asm();
 
     print_log("Kernel enabling interrupts");
+    PANIC(501, "Early exiting kernel, development stage.");
+
     kernel_enable_interrupts();
     keyboard_init();
 

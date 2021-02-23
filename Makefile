@@ -44,15 +44,15 @@ app_dashboard = $(BUILD_APP)/dashboard
 # Parameters
 # 1-byte hex and 1-based indexing for BT STAGE 2 ONLY
 SECTOR_START_BT_STAGE2 = 03
-SECTOR_COUNT_BT_STAGE2 = 19
+SECTOR_COUNT_BT_STAGE2 = 0b
 SECTOR_START_SHARED_LIBRARY = 1
 SECTOR_COUNT_SHARED_LIBRARY = 1
-SECTOR_START_KERNEL = 27
-SECTOR_COUNT_KERNEL = 33
-SECTOR_START_APP_TTT = 60
-SECTOR_COUNT_APP_TTT = 25
-SECTOR_START_APP_CALC = 85
-SECTOR_COUNT_APP_CALC= 25
+SECTOR_START_KERNEL = 13
+SECTOR_COUNT_KERNEL = 34
+SECTOR_START_APP_TTT = 47
+SECTOR_COUNT_APP_TTT = 18
+SECTOR_START_APP_CALC = 65
+SECTOR_COUNT_APP_CALC= 18
 
 MEMORY_STATIC_LIBRARY = 0x7E00
 MEMORY_LOCATION_KERNEL = 0xC000
@@ -64,7 +64,8 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 ## Integer is 4 bytes
 
 # Tools
-CC=gcc -std=c++11 -Os
+CC=gcc -std=c++11 -Os -nostartfiles -nostdlib -static
+LD=ld  -nostdlib -nostartfiles -nodefaultlibs --print-map --strip-all
 
 # Targets
 rebuild: clean all_artifacts
@@ -170,7 +171,7 @@ $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_MEMM
 		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
 		-D MEMORY_LOCATION_APP=$(MEMORY_LOCATION_APP) \
 		-o $(BUILD_BOOTLOADER)/stage2_c.o $(SRC_BOOTLOADER)/stage2.c
-	ld --oformat binary -m elf_i386 -Ttext 0x8000 --strip-all -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
+	$(LD) --oformat binary -m elf_i386 -Ttext 0x8000 -T linker.ld -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	truncate --size=%512 $@
 
 $(BUILD_REALMODE)/static_library: $(SRC_REALMODE)/static_library.asm $(SRC_REALMODE)/stub.asm
@@ -191,7 +192,7 @@ $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essent
 		-D SECTOR_START_APP_CALC=$(SECTOR_START_APP_CALC) \
 		-D SECTOR_COUNT_APP_CALC=$(SECTOR_COUNT_APP_CALC) \
 		-o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
-	ld --oformat binary -m elf_i386 --trace -Ttext 0x0000 --strip-all -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/process_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_DS)/libds $(BUILD_DRIVERS)/disk/libdisk $(BUILD_LIB_SYSCALL)/libsyscall
+	$(LD) --oformat binary -m elf_i386 -Ttext 0x0000 -T linker.ld -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/process_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_DS)/libds $(BUILD_DRIVERS)/disk/libdisk $(BUILD_LIB_SYSCALL)/libsyscall
 	truncate --size=%512 $(kernel_core)
 
 # Libraries
@@ -274,11 +275,11 @@ $(BUILD_LIB_SYSCALL)/libsyscall: $(SRC_LIB_SYSCALL)/syscall.h $(SRC_LIB_SYSCALL)
 $(app_calc): $(app_entry) $(SRC_APP)/calc.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
 	mkdir -p $$(dirname $(app_calc))
 	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/calc.o $(SRC_APP)/calc.c
-	ld --oformat binary -m elf_i386 -Ttext 0x0 --strip-all -o $@ $(app_entry) $(BUILD_APP)/calc.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
+	$(LD) --oformat binary -m elf_i386 -Ttext 0x0 -T linker.ld -o $@ $(app_entry) $(BUILD_APP)/calc.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
 	truncate --size=%512 $@
 
 $(app_tic_tac_toe): $(app_entry) $(SRC_APP)/tic_tac_toe.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
 	mkdir -p $$(dirname $(app_tic_tac_toe))
 	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/tic_tac_toe.o $(SRC_APP)/tic_tac_toe.c
-	ld --oformat binary -m elf_i386 -Ttext 0x0 --strip-all -o $@ $(app_entry) $(BUILD_APP)/tic_tac_toe.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
+	$(LD) --oformat binary -m elf_i386 -Ttext 0x0 -T linker.ld -o $@ $(app_entry) $(BUILD_APP)/tic_tac_toe.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
 	truncate --size=%512 $@

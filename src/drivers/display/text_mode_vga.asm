@@ -57,8 +57,8 @@ global _low_flush
         mov eax, 0x20
         mov es, eax                 ; Absolute memory address
 
-        mov esi,[ebp + 0x8]    ; (buffer)
-        mov cx, [ebp + 0xc]    ; (count)
+        mov esi, [ebp + 0x8]    ; (buffer)
+        mov ecx, [ebp + 0xc]    ; (count)
         mov edi, 0xb8000
 
         cld
