@@ -14,3 +14,8 @@ jobs:
 
     - name: make test
       run: make test
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Test Sceenshots
+        path: /tmp/*_test.ppm
