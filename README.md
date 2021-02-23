@@ -1,4 +1,4 @@
-# FuzzyOS [![Build](https://github.com/scopeInfinity/FuzzyOS/workflows/Build/badge.svg)](https://github.com/scopeInfinity/FuzzyOS/actions?query=workflow%3ABuild) [![Test](https://github.com/scopeInfinity/FuzzyOS/workflows/Test/badge.svg)](https://github.com/scopeInfinity/FuzzyOS/actions?query=workflow%3ATest) 
+# FuzzyOS [![CI](https://github.com/scopeInfinity/FuzzyOS/actions/workflows/ci.yaml/badge.svg)](https://github.com/scopeInfinity/FuzzyOS/actions/workflows/ci.yaml)
 Experimental OS
 
 - The project is still under development:exclamation:
@@ -7,10 +7,12 @@ Experimental OS
 
 Please find all releases at https://github.com/scopeInfinity/FuzzyOS/releases
 
-The new releases should have following artifacts:
- - VMDK image
- - Test Screenshots
- - Source code
+The VMDK image can be found under `Assets` for the corresponding release.
+
+
+### Screenshots
+
+The screenshots can be located as `Artifacts` under completed run on [Actions/CI](https://github.com/scopeInfinity/FuzzyOS/actions/workflows/ci.yaml?query=branch%3Amaster+event%3Apush+is%3Asuccess).
 
 ### Boot OS
 
