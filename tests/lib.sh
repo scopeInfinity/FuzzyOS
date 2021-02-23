@@ -5,6 +5,7 @@ SRC_TEST_DIR="src_test/"
 BUILD_TEST_DIR="build_test"
 MONITOR_PORT=55555
 QEMU_SCREENSHOT="/tmp/$(basename $0 .sh).ppm"
+QEMU_SCREENSHOT_ARTIFACT="${QEMU_SCREENSHOT%.ppm}.png"
 
 
 ##########################################
@@ -146,6 +147,8 @@ function os_test_up() {
         echo "Magic word found but no screenshot found! :( " >&2
         return -1
     fi
+
+    convert ${QEMU_SCREENSHOT:?} ${QEMU_SCREENSHOT_ARTIFACT:?}
 
     SCREEN_CONTENT="$(gocr -i ${QEMU_SCREENSHOT:?})"
     echo "Screen Content: '${SCREEN_CONTENT:?}'"
