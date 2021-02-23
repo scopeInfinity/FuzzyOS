@@ -1,9 +1,9 @@
-name: Build
+name: CI
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,3 +19,11 @@ jobs:
       with:
         name: OS Image
         path: build/image.vmdk
+
+    - name: make test
+      run: make test
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Test Sceenshots
+        path: /tmp/*_test.ppm
