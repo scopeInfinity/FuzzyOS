@@ -1,0 +1,29 @@
+name: CI
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Prerequisite
+      run: sudo bash before_install.sh
+
+    - name: make
+      run: make
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: OS Image
+        path: build/image.vmdk
+
+    - name: make test
+      run: make test
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Test Screenshots
+        path: /tmp/*_test.ppm
