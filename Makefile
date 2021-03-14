@@ -41,19 +41,6 @@ app_calc = $(BUILD_APP)/calc
 app_tic_tac_toe = $(BUILD_APP)/tic_tac_toe
 app_dashboard = $(BUILD_APP)/dashboard
 
-# Parameters
-# 1-byte hex and 1-based indexing for BT STAGE 2 ONLY
-SECTOR_START_BT_STAGE2 = 03
-SECTOR_COUNT_BT_STAGE2 = 0b
-SECTOR_START_SHARED_LIBRARY = 1
-SECTOR_COUNT_SHARED_LIBRARY = 1
-SECTOR_START_KERNEL = 13
-SECTOR_COUNT_KERNEL = 34
-SECTOR_START_APP_TTT = 47
-SECTOR_COUNT_APP_TTT = 18
-SECTOR_START_APP_CALC = 65
-SECTOR_COUNT_APP_CALC= 18
-
 MEMORY_STATIC_LIBRARY = 0x7E00
 MEMORY_LOCATION_KERNEL = 0xC000
 MEMORY_LOCATION_APP = 0x20000
@@ -68,63 +55,39 @@ CC=gcc -std=c++11 -Os -nostartfiles -nostdlib -static
 LD=ld  -nostdlib -nostartfiles -nodefaultlibs --print-map --strip-all
 
 # Targets
-rebuild: clean all_artifacts
+all_artifacts: images binaries
 
 test: $(image_vmdk) $(wildcard tests/**/*)
 	bash tests/run.sh
 
-all_artifacts: images binaries
 
 images: $(image_vmdk)
 
 binaries: $(bt_stage1) $(bt_stage2) $(kernel_core) $(rm_static)
 
-$(image_vmdk): $(bt_stage1) $(bt_stage2) $(kernel_core) $(app_calc) $(app_tic_tac_toe) $(rm_static)
-	dd bs=512 count=2 if=$(bt_stage1) of=$@
-	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
-	@echo "Stage 1 Size     : " $$(stat -c %s $(bt_stage1))
+# Build dependecies for configure and $(image_vmdk) are ordered based on their position on disk.
+SECTOR_START_BT_STAGE1 = 0
+SECTOR_COUNT_BT_STAGE1 = $(shell cut -d' ' -f1 configure 2> /dev/null || echo 0 )
+SECTOR_START_SHARED_LIBRARY = $(shell expr $(SECTOR_START_BT_STAGE1) + $(SECTOR_COUNT_BT_STAGE1) )
+SECTOR_COUNT_SHARED_LIBRARY = $(shell cut -d' ' -f2 configure 2> /dev/null || echo 0 )
+SECTOR_START_BT_STAGE2 = $(shell expr $(SECTOR_START_SHARED_LIBRARY) + $(SECTOR_COUNT_SHARED_LIBRARY) )
+SECTOR_COUNT_BT_STAGE2 = $(shell cut -d' ' -f3 configure 2> /dev/null || echo 0 )
+SECTOR_START_KERNEL = $(shell expr $(SECTOR_START_BT_STAGE2) + $(SECTOR_COUNT_BT_STAGE2) )
+SECTOR_COUNT_KERNEL = $(shell cut -d' ' -f4 configure 2> /dev/null || echo 0 )
+SECTOR_START_APP_TTT = $(shell expr $(SECTOR_START_KERNEL) + $(SECTOR_COUNT_KERNEL) )
+SECTOR_COUNT_APP_TTT = $(shell cut -d' ' -f5 configure 2> /dev/null || echo 0 )
+SECTOR_START_APP_CALC = $(shell expr $(SECTOR_START_APP_TTT) + $(SECTOR_COUNT_APP_TTT) )
+SECTOR_COUNT_APP_CALC = $(shell cut -d' ' -f6 configure 2> /dev/null || echo 0 )
 
-	@echo "Static Library"
-	@echo "  Got  SECTOR_START_SHARED_LIBRARY  : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
-	@echo "  Want SECTOR_START_SHARED_LIBRARY  : "$(SECTOR_START_SHARED_LIBRARY)
-	cat $(rm_static)  >> $@
-	@echo "  Got  SECTOR_COUNT_SHARED_LIBRARY  : "$$(( $$(stat -c %s $(rm_static)) / 512))
-	@echo "  Want SECTOR_COUNT_SHARED_LIBRARY  : "$(SECTOR_COUNT_SHARED_LIBRARY)
-	@echo "  Size : " $$(stat -c %s $(rm_static))
+# configure file stores the sector size of each sub images.
+configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc)
+	bash scripts/build_image.sh /dev/null $^ > $@
+	rm -r $(BUILD_DIR)/ && "Cleared build directory" || echo "Build directory is clean."
 
-	@echo "Boot Loader Stage 2"
-	@echo "  Got  SECTOR_START_BT_STAGE2   : 0x"$$(printf "%02x\n" $$(( $$(stat -c %s $(image_vmdk)) / 512 + 1)) )
-	@echo "  Want SECTOR_START_BT_STAGE2   : 0x"$(SECTOR_START_BT_STAGE2)
-	cat $(bt_stage2) >> $@
-	@echo "  Got  SECTOR_COUNT_BT_STAGE2   : 0x"$$(printf "%02x\n" $$(( $$(stat -c %s $(bt_stage2)) / 512)) )
-	@echo "  Want SECTOR_COUNT_BT_STAGE2   : 0x"$(SECTOR_COUNT_BT_STAGE2)
-	@echo "  Size : " $$(stat -c %s $(bt_stage2))
-
-	@echo "Kernel"
-	@echo "  Got  SECTOR_START_KERNEL     : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
-	@echo "  Want SECTOR_START_KERNEL     : "$(SECTOR_START_KERNEL)
-	cat $(kernel_core) >> $@
-	@echo "  Got  SECTOR_COUNT_KERNEL     : "$$(( $$(stat -c %s $(kernel_core)) / 512))
-	@echo "  Want SECTOR_COUNT_KERNEL     : "$(SECTOR_COUNT_KERNEL)
-	@echo "  Size : " $$(stat -c %s $(kernel_core))
-
-	@echo "App TicTacToe"
-	@echo "  Got  SECTOR_START_APP_TTT    : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
-	@echo "  Want SECTOR_START_APP_TTT    : "$(SECTOR_START_APP_TTT)
-	cat $(app_tic_tac_toe)  >> $@
-	@echo "  Got  SECTOR_COUNT_APP_TTT    : "$$(( $$(stat -c %s $(app_tic_tac_toe)) / 512))
-	@echo "  Want SECTOR_COUNT_APP_TTT    : "$(SECTOR_COUNT_APP_TTT)
-	@echo "  Size    : " $$(stat -c %s $(app_tic_tac_toe))
-
-	@echo "App Calc"
-	@echo "  Got  SECTOR_START_APP_CALC    : "$$(( $$(stat -c %s $(image_vmdk)) / 512 ))
-	@echo "  Want SECTOR_START_APP_CALC    : "$(SECTOR_START_APP_CALC)
-	cat $(app_calc)  >> $@
-	@echo "  Got  SECTOR_COUNT_APP_CALC    : "$$(( $$(stat -c %s $(app_calc)) / 512))
-	@echo "  Want SECTOR_COUNT_APP_CALC    : "$(SECTOR_COUNT_APP_CALC)
-	@echo "  Size    : " $$(stat -c %s $(app_calc))
-
-	@echo "Image Size       : " $$(stat -c %s $@)
+$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc)
+	test -s configure || { echo -e "\033[0;31mFailed! Please execute 'make configure' first.\033[0m" >&2; exit 1; }
+	bash scripts/build_image.sh $@ $^
+	@echo "Image Size : $$(stat -c %s $@) byte(s)"
 
 debug_stage1: $(bt_stage1)
 	objdump -b binary -mi386 -Maddr16,data16 -D $<
@@ -152,12 +115,19 @@ qemu_debug_connect:
 
 clean:
 	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."
+	rm -f configure
 
 # Fuzzy OS
 $(bt_stage1): $(SRC_BOOTLOADER)/stage1.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/disk.asm
 	mkdir -p $$(dirname $(bt_stage1))
-	nasm -o $@ -f bin -i $(SRC_BOOTLOADER)/ -D SECTOR_START_BT_STAGE2=$(SECTOR_START_BT_STAGE2) -D SECTOR_COUNT_BT_STAGE2=$(SECTOR_COUNT_BT_STAGE2) $<
+	nasm -o $@ -f bin -i $(SRC_BOOTLOADER)/ \
+		-D SECTOR_START_BT_STAGE2=$(shell printf "%02x" `expr 1 + $(SECTOR_START_BT_STAGE2)` ) \
+		-D SECTOR_COUNT_BT_STAGE2=$(shell printf "%02x" $(SECTOR_COUNT_BT_STAGE2) ) \
+		$<
 	truncate --size=%512 $@
+	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
+	@echo $(SECTOR_COUNT_BT_STAGE1)
+
 
 $(bt_stage2): $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(SRC_MEMMGR)/tables/gdt.c $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/constants.asm $(SRC_REALMODE)/stub.asm $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	mkdir -p $$(dirname $(bt_stage2))

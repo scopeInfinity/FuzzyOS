@@ -18,7 +18,7 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
 
 #### How to get boot image?
   - Download image from one of the [Release](#Release).
-  - Or directly build image using `make qemu` after cloning the repository.
+  - Or directly build image using `make configure && make images` after cloning the repository.
 
 #### Boot on VMware
   - Create *Virtual Machine Disk* with fixed size of *4MB*.
@@ -41,16 +41,23 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
 
 ```
 bash before_install.sh
+make clean
+make configure
 ```
 
 #### QEMU Quick Launch
 
-`make qemu`
+```
+make qemu
+```
 
 #### Build
 
 Use make to build binaries and image files.
-  - `make`
+
+```
+make
+```
 
 ##### Tests
 
@@ -58,12 +65,21 @@ At this moment tests works by injecting predefined ASM in the source code which 
 the execution at the point of interest. After that tests can make use of QEMU monitor
 to verify the current state with expected state.
 
- - `make test`
+```
+make test
+```
 
 ##### Debug
 
 Execute QEMU in debug mode and setup GDB server.
- - `make qemu_debug`
+
+```
+make qemu_debug
+```
 
 And then connect to GDB Server.
- - `make qemu_debug_connect`
+
+```
+make qemu_debug_connect
+```
+

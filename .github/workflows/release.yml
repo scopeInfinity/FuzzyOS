@@ -14,6 +14,9 @@ jobs:
     - name: Prerequisite
       run: sudo bash before_install.sh
 
+    - name: make configure
+      run: make configure
+
     - name: make
       run: make
 
