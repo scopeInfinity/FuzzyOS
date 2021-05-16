@@ -19,15 +19,15 @@ void move_xy(unsigned char x, unsigned char y) {
     set_display_text_xy(x, y);
 }
 
-void move_x_diff(unsigned char dx) {
+void move_x_diff(char dx) {
     set_display_text_x(get_display_text_x()+dx);
 }
 
-void move_y_diff(unsigned char dy) {
+void move_y_diff(char dy) {
     set_display_text_y(get_display_text_y()+dy);
 }
 
-void move_xy_diff(unsigned char dx, unsigned char dy) {
+void move_xy_diff(char dx, char dy) {
     int x = get_display_text_x()+dx;
     int y = get_display_text_y()+dy;
     set_display_text_xy(x, y);

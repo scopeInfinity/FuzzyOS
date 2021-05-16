@@ -11,8 +11,10 @@ char getch() {
     return SYSCALL_A0(SYSCALL_KEYBOARD);
 }
 
+// TODO(scopeinfinity): Fix local variables with syscall(maybe?)
+int i = 0;
 void read_line(char *str) {
-    int i = 0;
+    i = 0;
     while(1) {
         // Bug: Wierd hack to mitigate another hack.
         // Using following instead of str[i]=getch();

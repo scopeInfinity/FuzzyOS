@@ -245,7 +245,7 @@ void keyboard_init() {
         // reset second port
         out = write_to_ps2_second_port(0xFF, 1);
         if (out != 0xFA) {
-            PANIC(out, "reset ps/2 second failed");
+            // PANIC(out, "reset ps/2 second failed");
         }
     }
 
@@ -300,4 +300,5 @@ void keyboard_init() {
     }
     keyboard_scanner_init();
     set_color_fgbg(original_colors);
+    print_log("[keyboard init] done.");
 }
