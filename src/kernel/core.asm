@@ -19,7 +19,7 @@ global kernel_core_entry_asm
         ; transfer control to the desired entry point.
         get_protected_mode_entry
         cmp eax, 0
-        je kernel_core_entry
+        je kernel_core_entry_init
 
         unshelve_protected_mode_and_ret_entry_address
         push eax
@@ -27,6 +27,10 @@ global kernel_core_entry_asm
         STI
         pop eax
         jmp eax
+
+    kernel_core_entry_init:
+        mov esp, 0x13996  ; init stack pointer
+        jmp kernel_core_entry
 
         ; kernel_core_entry_asm currently exists only for tests.
     kernel_core_entry_asm:

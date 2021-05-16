@@ -2,7 +2,6 @@
 #include <lib/utils/input.h>
 #include <lib/utils/output.h>
 #include <lib/utils/string.h>
-
 static char buffer_num[20];
 
 extern int getch_low();

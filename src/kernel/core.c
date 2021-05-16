@@ -51,10 +51,10 @@ void kernel_core_entry() {
         }
         run = 0;
         // broken
-        read_line(command);
+        // read_line(command);
+        // print_line(command);
         print_log("Command: '%s'", command);
-        print_line(command);
-        if(strcmpi(command, "run ttt")==0) {
+        if(1 || strcmpi(command, "run ttt")==0) {
             sector_start = SECTOR_START_APP_TTT;
             sector_count = SECTOR_COUNT_APP_TTT;
             run = 1;
