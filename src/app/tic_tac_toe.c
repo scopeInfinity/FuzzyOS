@@ -58,6 +58,8 @@ void redraw(struct State *s) {
     print_line("        : R to reset game\n");
     print_line("        : Q to quit game\n\n");
     print_board(s);
+
+    // __TEST_INJECT_APP_TTT_ENTRY__: asm("hlt");
 }
 
 void play_move(struct State *s, unsigned char r, unsigned char c) {
@@ -65,7 +67,7 @@ void play_move(struct State *s, unsigned char r, unsigned char c) {
         return;
     char mark = 'X';
     if (s->turn==1) {
-        mark =  'O';
+        mark = 'O';
     }
     s->mat[r][c]=mark;
     s->turn=1-(s->turn);
