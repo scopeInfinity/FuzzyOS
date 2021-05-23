@@ -60,6 +60,8 @@ int process_exec(int sector_index, int sector_count) {
         print_log("Failed to load app in memory, Error: ", err);
         return -1;
     }
+    print_log("application loaded in memory.");
+
     int idt_cs_entry = (id<<1)+5;
     int idt_ds_entry = (id<<1)+6;
     // Application Code Segment Selector
