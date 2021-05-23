@@ -15,10 +15,14 @@
 extern void kernel_enable_interrupts();
 extern void kernel_core_entry_asm();
 
-char command[30];
 int send_int(int a,int b) {
     asm("int $0x61");
 }
+
+char command[30];
+int need_to_clear_hack;
+int run;
+int sector_start, sector_count;
 
 void kernel_core_entry() {
     set_color_bg(C_BLUE);
@@ -32,33 +36,28 @@ void kernel_core_entry() {
     kernel_core_entry_asm();
 
     print_log("Kernel enabling interrupts");
-    PANIC(501, "Early exiting kernel, development stage.");
 
     kernel_enable_interrupts();
     keyboard_init();
 
     process_handler_init();
-    int need_to_clear_hack = 1;
+
+    need_to_clear_hack = 1;
     while(1) {
         if(need_to_clear_hack) {
-            move_xy(0,10);
-            print_line("Typewriter: ");
-            set_color_bg(C_WHITE);
-            set_color_fg(C_BLACK);
-            print_rectangle(0, 12, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-2);
-            move_xy(0,12);
-            print_line("Suppored Commands: run ttt, run calculator, exit\n");
+            print_log("Typewriter: ");
+            print_log("Suppored Commands: run ttt, run calculator, exit");
             need_to_clear_hack = 0;
         }
-        read_line(command);
-        int run = 0;
-        int sector_start, sector_count;
+        run = 0;
+        // broken, using RUN_APP_ID for now
+        command[0]='\0';
         print_log("Command: '%s'", command);
-        if(strcmpi(command, "run ttt")==0) {
+        if(RUN_APP_ID == 1 || strcmpi(command, "run ttt")==0) {
             sector_start = SECTOR_START_APP_TTT;
             sector_count = SECTOR_COUNT_APP_TTT;
             run = 1;
-        } else if(strcmpi(command, "run calculator")==0) {
+        } else if(RUN_APP_ID == 2 || strcmpi(command, "run calculator")==0) {
             sector_start = SECTOR_START_APP_CALC;
             sector_count = SECTOR_COUNT_APP_CALC;
             run = 1;

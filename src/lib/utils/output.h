@@ -11,9 +11,9 @@ void flush_screen();
 void move_x(unsigned char x);
 void move_y(unsigned char y);
 void move_xy(unsigned char x, unsigned char y);
-void move_x_diff(unsigned char dx);
-void move_y_diff(unsigned char dy);
-void move_xy_diff(unsigned char dx, unsigned char dy);
+void move_x_diff(char dx);
+void move_y_diff(char dy);
+void move_xy_diff(char dx, char dy);
 
 void print_rectangle(unsigned char x1,unsigned char y1,
                      unsigned char x2, unsigned char y2);

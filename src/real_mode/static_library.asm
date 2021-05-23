@@ -18,6 +18,7 @@
         ; minimal setup for real mode as required.
         mov ax, 0
         mov ds, ax
+        mov ss, ax
         lidt [idt_table_real_mode]
         ; execute the interrupt
         unshelve_values_from_real_mode 0, ebx

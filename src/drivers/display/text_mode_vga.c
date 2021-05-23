@@ -43,7 +43,7 @@ void io_low_scroll_screen(char count, unsigned char color,
         for (int r = y1; r <= y2; ++r) {
             int d_index = r*TEXT_WINDOW_WIDTH+x1;
             for (int c = x1; c <= x2; ++c) {
-                buffer[d_index++]=(color<<8)|' ';
+                buffer[d_index++]=(((unsigned short)color)<<8)|' ';
             }
         }
     } else if (count > 0) {
@@ -72,7 +72,7 @@ void io_low_scroll_screen(char count, unsigned char color,
 
 void io_low_put_char(char c, unsigned char color) {
     _low_put_char(c,color, location_xy);
-    buffer[location_xy]=(color<<8)|c;
+    buffer[location_xy]=(((unsigned short)color)<<8)|c;
 }
 
 void io_low_flush() {

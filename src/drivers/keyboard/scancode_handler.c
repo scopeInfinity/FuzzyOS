@@ -246,7 +246,7 @@ int keyboard_scanner_handle_buffer() {
     c0  = queue_front(keyboard_buffer);
     queue_pop(keyboard_buffer);
 
-    // Disgard keyboard response for key released.
+    // Discard keyboard response for key released.
     if(tmp_juggad_is_f0) {
         tmp_juggad_is_f0 = 0;
         return 1;

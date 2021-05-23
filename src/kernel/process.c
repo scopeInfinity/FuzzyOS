@@ -52,14 +52,16 @@ int process_exec(int sector_index, int sector_count) {
     }
     int memory_location = process_new_allocated_memory(id);
 
-    print_log("Starting process exec for sector: %d count: %d as id: %d",
-        sector_index, sector_count, id);
+    print_log("Starting process exec for sector: %d count: %d as id: %d at %x memory",
+        sector_index, sector_count, id, memory_location);
 
     int err = load_sectors(memory_location, 0x80, sector_index, sector_count);
     if(err) {
         print_log("Failed to load app in memory, Error: ", err);
         return -1;
     }
+    print_log("application loaded in memory.");
+
     int idt_cs_entry = (id<<1)+5;
     int idt_ds_entry = (id<<1)+6;
     // Application Code Segment Selector

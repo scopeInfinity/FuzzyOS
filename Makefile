@@ -54,6 +54,11 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 CC=gcc -std=c++11 -Os -nostartfiles -nostdlib -static
 LD=ld  -nostdlib -nostartfiles -nodefaultlibs --print-map --strip-all
 
+# Program to auto start when kernel is ready.
+# 1 - Tic Tac Toe
+# 2 - Calculator (broken)
+RUN_APP_ID = 1
+
 # Targets
 all_artifacts: images binaries
 
@@ -105,7 +110,7 @@ qemu: $(image_vmdk)
 	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) $(QEMU_EXTRA_FLAGS)
 
 qemu_vvv: $(image_vmdk)
-	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
+	qemu-system-x86_64 -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) $(QEMU_EXTRA_FLAGS) -d  cpu,exec,in_asm
 
 qemu_debug: $(image_vmdk)
 	qemu-system-x86_64 -S -gdb tcp::$(QEMU_GDB_PORT) -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
@@ -155,6 +160,7 @@ $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essent
 	nasm -o $(BUILD_KERNEL)/process_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_KERNEL)/process.asm
 	nasm -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 $(SRC_KERNEL)/interrupts.asm
 	$(CC) -m32 -fno-pie -c -Isrc \
+		-D RUN_APP_ID=$(RUN_APP_ID) \
 		-D SECTOR_START_APP_TTT=$(SECTOR_START_APP_TTT) \
 		-D SECTOR_COUNT_APP_TTT=$(SECTOR_COUNT_APP_TTT) \
 		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \

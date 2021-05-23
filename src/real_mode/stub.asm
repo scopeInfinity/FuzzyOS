@@ -1,7 +1,8 @@
 ; 0x7F00 : 6  bytes   ; GDTR Address
 ; 0x7F08 : 4  bytes   ; Protected mode entry point
 ; 0x7F0C : 8  bytes   ; Protected mode shelved ebp and esp registers
-; 0x7F04 : 12 bytes   ; FREE
+; 0x7F10 : 2  bytes   ; Protected mode shelved ss registers
+; 0x7F12 : 82 bytes   ; FREE
 ; 0x7F64 : -          ; Shelved data values
 ; Notes:
 ; - Defined macros tries to avoid dependency on stack while in real mode.
@@ -113,7 +114,7 @@
 %endmacro
 
 ; Should be called from protected mode only.
-; The protected mode return address should be saved using above macro  beforehand.
+; The protected mode return address should be saved using above macro beforehand.
 %macro  execute_real_mode_0x13 0
         jmp 0x18:0x7E00
 %endmacro

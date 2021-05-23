@@ -7,6 +7,7 @@ MONITOR_PORT=55555
 QEMU_SCREENSHOT="/tmp/$(basename $0 .sh).ppm"
 QEMU_SCREENSHOT_ARTIFACT="${QEMU_SCREENSHOT%.ppm}.png"
 
+MAGIC_WORD_SLEEP="##SLEEP-10s##"
 
 ##########################################
 # Raise error.
@@ -68,12 +69,17 @@ function test_screen_content() {
 #   Filename
 #   Inject Keyword
 ##########################################
-function inject_test_code() {
-    echo "Injecting Test Code in $1 (if any)"
+function inject_test_code_asm() {
+    echo "Injecting test code in $1 as asm (if any)"
     sed -i "s/;\s*${2}:\s*//g" "$1"
 }
-export -f inject_test_code
+export -f inject_test_code_asm
 
+function inject_test_code_c() {
+    echo "Injecting test code in $1 as c (if any)"
+    sed -i "s|//\s*${2}:\s*||g" "$1"
+}
+export -f inject_test_code_c
 
 ##########################################
 # Copy SRC to Test Sorce and Inject Code.
@@ -84,9 +90,9 @@ function sync_to_src_test() {
     # Prepare source code directory for tests.
     rsync -r "${SRC_DIR:?}" "${SRC_TEST_DIR:?}"
 
-    find "${SRC_TEST_DIR:?}" -iname '*.asm' -exec bash -c 'inject_test_code "$0" "$1"' {} "$1" \;
+    find "${SRC_TEST_DIR:?}" -iname '*.asm' -exec bash -c 'inject_test_code_asm "$0" "$1"' {} "$1" \;
+    find "${SRC_TEST_DIR:?}" -iname '*.c' -exec bash -c 'inject_test_code_c "$0" "$1"' {} "$1" \;
 }
-
 
 ###################################################
 # Turn up OS in QEMU and wait for Magic Word
@@ -129,15 +135,19 @@ function os_test_up() {
     COMMAND_OUTPUT=""
     echo "Sending commands to QEMU and polling for the magic word '${magic_word:?}' every second."
 
-    while true; do
-        COMMAND_OUTPUT="$(./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "print \$eax")"
-        echo "QEMU monitor response: '${COMMAND_OUTPUT:?}'"
-        echo "${COMMAND_OUTPUT:?}" | \
-            grep -i "${magic_word:?}" && \
-            echo "Magic Word Found! Continuing the test..." && \
-            break
-        sleep 1s
-    done
+    if [[ "${magic_word:?}" == "${MAGIC_WORD_SLEEP}" ]]; then
+        sleep 10s
+    else
+        while true; do
+            COMMAND_OUTPUT="$(./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "print \$eax")"
+            echo "QEMU monitor response: '${COMMAND_OUTPUT:?}'"
+            echo "${COMMAND_OUTPUT:?}" | \
+                grep -i "${magic_word:?}" && \
+                echo "Magic Word Found! Continuing the test..." && \
+                break
+            sleep 1s
+        done
+    fi
 
     sleep 1s
     ./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "screendump ${QEMU_SCREENSHOT:?}"
