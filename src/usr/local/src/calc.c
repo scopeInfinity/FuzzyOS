@@ -3,14 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUILD_FOR_FUZZY
-#ifndef BUILD_FOR_FUZZY
-void read_line(char *s) {
-    scanf("%[^\n]",s);;
-}
-#else
-#endif
-
 int err;
 char tokens[2][20];
 int a,b;
@@ -140,7 +132,8 @@ int main(int argc,char *argv[]) {
     while(1) {
         err = 0;
         puts("Expression: ");
-        read_line(expr);
+        gets(expr);
+
         if(!handle_expression(expr)) {
             break;
         }
