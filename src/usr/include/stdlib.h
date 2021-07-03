@@ -1,6 +1,3 @@
-#ifndef	_FUZZY_STDLIB_H
-#define _FUZZY_STDLIB_H
+#pragma once
 
 int atoi (const char *s);
-
-#endif

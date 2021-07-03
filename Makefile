@@ -46,6 +46,7 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 
 # Tools
 CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static
+KERNEL_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR)
 LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
 
 # Program to auto start when kernel is ready.
@@ -95,6 +96,9 @@ clean:
 
 include emulator/Makefile.mk
 
+include $(SRC_DIR)/usr/include/Makefile.mk
+include $(SRC_DIR)/usr/lib/Makefile.mk
+
 include $(SRC_BOOTLOADER)/Makefile.mk
 include $(SRC_REALMODE)/Makefile.mk
 include $(SRC_KERNEL)/Makefile.mk
@@ -107,8 +111,5 @@ include $(SRC_LIB)/app/Makefile.mk
 include $(SRC_LIB_DS)/Makefile.mk
 include $(SRC_LIB_SYSCALL)/Makefile.mk
 include $(SRC_LIB_UTILS)/Makefile.mk
-
-include $(SRC_DIR)/usr/include/Makefile.mk
-include $(SRC_DIR)/usr/lib/Makefile.mk
 
 include $(SRC_APP)/Makefile.mk

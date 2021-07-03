@@ -3,7 +3,7 @@
 extern "C" {
 #endif
 
-char getch();
+char getch_in();
 void read_line(char *str);
 int read_int();
 

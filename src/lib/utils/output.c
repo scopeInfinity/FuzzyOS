@@ -54,6 +54,7 @@ void move_to_next_line() {
 }
 
 void print_char(char c) {
+    // TODO: Think about handling ANSI escape sequence.
     switch(c) {
         case '\n':
             move_to_next_line();

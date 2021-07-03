@@ -1,12 +1,5 @@
-#include <lib/utils/string.h>
-
-int parse_int(char *s) {
-    int x = 0;
-    for(int i=0;s[i]!='\0';i++) {
-        x=x*10+s[i]-'0';
-    }
-    return x;
-}
+#include <string.h>
+#include <ctype.h>
 
 int strcmp(char *l, char *r) {
     int i=0,j=0;
@@ -23,13 +16,6 @@ int strcmp(char *l, char *r) {
         return 1;
     }
     return -1;
-}
-
-char tolower(char x) {
-    if(x>='A' && x<='Z') {
-        return x-'A'+'a';
-    }
-    return x;
 }
 
 int strcmpi(char *l, char *r) {

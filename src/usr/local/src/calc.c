@@ -1,24 +1,14 @@
 // Simple Calculator
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define BUILD_FOR_FUZZY
 #ifndef BUILD_FOR_FUZZY
-//#include<stdio.h>
 void read_line(char *s) {
     scanf("%[^\n]",s);;
 }
-void print_line(char *s) {
-    printf("%s", s);
-}
-void print_int(int x) {
-    printf("%d", x);
-}
 #else
-#include <lib/utils/input.h>
-#include <lib/utils/output.h>
-#include <lib/utils/time.h>
-#include <lib/utils/string.h>
 #endif
 
 int err;
@@ -27,6 +17,40 @@ int a,b;
 char op;
 int t;
 int tl;
+
+int _print_int(int x) {
+    int is_negative = 0;
+    int tailing_zero = 0;
+    if(x<0) {
+        is_negative = 1;
+        x=-x;
+    }
+    int rev = 0;
+    while(x && x%10==0) {
+        x/=10;
+        tailing_zero++;
+    }
+    if(x==0) {
+        // If the initial number is zero, add one here.
+        tailing_zero++;
+    }
+    while(x) {
+        rev = rev*10 + x%10;
+        x/=10;
+    }
+    if(is_negative) {
+        putchar('-');
+    }
+    while(rev) {
+        putchar((char)(rev%10+'0'));
+        rev/=10;
+    }
+    while(tailing_zero) {
+        putchar('0');
+        tailing_zero--;
+    }
+}
+
 int solve(char s[]) {
     t=0;
     tl=0;
@@ -75,12 +99,12 @@ int solve(char s[]) {
 }
 
 void show_usage() {
-    print_line("  Usage: \n");
-    print_line("    HELP - Show Usage\n");
-    print_line("    EXIT - To quit Program\n");
-    print_line("\n");
-    print_line("    <num><op><num> to calculate expression.\n");
-    print_line("    Where <op> can be one of +-*/.\n");
+    puts("  Usage: \n");
+    puts("    HELP - Show Usage\n");
+    puts("    EXIT - To quit Program\n");
+    puts("\n");
+    puts("    <num><op><num> to calculate expression.\n");
+    puts("    Where <op> can be one of +-*/.\n");
 }
 char expr[100];
 int result;
@@ -95,34 +119,27 @@ int handle_expression(char str[]) {
     }
     result = solve(str);
     if(err) {
-        print_line("  Error[");
-        print_int(err);
-        print_line("]: Only '<num> [+-*/] <num>' syntax supported!\n");
-        print_line("  Type 'HELP' for instructions!\n\n");
+        puts("  Error[");
+        _print_int(err);
+        puts("]: Only '<num> [+-*/] <num>' syntax supported!\n");
+        puts("  Type 'HELP' for instructions!\n\n");
     } else {
-        print_line("  Result: ");
-        print_int(result);
-        print_line("\n\n");
+        puts("  Result: ");
+        _print_int(result);
+        puts("\n\n");
     }
     return 1;
 }
 
-void console_init() {
-    set_color_bg(C_BLACK);
-    set_color_fg(C_WHITE);
-    print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
-    move_xy(0,0);
-}
 
 int main(int argc,char *argv[]) {
-    console_init();
-    print_line("Simple Calculator\n");
-    print_line("-----------------\n");
-    print_line("\n");
+    puts("Simple Calculator\n");
+    puts("-----------------\n");
+    puts("\n");
     show_usage();
     while(1) {
         err = 0;
-        print_line("Expression: ");
+        puts("Expression: ");
         read_line(expr);
         if(!handle_expression(expr)) {
             break;
