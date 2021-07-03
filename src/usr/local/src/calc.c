@@ -1,7 +1,10 @@
 // Simple Calculator
+#include <stdio.h>
+#include <stdlib.h>
+
 #define BUILD_FOR_FUZZY
 #ifndef BUILD_FOR_FUZZY
-#include<stdio.h>
+//#include<stdio.h>
 void read_line(char *s) {
     scanf("%[^\n]",s);;
 }
@@ -54,8 +57,8 @@ int solve(char s[]) {
         err = 3;
         return 0;
     }
-    a = parse_int(tokens[0]);
-    b = parse_int(tokens[1]);
+    a = atoi(tokens[0]);
+    b = atoi(tokens[1]);
     switch(op) {
         case '+':
             return a+b;

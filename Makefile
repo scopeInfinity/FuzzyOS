@@ -36,7 +36,6 @@ SRC_APP = $(SRC_DIR)/usr/local/src
 BUILD_APP = $(BUILD_DIR)/usr/local/bin
 app_calc = $(BUILD_APP)/calc.out
 app_tic_tac_toe = $(BUILD_APP)/tic_tac_toe.out
-include $(SRC_APP)/Makefile.mk
 
 MEMORY_LOCATION_KERNEL = 0xC000
 
@@ -46,8 +45,8 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 ## Integer is 4 bytes
 
 # Tools
-CC=gcc -std=c++11 -Os -nostartfiles -nostdlib -static
-LD=ld  -nostdlib -nostartfiles -nodefaultlibs --print-map --strip-all
+CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static
+LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
 
 # Program to auto start when kernel is ready.
 # 1 - Tic Tac Toe
@@ -108,3 +107,8 @@ include $(SRC_LIB)/app/Makefile.mk
 include $(SRC_LIB_DS)/Makefile.mk
 include $(SRC_LIB_SYSCALL)/Makefile.mk
 include $(SRC_LIB_UTILS)/Makefile.mk
+
+include $(SRC_DIR)/usr/include/Makefile.mk
+include $(SRC_DIR)/usr/lib/Makefile.mk
+
+include $(SRC_APP)/Makefile.mk

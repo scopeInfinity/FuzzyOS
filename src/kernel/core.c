@@ -16,7 +16,7 @@ extern void kernel_enable_interrupts();
 extern void kernel_core_entry_asm();
 
 int send_int(int a,int b) {
-    asm("int $0x61");
+    __asm__("int $0x61");
 }
 
 char command[30];
