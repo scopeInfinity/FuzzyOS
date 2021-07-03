@@ -59,7 +59,7 @@ void redraw(struct State *s) {
     print_line("        : Q to quit game\n\n");
     print_board(s);
 
-    // __TEST_INJECT_APP_TTT_ENTRY__: asm("hlt");
+    // __TEST_INJECT_APP_TTT_ENTRY__: __asm__("hlt");
 }
 
 void play_move(struct State *s, unsigned char r, unsigned char c) {

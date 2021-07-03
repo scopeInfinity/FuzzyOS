@@ -96,7 +96,7 @@ void populate_gdt_table(
 void load_gdt_table(struct GDTReference* gdtr) {
     print_log("Loading GDT Table: 0x%x; base address: 0x%x, size: %d",
         (int)gdtr, gdtr->base_address, gdtr->size);
-    asm("mov %0, %%eax\n\t"
+    __asm__ ("mov %0, %%eax\n\t"
         "lgdt (%%eax)"
         :
         : "r" (gdtr));
