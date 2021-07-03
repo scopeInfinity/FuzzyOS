@@ -1,12 +1,13 @@
+#include <stdlib.h>
+
 #include <lib/syscall/syscall.h>
 #include <lib/utils/input.h>
 #include <lib/utils/output.h>
-#include <lib/utils/string.h>
 static char buffer_num[20];
 
 extern int getch_low();
 
-char getch() {
+char getch_in() {
     return SYSCALL_A0(SYSCALL_KEYBOARD);
 }
 
@@ -16,8 +17,8 @@ void read_line(char *str) {
     i = 0;
     while(1) {
         // Bug: Wierd hack to mitigate another hack.
-        // Using following instead of str[i]=getch();
-        char z = getch();
+        // Using following instead of str[i]=getch_in();
+        char z = getch_in();
         str[i] = z;
 
         if(str[i]=='\r' || str[i]=='\n') {
@@ -32,5 +33,5 @@ void read_line(char *str) {
 
 int read_int() {
     read_line(buffer_num);
-    return parse_int(buffer_num);
+    return atoi(buffer_num);
 }

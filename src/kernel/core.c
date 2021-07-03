@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <drivers/display/text_mode.h>
 #include <drivers/keyboard/keyboard.h>
 #include <drivers/disk/disk.h>

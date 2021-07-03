@@ -8,6 +8,7 @@ $(BUILD_APP)/%.o: $(SRC_APP)/%.c $(BUILD_USR_INCLUDE_ALL) $(SRC_LIB_UTILS)/outpu
 	mkdir -p $(BUILD_APP)
 	$(USER_CC) -c -o $@ $<
 
-$(BUILD_APP)/%.out: $(app_entry) $(BUILD_APP)/%.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall $(BUILD_USR_LIB)/libfuzzyc
-	$(USER_LD) -o $@ $^
+# TODO: libfuzzyc and libutils should not be cyclic dependent.
+$(BUILD_APP)/%.out: $(BUILD_LIB_APP_ENTRY) $(BUILD_APP)/%.o  $(BUILD_USR_LIB)/libfuzzyc $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
+	$(USER_LD) -o $@ $^ $(BUILD_USR_LIB)/libfuzzyc
 	truncate --size=%512 $@

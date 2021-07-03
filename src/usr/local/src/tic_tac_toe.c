@@ -1,19 +1,7 @@
 // Simple Calculator
-#define BUILD_FOR_FUZZY
-#ifndef BUILD_FOR_FUZZY
-#else
-#include <lib/utils/input.h>
-#include <lib/utils/output.h>
-#include <lib/utils/time.h>
-#include <lib/utils/string.h>
-#endif
-
-void console_init() {
-    set_color_bg(C_BLACK);
-    set_color_fg(C_WHITE);
-    print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
-    move_xy(0,0);
-}
+#include <stdio.h>
+#include <string.h>
+#include <conio.h>
 
 struct State
 {
@@ -28,35 +16,69 @@ void reset(struct State *s) {
             s->mat[i][j]=' ';
 }
 
+int _print_int(int x) {
+    int is_negative = 0;
+    int tailing_zero = 0;
+    if(x<0) {
+        is_negative = 1;
+        x=-x;
+    }
+    int rev = 0;
+    while(x && x%10==0) {
+        x/=10;
+        tailing_zero++;
+    }
+    if(x==0) {
+        // If the initial number is zero, add one here.
+        tailing_zero++;
+    }
+    while(x) {
+        rev = rev*10 + x%10;
+        x/=10;
+    }
+    if(is_negative) {
+        putchar('-');
+    }
+    while(rev) {
+        putchar((char)(rev%10+'0'));
+        rev/=10;
+    }
+    while(tailing_zero) {
+        putchar('0');
+        tailing_zero--;
+    }
+}
+
 void print_board(struct State *s) {
     for (int i = 0; i < 3; ++i) {
-        print_line("   ");
-        print_char(s->mat[i][0]);
-        print_char('|');
-        print_char(s->mat[i][1]);
-        print_char('|');
-        print_char(s->mat[i][2]);
-        print_char('\n');
+        puts("   ");
+        putchar(s->mat[i][0]);
+        putchar('|');
+        putchar(s->mat[i][1]);
+        putchar('|');
+        putchar(s->mat[i][2]);
+        putchar('\n');
         if(i<2) {
-            print_line("   -----\n");
+            puts("   -----\n");
         }
     }
 }
 
 void redraw(struct State *s) {
-    console_init();
-    print_line("TicTacToe\n");
-    print_line("---------\n");
-    print_line("\n");
-    print_line("Player 1 : X\n");
-    print_line("Player 2 : O\n");
-    print_line("\n");
-    print_line("Turn: Player ");
-    print_int(s->turn+1);
-    print_line("\n");
-    print_line("Controls: Use 1-9 in numpad keys pattern\n");
-    print_line("        : R to reset game\n");
-    print_line("        : Q to quit game\n\n");
+    clrscr();
+    gotoxy(0, 0);
+    puts("TicTacToe\n");
+    puts("---------\n");
+    puts("\n");
+    puts("Player 1 : X\n");
+    puts("Player 2 : O\n");
+    puts("\n");
+    puts("Turn: Player ");
+    _print_int(s->turn+1);
+    puts("\n");
+    puts("Controls: Use 1-9 in numpad keys pattern\n");
+    puts("        : R to reset game\n");
+    puts("        : Q to quit game\n\n");
     print_board(s);
 
     // __TEST_INJECT_APP_TTT_ENTRY__: __asm__("hlt");
@@ -107,7 +129,7 @@ int main(int argc,char *argv[]) {
                 play_move(&s, row, col);
                 break;
             } else {
-                print_int(c);
+                _print_int(c);
             }
         }
     }

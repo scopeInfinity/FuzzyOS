@@ -1,4 +1,4 @@
-#ifndef	_FUZZY_STDIO_H
-#define _FUZZY_STDIO_H
+#pragma once
 
-#endif
+int putchar(int c);
+int puts(const char *s);
