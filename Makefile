@@ -12,7 +12,6 @@ SRC_LIB_SYSCALL = $(SRC_DIR)/lib/syscall
 SRC_LIB_UTILS = $(SRC_DIR)/lib/utils
 SRC_LIB = $(SRC_DIR)/lib
 SRC_MEMMGR = $(SRC_DIR)/memmgr
-SRC_APP = $(SRC_DIR)/app
 SRC_REALMODE = $(SRC_DIR)/real_mode
 
 BUILD_BOOTLOADER = $(BUILD_DIR)/bootloader
@@ -22,7 +21,6 @@ BUILD_LIB_DS = $(BUILD_DIR)/lib/ds
 BUILD_LIB_SYSCALL = $(BUILD_DIR)/lib/syscall
 BUILD_LIB_UTILS = $(BUILD_DIR)/lib/utils
 BUILD_LIB = $(BUILD_DIR)/lib
-BUILD_APP = $(BUILD_DIR)/app
 BUILD_REALMODE = $(BUILD_DIR)/real_mode
 .PHONY: all clean
 
@@ -37,9 +35,11 @@ rm_static = $(BUILD_REALMODE)/static_library
 kernel_core = $(BUILD_DIR)/kernel/core
 
 # Apps
-app_calc = $(BUILD_APP)/calc
-app_tic_tac_toe = $(BUILD_APP)/tic_tac_toe
-app_dashboard = $(BUILD_APP)/dashboard
+SRC_APP = $(SRC_DIR)/usr/local/src
+BUILD_APP = $(BUILD_DIR)/usr/local/bin
+app_calc = $(BUILD_APP)/calc.out
+app_tic_tac_toe = $(BUILD_APP)/tic_tac_toe.out
+include $(SRC_APP)/Makefile.mk
 
 MEMORY_STATIC_LIBRARY = 0x7E00
 MEMORY_LOCATION_KERNEL = 0xC000
@@ -247,15 +247,3 @@ $(BUILD_LIB_SYSCALL)/libsyscall: $(SRC_LIB_SYSCALL)/syscall.h $(SRC_LIB_SYSCALL)
 	nasm -o $(BUILD_LIB_SYSCALL)/syscall_asm.o -f elf32 $(SRC_LIB_SYSCALL)/syscall.asm
 	ar rc $@ $(BUILD_LIB_SYSCALL)/syscall_asm.o
 
-# User Applications
-$(app_calc): $(app_entry) $(SRC_APP)/calc.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
-	mkdir -p $$(dirname $(app_calc))
-	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/calc.o $(SRC_APP)/calc.c
-	$(LD) --oformat binary -m elf_i386 -Ttext 0x0 -T linker.ld -o $@ $(app_entry) $(BUILD_APP)/calc.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
-	truncate --size=%512 $@
-
-$(app_tic_tac_toe): $(app_entry) $(SRC_APP)/tic_tac_toe.c $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB_UTILS)/time.h $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall # And dependecies :/
-	mkdir -p $$(dirname $(app_tic_tac_toe))
-	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_APP)/tic_tac_toe.o $(SRC_APP)/tic_tac_toe.c
-	$(LD) --oformat binary -m elf_i386 -Ttext 0x0 -T linker.ld -o $@ $(app_entry) $(BUILD_APP)/tic_tac_toe.o $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_SYSCALL)/libsyscall
-	truncate --size=%512 $@
