@@ -46,6 +46,7 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 
 # Tools
 CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static
+HOST_CC = gcc -std=c11
 KERNEL_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR)
 LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
 
@@ -106,6 +107,8 @@ include $(SRC_KERNEL)/Makefile.mk
 include $(SRC_DRIVERS)/disk/Makefile.mk
 include $(SRC_DRIVERS)/display/Makefile.mk
 include $(SRC_DRIVERS)/keyboard/Makefile.mk
+
+include $(SRC_DIR)/fs/Makefile.mk
 
 include $(SRC_LIB)/app/Makefile.mk
 include $(SRC_LIB_DS)/Makefile.mk
