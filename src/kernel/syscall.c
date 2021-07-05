@@ -2,6 +2,7 @@
 #include <drivers/keyboard/keyboard.h>
 
 #include "kernel/process.c"
+#include "kernel/file_handler.c"
 
 #define SYSCALL_SIZE 30
 int SYSCALL_TABLE[SYSCALL_SIZE];
@@ -14,8 +15,15 @@ int syscall_1_process_exec(int sector_start,int sector_count,int a2,int a3) {
     return process_exec(sector_start, sector_count);
 }
 
+// TODO: Think how to take string argument
+// TODO: how to write on provide string buffer.
+int syscall_2_file_handler(int operation) {
+    return fh_switch(operation);
+}
+
 void register_syscalls() {
     print_log("Registering syscalls.");
     SYSCALL_TABLE[0]=syscall_0_keyboard_getch;
     SYSCALL_TABLE[1]=syscall_1_process_exec;
+    SYSCALL_TABLE[2]=syscall_2_file_handler;
 }

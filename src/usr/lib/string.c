@@ -36,3 +36,9 @@ int strcmpi(char *l, char *r) {
     }
     return -1;
 }
+
+void *memcpy(void *dest, const void *src, unsigned int n) {
+    while (n--) {
+        *(char*)(dest++) = *(char*)(src++);
+    }
+}

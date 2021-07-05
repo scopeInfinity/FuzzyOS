@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <conio.h>
 #include <lib/utils/output.h>
+#include <lib/syscall/syscall.h>
 
 int putchar(int c) {
     print_char(c);
@@ -24,4 +25,15 @@ char* gets(char *s) {
         (*s) = c;
         s++;
     }
+}
+
+FILE *fopen(char *filename, char *mode) {
+    // TODO: mode is ignored for now.
+    // And only read only mode is supported.
+
+    // ONGOING: add a syscall here
+    //  SYSCALL_A0(SYSCALL_KEYBOARD);
+}
+int fclose(FILE *file) {
+
 }

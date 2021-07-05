@@ -17,6 +17,8 @@ $(kernel_core): $(SRC_KERNEL)/core.asm $(SRC_KERNEL)/core.c $(SRC_KERNEL)/essent
 		-D MEMORY_LOCATION_APP=$(MEMORY_LOCATION_APP) \
 		-D SECTOR_START_APP_CALC=$(SECTOR_START_APP_CALC) \
 		-D SECTOR_COUNT_APP_CALC=$(SECTOR_COUNT_APP_CALC) \
+		-D SECTOR_START_APP_LS=$(SECTOR_START_APP_LS) \
+		-D SECTOR_COUNT_APP_LS=$(SECTOR_COUNT_APP_LS) \
 		-o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
 	$(LD) --oformat binary -m elf_i386 -Ttext 0x0000 -T linker.ld -o $(kernel_core) $(BUILD_KERNEL)/core_asm.o $(BUILD_KERNEL)/process_asm.o $(BUILD_KERNEL)/core_c.o $(BUILD_KERNEL)/interrupts_asm.o $(BUILD_DRIVERS)/keyboard/libkeyboard $(BUILD_LIB_UTILS)/libutils $(BUILD_DRIVERS)/display/libtm_vga $(BUILD_LIB_DS)/libds $(BUILD_DRIVERS)/disk/libdisk $(BUILD_LIB_SYSCALL)/libsyscall $(BUILD_USR_LIB)/libfuzzyc
 	truncate --size=%512 $(kernel_core)

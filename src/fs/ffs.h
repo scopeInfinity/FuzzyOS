@@ -44,3 +44,12 @@ union FFSFileEntry {
 
 #define FS_FFS_SIGNATURE "__FuzzyOS__FFS__"  // 16 chars
 
+
+void fetch_first_block(
+    int (*partition_read_block)(void *dest),
+    FFSMetaData *block);
+
+void fetch_file_entry(
+    int (*partition_read_block)(void *dest),
+    int entry_id,
+    FFSFileEntry *entry);

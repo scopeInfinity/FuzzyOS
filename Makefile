@@ -36,6 +36,7 @@ SRC_APP = $(SRC_DIR)/usr/local/src
 BUILD_APP = $(BUILD_DIR)/usr/local/bin
 app_calc = $(BUILD_APP)/calc.out
 app_tic_tac_toe = $(BUILD_APP)/tic_tac_toe.out
+app_ls = $(BUILD_APP)/ls.out
 
 MEMORY_LOCATION_KERNEL = 0xC000
 
@@ -53,7 +54,8 @@ LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
 # Program to auto start when kernel is ready.
 # 1 - Tic Tac Toe
 # 2 - Calculator (broken)
-RUN_APP_ID = 1
+# 3 - ls
+RUN_APP_ID = 3
 
 # Targets
 all_artifacts: images binaries
@@ -79,13 +81,15 @@ SECTOR_START_APP_TTT = $(shell expr $(SECTOR_START_KERNEL) + $(SECTOR_COUNT_KERN
 SECTOR_COUNT_APP_TTT = $(shell cut -d' ' -f5 configure 2> /dev/null || echo 0 )
 SECTOR_START_APP_CALC = $(shell expr $(SECTOR_START_APP_TTT) + $(SECTOR_COUNT_APP_TTT) )
 SECTOR_COUNT_APP_CALC = $(shell cut -d' ' -f6 configure 2> /dev/null || echo 0 )
+SECTOR_START_APP_LS =  $(shell expr $(SECTOR_START_APP_CALC) + $(SECTOR_COUNT_APP_CALC) )
+SECTOR_COUNT_APP_LS = $(shell cut -d' ' -f7 configure 2> /dev/null || echo 0 )
 
 # configure file stores the sector size of each sub images.
-configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc)
+configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls)
 	bash scripts/build_image.sh /dev/null $^ > $@
 	rm -r $(BUILD_DIR)/ && "Cleared build directory" || echo "Build directory is clean."
 
-$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc)
+$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls)
 	test -s configure || { echo -e "\033[0;31mFailed! Please execute 'make configure' first.\033[0m" >&2; exit 1; }
 	bash scripts/build_image.sh $@ $^
 	@echo "Image Size : $$(stat -c %s $@) byte(s)"
