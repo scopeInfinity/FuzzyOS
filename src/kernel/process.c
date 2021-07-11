@@ -44,6 +44,15 @@ int process_new_allocated_memory(int id) {
 
 extern int call_main(int cs, int ds, int argc, char *argv[]);
 
+/*
+User side memory view
+CS 0x0000 -> ...
+DS 0x0000 -> 0xFFFF
+FS ; same as DS
+GS ; same as DS
+SS ...    <- 0xDFFF  ; user stack
+SS 0xE000 <- 0xFFFF  ; kernel stack
+*/
 int process_exec(int sector_index, int sector_count) {
     int id = process_reserve_new_id();
     if(id<0) {

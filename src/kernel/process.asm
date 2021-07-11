@@ -5,6 +5,8 @@ global call_main
 [SECTION .text]
 
     call_main:
+        ; TODO: write assumptions and constraints
+        ; TODO: function needs to be verified for exit case.
         push ebp
         mov ebp, esp
 
@@ -28,13 +30,17 @@ global call_main
         mov fs, cx
         mov gs, cx
 
-        mov eax, 0xFFFF
+        ; fix app kernel stack
+        mov eax, 0xFFFC
+        mov esp, eax
+
 
         ; far jump to main()
-        mov [farjmp_location+4], bx
+        push ebx    ; CS, 2 bytes
         xor ebx, ebx
-        mov [farjmp_location], ebx
-        call far [farjmp_location]
+        push ebx    ; IP: 4 bytes
+        call far [esp]
+
         ; eax should contain the program return value.
 
         ; Returned from exec.
