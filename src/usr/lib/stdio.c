@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <conio.h>
 #include <lib/utils/output.h>
-#include <lib/syscall/syscall.h>
+#include <sys/syscall.h>
 
 int putchar(int c) {
     print_char(c);

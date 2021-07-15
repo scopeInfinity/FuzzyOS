@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include <lib/syscall/syscall.h>
+#include <sys/syscall.h>
 #include <lib/utils/input.h>
 #include <lib/utils/output.h>
 static char buffer_num[20];

@@ -5,7 +5,6 @@ SRC_BOOTLOADER = $(SRC_DIR)/bootloader
 SRC_KERNEL = $(SRC_DIR)/kernel
 SRC_DRIVERS = $(SRC_DIR)/drivers
 SRC_LIB_DS = $(SRC_DIR)/lib/ds
-SRC_LIB_SYSCALL = $(SRC_DIR)/lib/syscall
 SRC_LIB_UTILS = $(SRC_DIR)/lib/utils
 SRC_LIB = $(SRC_DIR)/lib
 SRC_MEMMGR = $(SRC_DIR)/memmgr
@@ -15,7 +14,6 @@ BUILD_BOOTLOADER = $(BUILD_DIR)/bootloader
 BUILD_KERNEL = $(BUILD_DIR)/kernel
 BUILD_DRIVERS = $(BUILD_DIR)/drivers
 BUILD_LIB_DS = $(BUILD_DIR)/lib/ds
-BUILD_LIB_SYSCALL = $(BUILD_DIR)/lib/syscall
 BUILD_LIB_UTILS = $(BUILD_DIR)/lib/utils
 BUILD_LIB = $(BUILD_DIR)/lib
 BUILD_REALMODE = $(BUILD_DIR)/real_mode
@@ -55,7 +53,7 @@ LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
 # 1 - Tic Tac Toe
 # 2 - Calculator (broken)
 # 3 - ls
-RUN_APP_ID = 3
+RUN_APP_ID = 1
 
 # Targets
 all_artifacts: images binaries
@@ -116,7 +114,6 @@ include $(SRC_DIR)/fs/Makefile.mk
 
 include $(SRC_LIB)/app/Makefile.mk
 include $(SRC_LIB_DS)/Makefile.mk
-include $(SRC_LIB_SYSCALL)/Makefile.mk
 include $(SRC_LIB_UTILS)/Makefile.mk
 
 include $(SRC_APP)/Makefile.mk

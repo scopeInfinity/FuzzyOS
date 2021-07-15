@@ -23,17 +23,16 @@ global call_main
 
         ; Preparing for exec.
 
-        ; Assigning DS and stuff.
+        ; assigning segment registers
         mov es, cx
         mov ss, cx
         mov ds, cx
         mov fs, cx
         mov gs, cx
 
-        ; fix app kernel stack
+        ; assign kernel stack
         mov eax, 0xFFFC
         mov esp, eax
-
 
         ; far jump to main()
         push ebx    ; CS, 2 bytes
@@ -61,5 +60,3 @@ global call_main
 
 [SECTION .data]
     kernel_saved_stack_top  db  '    '
-    farjmp_location dd 0
-                    dw 0

@@ -47,9 +47,9 @@ union FFSFileEntry {
 
 void fetch_first_block(
     int (*partition_read_block)(void *dest),
-    FFSMetaData *block);
+    union FFSMetaData *block);
 
 void fetch_file_entry(
     int (*partition_read_block)(void *dest),
     int entry_id,
-    FFSFileEntry *entry);
+    union FFSFileEntry *entry);

@@ -8,7 +8,7 @@
 #include <lib/utils/input.h>
 #include <lib/utils/panic.h>
 #include <lib/utils/time.h>
-#include <lib/syscall/syscall.h>
+#include <sys/syscall.h>
 
 #include "kernel/essentials.c"
 #include "kernel/interrupts.c"

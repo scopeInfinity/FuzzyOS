@@ -8,6 +8,7 @@ global idt_table
 
 global syscall_selector_low
 extern syscall_selector
+global syscall_copy_es_to_ss
 
 [SECTION .text]
 
@@ -42,7 +43,7 @@ extern syscall_selector
         push ebx
         mov bx, 0x10
         mov ds, bx
-        mov es, bx
+        ; mov es, bx  ; ES will point to user space data.
         mov fs, bx
         mov gs, bx
         pop ebx
@@ -58,3 +59,7 @@ extern syscall_selector
         pop es
         pop ds
         iret
+
+    syscall_copy_es_to_ss:
+        ; TODO
+        ret
