@@ -1,6 +1,12 @@
 BUILD_DIR = build
 SRC_DIR = src
 
+SELF_SRC_DIR = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+SELF_BUILD_DIR = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SELF_SRC_DIR))
+
+SELF_SRC_ALL_C = $(shell find $(SELF_SRC_DIR) -name '*.c')
+SELF_BUILD_ALL_C = $(patsubst $(SELF_SRC_DIR)/%.c,$(SELF_BUILD_DIR)/%.o,$(SELF_SRC_ALL_C))
+
 SRC_BOOTLOADER = $(SRC_DIR)/bootloader
 SRC_KERNEL = $(SRC_DIR)/kernel
 SRC_DRIVERS = $(SRC_DIR)/drivers

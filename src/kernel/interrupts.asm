@@ -10,6 +10,122 @@ global syscall_selector_low
 extern syscall_selector
 global syscall_copy_es_to_ss
 
+KERNEL_STACK_MARKER_NEW    EQU 0x10000001
+KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
+
+%macro _int_start 0
+        ; NOT READY for HW interrupts
+        ;  - eax not preserved.
+        ;  - disabled nested, as we aren't sure if it will work.
+        CLI  ; should get restored on iret
+
+        ; meant to placed at start of interrupt handler
+        push ebp
+        mov ebp, esp
+
+        ; general purpose register
+        ; push eax
+        push ebx
+        push ecx
+        push edx
+        push esi
+        push edi
+        ; ignore esp; will reset at end of call
+        ; ignore ebp; already pushed
+
+        ; below ebp: old+ebp, CS:IP, eflags 16 bytes
+        mov ebx, [ebp + 0x10]
+        mov ecx, [ebp + 0x14]
+        mov edx, [ebp + 0x18]
+        mov esi, [ebp + 0x1C]
+        mov edi, [ebp + 0x20]
+
+        ; segment registers
+
+        ; HANDLE_SS_START
+        ; if ss is not already in kernel mode than create kernel stack
+        ; and save ongoing stack.
+        mov ax, 0x10
+        push ebx
+        mov bx, ss
+        cmp bx, ax
+        pop ebx
+        je _kernel_stack_new_not_needed
+        ; create new kernel stack
+        mov ebp, esp
+        mov ss, ax
+        mov esp, 0xFFFC
+        push ebp    ; old esp ; ASSUME ss == ds
+        mov eax, KERNEL_STACK_MARKER_NEW
+        push eax
+        jmp _kernel_stack_done
+    _kernel_stack_new_not_needed:
+        mov eax, KERNEL_STACK_MARKER_NOTNEW
+        push eax
+    _kernel_stack_done:
+        ; HANDLE_SS_END
+
+        ; cs: already pushed when interrupt triggered
+        ; ss: there is no benefit to push ss on last stack
+        push ds
+        push es
+        push fs
+        push gs
+
+        ; Let's move to kernel mode
+        ; es: will updated later, and will be es==ds
+        mov ax, 0x10
+        mov ds, ax
+        mov fs, ax
+        mov gs, ax
+
+        ; move interrupt arguments as function argument
+        push edi
+        push esi
+        push edx
+        push ecx
+        push ebx
+%endmacro
+
+%macro _int_end 0
+        ; meant to placed at end of interrupt handler
+        ; and must NOT update eax
+        add esp, 20
+
+        ; Let's remove to previous mode
+        ; restore segment register, cs and ss are left
+        pop gs
+        pop fs
+        pop es
+        pop ds
+
+        ; HANDLE_SS_START
+
+        ; move stack to previous stack if it wasn't kernel stack
+        pop ebx
+        cmp ebx, KERNEL_STACK_MARKER_NOTNEW
+        je _kernel_stack_skip_no_new
+        ; move to old stack
+        pop esp
+        mov bx, ds
+        ; assumption ss == ds
+        ; it might break in nested hardware interrupts.
+        mov ss, bx
+    _kernel_stack_skip_no_new:
+        ; HANDLE_SS_END
+
+        ; restore general purpose flag
+        pop edi
+        pop esi
+        pop edx
+        pop ecx
+        pop ebx
+        ; TODO: eax value must be preserve for full routine for HW interrupts.
+        ; eax value must remain same during _int_end for syscall.
+        ; pop eax
+        pop ebp
+%endmacro
+
 [SECTION .text]
 
     interrupt_nohup:
@@ -35,31 +151,7 @@ global syscall_copy_es_to_ss
         ret
 
     syscall_selector_low:
-        ; Not saving SS
-        push ds
-        push es
-        push fs
-        push gs
-        push ebx
-        mov bx, 0x10
-        mov ds, bx
-        ; mov es, bx  ; ES will point to user space data.
-        mov fs, bx
-        mov gs, bx
-        pop ebx
-        push esi
-        push edx
-        push ecx
-        push ebx
-        push eax
+        _int_start
         call syscall_selector
-        add esp, 20
-        pop gs
-        pop fs
-        pop es
-        pop ds
+        _int_end
         iret
-
-    syscall_copy_es_to_ss:
-        ; TODO
-        ret

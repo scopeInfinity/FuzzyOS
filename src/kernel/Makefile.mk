@@ -1,3 +1,5 @@
+include $(SELF_SRC_DIR)/syscall/Makefile.mk
+
 MEMORY_LOCATION_APP = 0x20000
 
 debug_kernel: $(kernel_core)

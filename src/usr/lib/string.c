@@ -37,6 +37,15 @@ int strcmpi(char *l, char *r) {
     return -1;
 }
 
+int strlen(char *str) {
+    int n=0;
+    while((*str)!='\0') {
+        n++;
+        str++;
+    }
+    return n;
+}
+
 void *memcpy(void *dest, const void *src, unsigned int n) {
     while (n--) {
         *(char*)(dest++) = *(char*)(src++);

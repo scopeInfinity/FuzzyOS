@@ -1,6 +1,8 @@
 [BITS 32]
 
 global call_main
+global syscall_context_switching_fix_es
+global syscall_strccpy_es_to_ds
 
 [SECTION .text]
 
@@ -57,6 +59,39 @@ global call_main
         mov esp, ebp
         pop ebp
         ret
+
+    syscall_context_switching_fix_es:
+        push ebx
+        mov bx, ds
+        mov es, bx
+        pop ebx
+        ret
+
+    syscall_strccpy_es_to_ds:
+        push ebp
+        mov ebp, esp
+
+        ; swap es, ds
+        push es
+        push ds
+        pop es
+        pop ds
+
+        ; strcpy
+        mov esi, [ebp + 0x08]         ; ds:esi, char *src_es_address
+        mov edi, [ebp + 0x0c]         ; es:edi, char *dest_ds_address
+        mov ecx, [ebp + 0x10]         ; size_t size
+        rep movsb
+
+        ; swap es, ds
+        push es
+        push ds
+        pop es
+        pop ds
+
+        pop ebp
+        ret
+
 
 [SECTION .data]
     kernel_saved_stack_top  db  '    '

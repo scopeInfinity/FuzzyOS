@@ -5,6 +5,7 @@
 
 int main(int argc,char *argv[]) {
     puts("ls - list files\n");
+    fopen("hello_world", "r");
     while (1);
 
     return 0;

@@ -30,10 +30,12 @@ char* gets(char *s) {
 FILE *fopen(char *filename, char *mode) {
     // TODO: mode is ignored for now.
     // And only read only mode is supported.
-
-    // ONGOING: add a syscall here
-    //  SYSCALL_A0(SYSCALL_KEYBOARD);
+    puts("STRLEN: ");
+    int n = SYSCALL_A1(SYSCALL_FILE_OP, filename);
+    print_int(n);
+    puts("; done.\n");
 }
+
 int fclose(FILE *file) {
 
 }
