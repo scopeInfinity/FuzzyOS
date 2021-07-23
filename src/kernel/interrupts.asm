@@ -56,6 +56,7 @@ KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
         mov ss, ax
         mov esp, 0xFFFC
         push ebp    ; old esp ; ASSUME ss == ds
+        mov ebp, esp
         mov eax, KERNEL_STACK_MARKER_NEW
         push eax
         jmp _kernel_stack_done

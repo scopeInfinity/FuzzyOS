@@ -31,7 +31,7 @@ FILE *fopen(char *filename, char *mode) {
     // TODO: mode is ignored for now.
     // And only read only mode is supported.
     puts("STRLEN: ");
-    int n = SYSCALL_A1(SYSCALL_FILE_OP, filename);
+    int n = SYSCALL_A2(SYSCALL_FILE_OP, SYSCALL_FILE_SUB_OPEN, filename);
     print_int(n);
     puts("; done.\n");
 }

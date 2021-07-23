@@ -1,3 +1,4 @@
+ROOT_DIR = .
 BUILD_DIR = build
 SRC_DIR = src
 
@@ -59,7 +60,7 @@ LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
 # 1 - Tic Tac Toe
 # 2 - Calculator (broken)
 # 3 - ls
-RUN_APP_ID = 1
+RUN_APP_ID = 3
 
 # Targets
 all_artifacts: images binaries

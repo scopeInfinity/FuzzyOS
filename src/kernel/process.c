@@ -45,6 +45,7 @@ int process_new_allocated_memory(int id) {
 extern int call_main(int cs, int ds, int argc, char *argv[]);
 
 /*
+TODO: fix documentation.
 User side memory view
 CS 0x0000 -> ...
 DS 0x0000 -> 0xFFFF

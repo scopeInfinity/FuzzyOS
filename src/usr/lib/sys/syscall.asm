@@ -19,7 +19,7 @@ global syscall
         push edx
         push ecx
         push ebx
-        int 0x32
+        int 0x32 ; EIP: 0x20117
         add esp, 20
 
         mov esp, ebp
