@@ -12,4 +12,6 @@ qemu_debug: $(image_vmdk)
 	qemu-system-x86_64 -S -gdb tcp::$(QEMU_GDB_PORT) -smp 1 -m 128M -hda $< $(QEMU_SHUT_FLAGS) -d  cpu,exec,in_asm
 
 qemu_debug_connect:
-	gdb -ex "target remote :$(QEMU_GDB_PORT)"
+	gdb -x $(ROOT_DIR)/.gdbinit -ex "target remote :$(QEMU_GDB_PORT)"
+
+
