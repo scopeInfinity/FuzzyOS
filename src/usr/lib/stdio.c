@@ -27,15 +27,35 @@ char* gets(char *s) {
     }
 }
 
+int _all_file_handlers_buzy[LIMIT_MAX_FILE_OPEN]={0};
+FILE _all_file_handlers[LIMIT_MAX_FILE_OPEN];
+
 FILE *fopen(char *filename, char *mode) {
     // TODO: mode is ignored for now.
     // And only read only mode is supported.
-    puts("STRLEN: ");
-    int n = SYSCALL_A2(SYSCALL_FILE_OP, SYSCALL_FILE_SUB_OPEN, filename);
-    print_int(n);
-    puts("; done.\n");
+    int file_id = SYSCALL_A2(SYSCALL_FILE_OP, SYSCALL_FILE_SUB_OPEN, filename);
+    if (file_id<0) return NULL;
+
+    // find available file_handler
+    int fh_id=0;
+    while (fh_id<LIMIT_MAX_FILE_OPEN) {
+        if(!_all_file_handlers_buzy[fh_id]) break;
+        fh_id++;
+    }
+    if(fh_id==LIMIT_MAX_FILE_OPEN) {
+        // no available file_handler found
+        return NULL;
+    }
+
+    _all_file_handlers_buzy[fh_id] = 1;
+    FILE *handler = &_all_file_handlers[fh_id];
+    handler->file_handler_id = fh_id;
+    handler->file_id = file_id;
+    return handler;
 }
 
-int fclose(FILE *file) {
-
+int fclose(FILE *handler) {
+    if (handler != NULL) {
+        _all_file_handlers_buzy[handler->file_handler_id] = 0;
+    }
 }

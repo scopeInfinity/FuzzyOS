@@ -9,6 +9,7 @@
 #include <lib/utils/panic.h>
 #include <lib/utils/time.h>
 #include <sys/syscall.h>
+#include <fuzzy/fs/ffs.h>
 
 #include "kernel/essentials.c"
 #include "kernel/interrupts.c"
@@ -43,6 +44,11 @@ void kernel_core_entry() {
     keyboard_init();
 
     process_handler_init();
+
+    union FFSFileEntry entry;
+    int err = fetch_file_entry(0, 2, &entry);
+    PANIC(err, entry.content.filename);
+
 
     need_to_clear_hack = 1;
     while(1) {

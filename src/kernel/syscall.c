@@ -3,7 +3,7 @@
 
 #include "kernel/extern.h"
 #include "kernel/process.c"
-#include "kernel/syscall/file_handler.c"
+#include "kernel/syscall/file_handler.h"
 
 #define SYSCALL_SIZE 30
 

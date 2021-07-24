@@ -1,8 +1,10 @@
 ROOT_DIR = .
 BUILD_DIR = build
+INCLUDE_DIR = include/fuzzy
 SRC_DIR = src
 
 SELF_SRC_DIR = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+SELF_INCLUDE_DIR = $(patsubst $(SRC_DIR)/%,$(INCLUDE_DIR)/%,$(SELF_SRC_DIR))
 SELF_BUILD_DIR = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SELF_SRC_DIR))
 
 SELF_SRC_ALL_C = $(shell find $(SELF_SRC_DIR) -name '*.c')
@@ -52,8 +54,8 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 
 # Tools
 CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static
-HOST_CC = gcc -std=c11
-KERNEL_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR)
+HOST_CC = gcc -std=c11 -Iinclude
+KERNEL_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR) -Iinclude -Isrc/usr/include
 LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
 
 # Program to auto start when kernel is ready.
@@ -63,7 +65,7 @@ LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
 RUN_APP_ID = 3
 
 # Targets
-all_artifacts: images binaries
+all_artifacts: images binaries external
 
 test: $(image_vmdk) $(wildcard tests/**/*)
 	bash tests/run.sh
@@ -94,15 +96,15 @@ configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_t
 	bash scripts/build_image.sh /dev/null $^ > $@
 	rm -r $(BUILD_DIR)/ && "Cleared build directory" || echo "Build directory is clean."
 
-$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls)
+$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(BUILD_DIR)/external/bin/mbr_builder $(BUILD_DIR)/external/example/sample_fs
 	test -s configure || { echo -e "\033[0;31mFailed! Please execute 'make configure' first.\033[0m" >&2; exit 1; }
-	bash scripts/build_image.sh $@ $^
+	bash scripts/build_image.sh temp_vmdk $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls)
+	./$(BUILD_DIR)/external/bin/mbr_builder $@  temp_vmdk $(BUILD_DIR)/external/example/sample_fs
 	@echo "Image Size : $$(stat -c %s $@) byte(s)"
 
 clean:
 	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."
 	rm -f configure
-
 
 include emulator/Makefile.mk
 
@@ -124,3 +126,5 @@ include $(SRC_LIB_DS)/Makefile.mk
 include $(SRC_LIB_UTILS)/Makefile.mk
 
 include $(SRC_APP)/Makefile.mk
+
+include external/src/Makefile.mk

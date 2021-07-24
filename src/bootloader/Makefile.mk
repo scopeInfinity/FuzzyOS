@@ -15,7 +15,6 @@ $(bt_stage1): $(SRC_BOOTLOADER)/stage1.asm $(SRC_BOOTLOADER)/constants.asm $(SRC
 		-D SECTOR_COUNT_BT_STAGE2=$(shell printf "%02x" $(SECTOR_COUNT_BT_STAGE2) ) \
 		$<
 	truncate --size=%512 $@
-	/bin/echo -ne "\x55\xaa" | dd seek=510 bs=1 of=$@
 	@echo $(SECTOR_COUNT_BT_STAGE1)
 
 

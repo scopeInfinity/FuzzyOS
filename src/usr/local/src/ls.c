@@ -5,7 +5,13 @@
 
 int main(int argc,char *argv[]) {
     puts("ls - list files\n");
-    fopen("hello_world", "r");
+    FILE *handler = fopen("lib.sh", "r");
+    if(handler!=NULL) {
+        puts("FILE open: success.");
+    } else {
+        puts("FILE open: failed.");
+    }
+    fclose(handler);
     while (1);
 
     return 0;

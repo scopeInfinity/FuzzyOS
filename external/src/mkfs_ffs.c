@@ -2,7 +2,7 @@
 mkfs.ffs binary implementation for Linux.
 */
 
-#include "ffs.h"
+#include <fuzzy/fs/ffs.h>
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
@@ -35,11 +35,12 @@ void write_file(int file_id, FILE *outfile, int *outfile_nextdata_block, const c
     // Write file content
     char buffer[512];
     size_t bytes_read;
+    printf("Writting context at %d\n", ((*outfile_nextdata_block)));
     fseek(outfile, (*outfile_nextdata_block)*FS_BLOCK_SIZE, SEEK_SET);
     (*outfile_nextdata_block) += (file_size+FS_BLOCK_SIZE-1)/FS_BLOCK_SIZE;
 
 
-    while (0 < (bytes_read = fread(buffer, 1, sizeof(buffer), srcfile))) {
+    while ((bytes_read = fread(buffer, 1, sizeof(buffer), srcfile)) > 0) {
         fwrite(buffer, 1, bytes_read, outfile);
     }
 
@@ -57,7 +58,7 @@ void write_nofile(int file_id, FILE *out) {
 int create_partition(char *src_dir, char *out_filepath) {
     printf("%s, %s\n", src_dir, out_filepath);
     FILE *src = opendir(src_dir);
-    FILE *out = fopen(out_filepath, "ab");
+    FILE *out = fopen(out_filepath, "wb");
     if (!out) {
         fprintf(stderr, "can't open output file.");
         return 1;

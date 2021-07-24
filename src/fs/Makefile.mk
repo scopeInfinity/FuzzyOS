@@ -1,13 +1,8 @@
-SRC_FS=$(SRC_DIR)/fs
-BUILD_FS=$(BUILD_DIR)/fs
+$(SELF_BUILD_DIR)/%.o: $(SELF_SRC_DIR)/%.c $(SELF_INCLUDE_DIR)/%.h
+	mkdir -p $(dir $@)
+	$(KERNEL_CC) -c \
+		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
+		-o $@ $<
 
-$(BUILD_FS)/%.o: $(SRC_FS)/%.c $(SRC_FS)/%.h
-	mkdir -p $(BUILD_FS)
-	$(KERNEL_CC) -c -o $@ $<
-
-$(BUILD_FS)/mkfs.ffs: $(SRC_FS)/mkfs_ffs.c
-	mkdir -p $(BUILD_FS)
-	$(HOST_CC) -o $@ $<
-
-$(BUILD_FS)/libffs:	$(patsubst $(SRC_FS)/%.c,$(BUILD_FS)/%.o,$(wildcard $(SRC_FS)/*.c))
+$(SELF_BUILD_DIR)/libffs:	$(patsubst $(SELF_SRC_DIR)/%.c,$(SELF_BUILD_DIR)/%.o,$(wildcard $(SELF_SRC_DIR)/*.c))
 	ar rc $@ $^
