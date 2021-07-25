@@ -68,6 +68,10 @@ void kernel_core_entry() {
             lba_start = SECTOR_START_APP_LS;
             sector_count = SECTOR_COUNT_APP_LS;
             run = 1;
+        } else if(RUN_APP_ID == 4 || strcmpi(command, "run cat")==0) {
+            lba_start = SECTOR_START_APP_CAT;
+            sector_count = SECTOR_COUNT_APP_CAT;
+            run = 1;
         } else if(strcmpi(command, "exit")==0) {
             PANIC(0, "No Panic, it's a normal exit.");
         }
