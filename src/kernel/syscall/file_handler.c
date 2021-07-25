@@ -17,7 +17,7 @@ int _file_handler_open(int user_ds, char *_us_filename) {
 
     union FFSFileEntry entry;
     int file_id = 0;
-    while (file_id < 3 && file_id < FS_FFS_FILEENTRY_COUNT) {
+    while (file_id < FS_FFS_FILEENTRY_COUNT) {
         int err = fetch_file_entry(
             partition_id, file_id, &entry);
         if(!err && strcmp(filename, entry.content.filename)==0) {
@@ -59,6 +59,27 @@ int _file_handler_read(int user_ds, int file_id, char _us_buffer[FILEIO_BUFFER_S
     return len;
 }
 
+int _file_handler_read_dir(int user_ds, int last_file_id, char *_us_filename) {
+    union FFSFileEntry entry;
+    int file_id;
+    if (last_file_id < 0) {
+        file_id = 0;
+    } else {
+        file_id = last_file_id+1;
+    }
+    while (file_id < FS_FFS_FILEENTRY_COUNT) {
+        int err = fetch_file_entry(
+            partition_id, file_id, &entry);
+        if(err) continue;
+        // next file
+        syscall_strncpy_kernel_to_user(
+            user_ds, _us_filename,
+            entry.content.filename, sizeof(entry.content.filename));
+        return file_id;
+    }
+    return -1; // there is no next file
+}
+
 int syscall_2_file_handler(int operation, int a1, int a2, int a3, int user_ds) {
     switch (operation) {
         case SYSCALL_FILE_SUB_OPEN:
@@ -66,6 +87,9 @@ int syscall_2_file_handler(int operation, int a1, int a2, int a3, int user_ds) {
             break;
         case SYSCALL_FILE_SUB_READBUFFER:
             return _file_handler_read(user_ds, a1, (char*)a2, a3);
+            break;
+        case SYSCALL_FILE_SUB_READ_DIR:
+            return _file_handler_read_dir(user_ds, a1, (char*)a2);
             break;
     }
     return -1;

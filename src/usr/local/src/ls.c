@@ -1,7 +1,8 @@
-// Simple Calculator
+// list directory
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 
 void process() {
     char filename[]="lib.sh";
@@ -38,6 +39,16 @@ void process() {
     fgets(buffer, sizeof(buffer), handler);
     puts("\n3: ");
     puts(buffer);
+
+    struct DIR dir;
+    opendir(&dir);
+    struct dirent *dp;
+
+    puts("\n");
+    while ((dp = readdir(&dir)) !=NULL) {
+        puts(dp->d_name);
+        puts("\n");
+    }
 
     fclose(handler);
 }

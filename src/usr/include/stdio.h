@@ -23,6 +23,7 @@ typedef struct FILE {
 // Only readonly mode is supported.
 #define SYSCALL_FILE_SUB_OPEN 0
 #define SYSCALL_FILE_SUB_READBUFFER 1
+#define SYSCALL_FILE_SUB_READ_DIR 2
 
 // We are allocating FILE handler as global because we
 // don't have heap memory manager yet.
