@@ -43,7 +43,8 @@ kernel_core = $(BUILD_DIR)/kernel/core
 # 2 - Calculator
 # 3 - ls
 # 4 - cat
-RUN_APP_ID = 1
+# 5 - sh
+RUN_APP_ID = 5
 
 # Apps
 SRC_APP = $(SRC_DIR)/usr/local/src
@@ -52,6 +53,7 @@ app_calc = $(BUILD_APP)/calc.out
 app_tic_tac_toe = $(BUILD_APP)/tic_tac_toe.out
 app_ls = $(BUILD_APP)/ls.out
 app_cat = $(BUILD_APP)/cat.out
+app_sh = $(BUILD_APP)/sh.out
 
 MEMORY_LOCATION_KERNEL = 0xC000
 
@@ -95,15 +97,17 @@ SECTOR_START_APP_LS =  $(shell expr $(SECTOR_START_APP_CALC) + $(SECTOR_COUNT_AP
 SECTOR_COUNT_APP_LS = $(shell cut -d' ' -f7 configure 2> /dev/null || echo 30 )
 SECTOR_START_APP_CAT =  $(shell expr $(SECTOR_START_APP_LS) + $(SECTOR_COUNT_APP_LS) )
 SECTOR_COUNT_APP_CAT = $(shell cut -d' ' -f7 configure 2> /dev/null || echo 30 )
+SECTOR_START_APP_SH =  $(shell expr $(SECTOR_START_APP_CAT) + $(SECTOR_COUNT_APP_CAT) )
+SECTOR_COUNT_APP_SH = $(shell cut -d' ' -f7 configure 2> /dev/null || echo 30 )
 
 # configure file stores the sector size of each sub images.
-configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat)
+configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat) $(app_sh)
 	bash scripts/build_image.sh /dev/null $^ > $@
 	rm -r $(BUILD_DIR)/ && "Cleared build directory" || echo "Build directory is clean."
 
-$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat) $(BUILD_DIR)/external/bin/mbr_builder $(BUILD_DIR)/external/example/sample_fs
+$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat) $(app_sh) $(BUILD_DIR)/external/bin/mbr_builder $(BUILD_DIR)/external/example/sample_fs
 	test -s configure || { echo -e "\033[0;31mFailed! Please execute 'make configure' first.\033[0m" >&2; exit 1; }
-	bash scripts/build_image.sh $(BUILD_DIR)/temp_vmdk $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat)
+	bash scripts/build_image.sh $(BUILD_DIR)/temp_vmdk $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat) $(app_sh)
 	./$(BUILD_DIR)/external/bin/mbr_builder $@  $(BUILD_DIR)/temp_vmdk $(BUILD_DIR)/external/example/sample_fs
 	@echo "Image Size : $$(stat -c %s $@) byte(s)"
 

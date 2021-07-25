@@ -84,13 +84,10 @@ int syscall_2_file_handler(int operation, int a1, int a2, int a3, int user_ds) {
     switch (operation) {
         case SYSCALL_FILE_SUB_OPEN:
             return _file_handler_open(user_ds, (char*)a1);
-            break;
         case SYSCALL_FILE_SUB_READBUFFER:
             return _file_handler_read(user_ds, a1, (char*)a2, a3);
-            break;
         case SYSCALL_FILE_SUB_READ_DIR:
             return _file_handler_read_dir(user_ds, a1, (char*)a2);
-            break;
     }
     return -1;
 }

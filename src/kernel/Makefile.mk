@@ -42,6 +42,8 @@ $(kernel_core): $(SRC_KERNEL)/core.asm \
 		-D SECTOR_COUNT_APP_LS=$(SECTOR_COUNT_APP_LS) \
 		-D SECTOR_START_APP_CAT=$(SECTOR_START_APP_CAT) \
 		-D SECTOR_COUNT_APP_CAT=$(SECTOR_COUNT_APP_CAT) \
+		-D SECTOR_START_APP_SH=$(SECTOR_START_APP_SH) \
+		-D SECTOR_COUNT_APP_SH=$(SECTOR_COUNT_APP_SH) \
 		-o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
 	$(LD) --oformat binary -m elf_i386 -Ttext 0x0000 -T linker.ld -o $(kernel_core) \
 		$(BUILD_KERNEL)/core_asm.o \
