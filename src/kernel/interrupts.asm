@@ -143,7 +143,6 @@ KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
         mov eax, [ebp + 0x8]
         lidt [eax]
 
-        mov esp, ebp
         pop ebp
         ret
 

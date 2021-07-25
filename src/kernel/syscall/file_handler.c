@@ -70,7 +70,10 @@ int _file_handler_read_dir(int user_ds, int last_file_id, char *_us_filename) {
     while (file_id < FS_FFS_FILEENTRY_COUNT) {
         int err = fetch_file_entry(
             partition_id, file_id, &entry);
-        if(err) continue;
+        if(err) {
+            file_id++;
+            continue;
+        }
         // next file
         syscall_strncpy_kernel_to_user(
             user_ds, _us_filename,

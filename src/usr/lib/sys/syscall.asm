@@ -29,6 +29,5 @@ global syscall
         pop edi
         pop esi
         pop ebx
-        mov esp, ebp
         pop ebp
         ret

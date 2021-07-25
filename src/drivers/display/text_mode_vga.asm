@@ -10,8 +10,8 @@ global _low_flush
         mov ebp, esp
         ; callee save register
         push ebx
-        push esi
-        push edi
+        ; push esi
+        ; push edi
 
         push ds
         mov eax, 0x20
@@ -25,10 +25,9 @@ global _low_flush
         mov [ebx], ax
 
         pop ds
-        pop edi
-        pop esi
+        ; pop edi
+        ; pop esi
         pop ebx
-        mov esp, ebp
         pop ebp
         ret
 
@@ -37,8 +36,8 @@ global _low_flush
         mov ebp, esp
         ; callee save register
         push ebx
-        push esi
-        push edi
+        ; push esi
+        ; push edi
         push ds
         mov eax, 0x20
         mov ds, eax                 ; Absolute memory address
@@ -58,10 +57,9 @@ global _low_flush
         loop _low_vga_copy_step_internal
 
         pop ds
-        pop edi
-        pop esi
+        ; pop edi
+        ; pop esi
         pop ebx
-        mov esp, ebp
         pop ebp
         ret
 
@@ -69,7 +67,7 @@ global _low_flush
         push ebp
         mov ebp, esp
         ; callee save register
-        push ebx
+        ; push ebx
         push esi
         push edi
         push es
@@ -86,7 +84,6 @@ global _low_flush
         pop es
         pop edi
         pop esi
-        pop ebx
-        mov esp, ebp
+        ; pop ebx
         pop ebp
         ret

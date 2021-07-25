@@ -11,6 +11,10 @@ global syscall_strncpy_kernel_to_user
         ; TODO: function needs to be verified for exit case.
         push ebp
         mov ebp, esp
+        ; callee save register
+        push ebx
+        push esi
+        push edi
 
         mov eax, [ebp + 0x10]         ; (argc)
         mov eax, [ebp + 0x14]         ; (argv)
@@ -56,7 +60,9 @@ global syscall_strncpy_kernel_to_user
         mov ebx, [kernel_saved_stack_top]
         mov esp, ebx
 
-        mov esp, ebp
+        pop edi
+        pop esi
+        pop ebx
         pop ebp
         ret
 

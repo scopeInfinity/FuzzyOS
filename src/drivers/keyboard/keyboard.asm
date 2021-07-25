@@ -12,7 +12,6 @@ global port_read
         mov dx,  [ebp + 0x8]   ; port
         out dx, al
 
-        mov esp, ebp
         pop ebp
         ret
 
@@ -24,6 +23,5 @@ global port_read
         in al, dx
         and eax, 0xFF
 
-        mov esp, ebp
         pop ebp
         ret
