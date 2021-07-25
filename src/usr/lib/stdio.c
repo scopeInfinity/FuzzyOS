@@ -22,13 +22,16 @@ int puts(const char *s) {
 }
 
 char* gets(char *s) {
+    char *og = s;
     while (1) {
         char c = getch();
         if (c == '\0') return NULL;
-        if (c == '\n') return s;
         putchar(c);
-        (*s) = c;
-        s++;
+        if (c == '\n') {
+            *s='\0';
+            return og;
+        }
+        *(s++) = c;
     }
 }
 

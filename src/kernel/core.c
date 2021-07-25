@@ -10,6 +10,7 @@
 #include <lib/utils/time.h>
 #include <sys/syscall.h>
 #include <fuzzy/fs/ffs.h>
+#include <process.h>
 
 #include "kernel/essentials.c"
 #include "kernel/interrupts.c"
@@ -72,13 +73,17 @@ void kernel_core_entry() {
             lba_start = SECTOR_START_APP_CAT;
             sector_count = SECTOR_COUNT_APP_CAT;
             run = 1;
+        } else if(RUN_APP_ID == 5 || strcmpi(command, "run sh")==0) {
+            lba_start = SECTOR_START_APP_SH;
+            sector_count = SECTOR_COUNT_APP_SH;
+            run = 1;
         } else if(strcmpi(command, "exit")==0) {
             PANIC(0, "No Panic, it's a normal exit.");
         }
 
         if(run)  {
             need_to_clear_hack = 1;
-            int exit_code = syscall(1, lba_start, sector_count, 0, 0);
+            int exit_code = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_LBA_SC, lba_start, sector_count, 0);
             if(exit_code<0) {
                 PANIC(exit_code, "Failed to execute the process.");
             } else {

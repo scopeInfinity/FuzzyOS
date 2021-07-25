@@ -1,4 +1,5 @@
 #pragma once
+#include <process.h>
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
 
@@ -101,3 +102,16 @@ int process_exec(int lba_index, int sector_count) {
     io_low_flush();
     return exit_code;
 }
+
+int syscall_1_process_spawn_lba_sc(int lba_start, int sector_count) {
+    return process_exec(lba_start, sector_count);
+}
+
+int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds) {
+    switch (operation) {
+        case SYSCALL_PROCESS_SUB_LBA_SC:
+            return syscall_1_process_spawn_lba_sc(a0, a1);
+    }
+    return -1;
+}
+
