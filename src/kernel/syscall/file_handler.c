@@ -9,10 +9,9 @@ int fh_switch(int operation) {
     return 0;
 }
 
-int _file_handler_open(char *_us_filename) {
+int _file_handler_open(int user_ds, char *_us_filename) {
     char filename[FS_FFS_FILENAME_LIMIT];
-    syscall_strccpy_es_to_ds(_us_filename, filename, sizeof(filename));
-    syscall_context_switching_fix_es();
+    syscall_strncpy_user_to_kernel(user_ds, _us_filename, filename, sizeof(filename));
 
     union FFSFileEntry entry;
     int file_id = 0;
@@ -33,10 +32,10 @@ int _file_handler_read( int file_id, char* write_buffer, int start_byte, int siz
     return 0;
 }
 
-int syscall_2_file_handler(int operation, int a1, int a2, int a3) {
+int syscall_2_file_handler(int operation, int a1, int a2, int a3, int user_ds) {
     switch (operation) {
         case SYSCALL_FILE_SUB_OPEN:
-            return _file_handler_open((char*)a1);
+            return _file_handler_open(user_ds, (char*)a1);
             break;
     }
     return -1;

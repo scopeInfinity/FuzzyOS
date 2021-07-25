@@ -59,8 +59,8 @@ void populate_idt_entry_32bit(int id,
 
 extern int syscall_selector_low();
 extern int SYSCALL_TABLE[];
-int syscall_selector(int id, int arg0, int arg1,int arg2,int arg3) {
-    return ((int(*)(int,int,int,int))(SYSCALL_TABLE[id]))(arg0, arg1, arg2, arg3);
+int syscall_selector(int id, int arg0, int arg1, int arg2, int arg3, int user_ds) {
+    return ((int(*)(int,int,int,int,int))(SYSCALL_TABLE[id]))(arg0, arg1, arg2, arg3, user_ds);
 }
 
 void populate_and_load_idt_table() {

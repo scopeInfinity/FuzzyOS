@@ -73,25 +73,29 @@ KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
         push fs
         push gs
 
-        ; Let's move to kernel mode
-        ; es: will updated later, and will be es==ds
+        ; Let's move to kernel mode and move interrupt arguments as function argument
+        ; es: will updated in next section, and will be es==ds
         mov ax, 0x10
         mov ds, ax
         mov fs, ax
         mov gs, ax
 
-        ; move interrupt arguments as function argument
-        push edi
-        push esi
-        push edx
-        push ecx
-        push ebx
+        mov eax, es
+        push eax  ; arg5: user_dataspace/${last}_dataspace es==ds
+        mov eax, ds
+        mov es, eax
+
+        push edi  ; arg4
+        push esi  ; arg3
+        push edx  ; arg2
+        push ecx  ; arg1
+        push ebx  ; arg0
 %endmacro
 
 %macro _int_end 0
         ; meant to placed at end of interrupt handler
         ; and must NOT update eax
-        add esp, 20
+        add esp, 24
 
         ; Let's remove to previous mode
         ; restore segment register, cs and ss are left

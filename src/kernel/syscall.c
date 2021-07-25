@@ -10,13 +10,11 @@
 int SYSCALL_TABLE[SYSCALL_SIZE];
 
 
-int syscall_0_keyboard_getch(int a0,int a1,int a2,int a3) {
-    syscall_context_switching_fix_es();
+int syscall_0_keyboard_getch(int a0,int a1,int a2,int a3, int user_ds) {
     return keyboard_get_key_pressed_blocking();
 }
 
-int syscall_1_process_exec(int lba_start, int sector_count, int a2,int a3) {
-    syscall_context_switching_fix_es();
+int syscall_1_process_exec(int lba_start, int sector_count, int a2, int a3, int user_ds) {
     return process_exec(lba_start, sector_count);
 }
 

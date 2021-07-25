@@ -1,8 +1,7 @@
 [BITS 32]
 
 global call_main
-global syscall_context_switching_fix_es
-global syscall_strccpy_es_to_ds
+global syscall_strncpy_user_to_kernel
 
 [SECTION .text]
 
@@ -60,39 +59,25 @@ global syscall_strccpy_es_to_ds
         pop ebp
         ret
 
-    syscall_context_switching_fix_es:
-        push ebx
-        mov bx, ds
-        mov es, bx
-        pop ebx
-        ret
-
-    syscall_strccpy_es_to_ds:
+    syscall_strncpy_user_to_kernel:
         push ebp
         mov ebp, esp
         ; callee save register
         push ebx
         push esi
         push edi
-
-        ; swap es, ds
-        push es
         push ds
-        pop es
-        pop ds
+
+        mov eax, [ebp + 0x08]         ; user_ds
+        mov ds, eax
 
         ; strcpy
-        mov esi, [ebp + 0x08]         ; ds:esi, char *src_es_address
-        mov edi, [ebp + 0x0c]         ; es:edi, char *dest_ds_address
-        mov ecx, [ebp + 0x10]         ; size_t size
+        mov esi, [ebp + 0x0C]         ; ds:esi, char *src_es_address
+        mov edi, [ebp + 0x10]         ; es:edi, char *dest_ds_address
+        mov ecx, [ebp + 0x14]         ; size_t size
         rep movsb
 
-        ; swap es, ds
-        push es
-        push ds
-        pop es
         pop ds
-
         pop edi
         pop esi
         pop ebx
