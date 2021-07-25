@@ -40,10 +40,10 @@ kernel_core = $(BUILD_DIR)/kernel/core
 
 # Program to auto start when kernel is ready.
 # 1 - Tic Tac Toe
-# 2 - Calculator (broken)
+# 2 - Calculator
 # 3 - ls
 # 4 - cat
-RUN_APP_ID = 4
+RUN_APP_ID = 1
 
 # Apps
 SRC_APP = $(SRC_DIR)/usr/local/src
