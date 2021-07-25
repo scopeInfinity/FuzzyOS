@@ -15,9 +15,9 @@ int syscall_0_keyboard_getch(int a0,int a1,int a2,int a3) {
     return keyboard_get_key_pressed_blocking();
 }
 
-int syscall_1_process_exec(int sector_start, int sector_count, int a2,int a3) {
+int syscall_1_process_exec(int lba_start, int sector_count, int a2,int a3) {
     syscall_context_switching_fix_es();
-    return process_exec(sector_start, sector_count);
+    return process_exec(lba_start, sector_count);
 }
 
 

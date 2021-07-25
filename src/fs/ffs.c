@@ -39,5 +39,7 @@ int fetch_file_entry(
     memcpy(entry->bytes,
         buffer+(entry_id%FILE_ENTRY_PER_BLOCK)*FS_FFS_FILEENTRY_SIZE,
         sizeof(entry->bytes));
-    return 0;
+    int file_not_exists = (entry->content.start_block_id==0);
+    err = file_not_exists;
+    return err;
 }

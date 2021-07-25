@@ -26,7 +26,7 @@ int load_sectors(unsigned int full_address,
         0
     );
     unsigned int status = eax >> 8;
-    print_log("[load_sectors] [dev %x]:%x -> mem:%x, cnt: %d; err: %x",
+    print_info("[load_sectors] [dev %x]:%x -> mem:%x, cnt: %d; err: %x",
         drive, lba, full_address, count, status);
     return status;
 }

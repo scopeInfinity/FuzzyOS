@@ -17,7 +17,7 @@ int _file_handler_open(char *_us_filename) {
     union FFSFileEntry entry;
     int file_id = 0;
     const int partition_id = 0;
-    while (file_id < FS_FFS_FILEENTRY_COUNT) {
+    while (file_id < 3 && file_id < FS_FFS_FILEENTRY_COUNT) {
         int err = fetch_file_entry(
             partition_id, file_id, &entry);
         if(!err && strcmp(filename, entry.content.filename)==0) {

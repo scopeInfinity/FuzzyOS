@@ -25,7 +25,7 @@ int send_int(int a,int b) {
 char command[30];
 int need_to_clear_hack;
 int run;
-int sector_start, sector_count;
+int lba_start, sector_count;
 
 void kernel_core_entry() {
     set_color_bg(C_BLUE);
@@ -45,10 +45,6 @@ void kernel_core_entry() {
 
     process_handler_init();
 
-    union FFSFileEntry entry;
-    int err = fetch_file_entry(0, 1, &entry);
-    PANIC(err, entry.content.filename);
-
     need_to_clear_hack = 1;
     while(1) {
         if(need_to_clear_hack) {
@@ -61,15 +57,15 @@ void kernel_core_entry() {
         command[0]='\0';
         print_log("Command: '%s'", command);
         if(RUN_APP_ID == 1 || strcmpi(command, "run ttt")==0) {
-            sector_start = SECTOR_START_APP_TTT;
+            lba_start = SECTOR_START_APP_TTT;
             sector_count = SECTOR_COUNT_APP_TTT;
             run = 1;
         } else if(RUN_APP_ID == 2 || strcmpi(command, "run calculator")==0) {
-            sector_start = SECTOR_START_APP_CALC;
+            lba_start = SECTOR_START_APP_CALC;
             sector_count = SECTOR_COUNT_APP_CALC;
             run = 1;
         } else if(RUN_APP_ID == 3 || strcmpi(command, "run ls")==0) {
-            sector_start = SECTOR_START_APP_LS;
+            lba_start = SECTOR_START_APP_LS;
             sector_count = SECTOR_COUNT_APP_LS;
             run = 1;
         } else if(strcmpi(command, "exit")==0) {
@@ -78,7 +74,7 @@ void kernel_core_entry() {
 
         if(run)  {
             need_to_clear_hack = 1;
-            int exit_code = syscall(1, sector_start, sector_count, 0, 0);
+            int exit_code = syscall(1, lba_start, sector_count, 0, 0);
             if(exit_code<0) {
                 PANIC(exit_code, "Failed to execute the process.");
             } else {

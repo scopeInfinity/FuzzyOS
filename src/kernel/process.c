@@ -54,17 +54,17 @@ GS ; same as DS
 SS ...    <- 0xDFFF  ; user stack
 SS 0xE000 <- 0xFFFF  ; kernel stack
 */
-int process_exec(int sector_index, int sector_count) {
+int process_exec(int lba_index, int sector_count) {
     int id = process_reserve_new_id();
     if(id<0) {
         print_log("Failed to reserved a new process ID");
         return -1;
     }
-    print_log("[process] pid:%d, sector: %d, sector_count: %d",
-        id, sector_index, sector_count);
+    print_log("[process] pid:%d, lba: %d, sector_count: %d",
+        id, lba_index, sector_count);
     int memory_location = process_new_allocated_memory(id);
 
-    int err = load_sectors(memory_location, 0x80, sector_index, sector_count);
+    int err = load_sectors(memory_location, 0x80, lba_index, sector_count);
     if(err) {
         print_log("Failed to load app in memory, Error: ", err);
         return -1;

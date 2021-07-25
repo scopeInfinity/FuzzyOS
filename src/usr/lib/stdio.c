@@ -11,9 +11,13 @@ int putchar(int c) {
 }
 
 int puts(const char *s) {
-    print_line(s);
-    // TODO: Fix puts return value.
-    return 0;
+    if(!s) return 0;
+    int c = 0;
+    while ((*s)!='\0') {
+        print_char(*(s++));
+        c++;
+    }
+    return c;
 }
 
 char* gets(char *s) {

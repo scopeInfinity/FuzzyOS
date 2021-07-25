@@ -27,7 +27,7 @@ void read_partition_entry(int id, struct PartitionEntry *entry) {
     char *entry_str=(char*)entry;
 
     memcpy(entry_str, mbr_block+MBR_PARTITION_BEGIN, sizeof(struct PartitionEntry));
-    print_log("[mbr][p%d] lba: %d, sector_count: %d",
+    print_info("[mbr][p%d] lba: %d, sector_count: %d",
         id, entry->lba, entry->sector_count);
 }
 

@@ -70,6 +70,10 @@ global syscall_strccpy_es_to_ds
     syscall_strccpy_es_to_ds:
         push ebp
         mov ebp, esp
+        ; callee save register
+        push ebx
+        push esi
+        push edi
 
         ; swap es, ds
         push es
@@ -88,6 +92,10 @@ global syscall_strccpy_es_to_ds
         push ds
         pop es
         pop ds
+
+        pop edi
+        pop esi
+        pop ebx
 
         pop ebp
         ret
