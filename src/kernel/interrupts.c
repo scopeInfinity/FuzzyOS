@@ -81,7 +81,6 @@ void populate_and_load_idt_table() {
 }
 
 void reload_idt_table() {
-    print_log("Loading IDT Table");
     int idtr_address = (int)&idtr;
     load_idt_table_low(idtr_address);
 }

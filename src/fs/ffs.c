@@ -2,11 +2,14 @@
 #include <fuzzy/fs/mbr.h>
 #include <string.h>
 #include <drivers/disk/disk.h>
+#include <lib/utils/logging.h>
 
-int partition_read_block(int block_index, void *wr_buffer) {
-    // block_index=1;
+// TODO: cache partition entry
+// TODO: verify partition metadata
+
+int partition_read_block(int lba, void *wr_buffer) {
     int memory_location = ((int)wr_buffer)+MEMORY_LOCATION_KERNEL;
-    int err = load_sectors(memory_location, 0x80, block_index, 1);
+    int err = load_sectors(memory_location, 0x80, lba, 1);
     return err;
 }
 
