@@ -6,6 +6,10 @@ global _low_disk_read_sectors
     _low_disk_read_sectors:
         push ebp
         mov ebp, esp
+        ; callee save register
+        push ebx
+        push esi
+        push edi
 
         ; check es
         mov ah, 0x02                ; (read sectors)
@@ -20,6 +24,8 @@ global _low_disk_read_sectors
         mov al, ah                   ; (result status code, 0 means no error)
         and eax, 0xFF
 
-        mov esp, ebp
+        pop edi
+        pop esi
+        pop ebx
         pop ebp
         ret

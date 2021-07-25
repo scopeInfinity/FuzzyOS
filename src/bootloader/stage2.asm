@@ -23,7 +23,6 @@ global label_exit
 
         get_gdtr_address
 
-        mov esp, ebp
         pop ebp
         ret
 

@@ -17,7 +17,6 @@ global _low_read_char
         mov bl, [ebp + 0x10]         ; (attribute)
         int 0x10
 
-        mov esp, ebp
         pop ebp
         ret
 
@@ -31,7 +30,6 @@ global _low_read_char
         mov bh, [ebp + 0x10]         ; (page number)
         int 0x10
 
-        mov esp, ebp
         pop ebp
         ret
 
@@ -48,6 +46,5 @@ global _low_read_char
         mov ah, [ebp + 0x20]          ; (scroll up:0x06, down:0x07)
         int 0x10
 
-        mov esp, ebp
         pop ebp
         ret

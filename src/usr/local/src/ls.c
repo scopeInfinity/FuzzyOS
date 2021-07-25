@@ -9,6 +9,7 @@ void process() {
     struct dirent *dp;
 
     while ((dp = readdir(&dir)) !=NULL) {
+        puts("- ");
         puts(dp->d_name);
         puts("\n");
     }
@@ -16,6 +17,7 @@ void process() {
 
 int main(int argc,char *argv[]) {
     process();
-    while (1);
+    puts("Press return key to exit...");
+    getch();
     return 0;
 }
