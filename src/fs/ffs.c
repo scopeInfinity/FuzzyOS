@@ -43,3 +43,29 @@ int fetch_file_entry(
     err = file_not_exists;
     return err;
 }
+
+int fetch_file_content(
+    const int partition_id,
+    const union FFSFileEntry *entry,
+    char buffer[FS_BLOCK_SIZE],
+    const int file_block_id) {
+
+    // fetch parition info
+    struct PartitionEntry partition;
+    read_partition_entry(partition_id, &partition);
+
+    // fetch file entry
+    int file_size = entry->content.filesize;
+    int block_count = file_size/FS_BLOCK_SIZE;
+    if(file_block_id >= block_count) {
+        return -1;
+    }
+
+    int err = partition_read_block(
+        partition.lba + entry->content.start_block_id + file_block_id,
+        buffer);
+    if (err) return -2;
+    // returns content length in buffer.
+    if(file_block_id + 1 == block_count) return file_size%FS_BLOCK_SIZE;
+    return FS_BLOCK_SIZE;
+}

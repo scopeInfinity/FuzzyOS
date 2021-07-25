@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stddef.h>
 #include <conio.h>
 #include <lib/utils/output.h>
@@ -31,8 +32,8 @@ char* gets(char *s) {
     }
 }
 
-int _all_file_handlers_buzy[LIMIT_MAX_FILE_OPEN]={0};
-FILE _all_file_handlers[LIMIT_MAX_FILE_OPEN];
+static int _all_file_handlers_buzy[LIMIT_MAX_FILE_OPEN]={0};
+static FILE _all_file_handlers[LIMIT_MAX_FILE_OPEN];
 
 FILE *fopen(char *filename, char *mode) {
     // TODO: mode is ignored for now.
@@ -55,6 +56,7 @@ FILE *fopen(char *filename, char *mode) {
     FILE *handler = &_all_file_handlers[fh_id];
     handler->file_handler_id = fh_id;
     handler->file_id = file_id;
+    handler->cursor = 0;
     return handler;
 }
 
@@ -62,4 +64,46 @@ int fclose(FILE *handler) {
     if (handler != NULL) {
         _all_file_handlers_buzy[handler->file_handler_id] = 0;
     }
+}
+
+char *fgets(char *buf, size_t n, FILE *file) {
+    if(n == 0) {
+        return NULL;
+    }
+    n--;  // number of char to read excluding null char.
+    char *og_buf = buf;
+    char _buffer[FILEIO_BUFFER_SIZE];
+    while (n > 0) {
+        // Assumes count <= FILEIO_BUFFER_SIZE
+        int count = SYSCALL_A4(SYSCALL_FILE_OP, SYSCALL_FILE_SUB_READBUFFER, file->file_id, _buffer, file->cursor);
+        if (count < 0) {
+            // error
+            return NULL;
+        }
+        if (count == 0) {
+            // EOF
+            break;
+        }
+
+        int max_iterations = min(n, count);
+        int char_read_count = 0;
+        int found_newline = 0;
+        for (size_t i = 0; i < max_iterations; i++) {
+            char_read_count++;
+            if(_buffer[i]=='\n') {
+                found_newline = 1;
+                break;
+            }
+            *(buf++)=_buffer[i];
+        }
+        file->cursor += char_read_count;
+        n-=char_read_count;
+        if(found_newline) break;
+    }
+    *buf = '\0';
+    return og_buf;
+}
+
+int fgetc(FILE *file) {
+
 }

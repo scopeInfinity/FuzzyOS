@@ -54,3 +54,9 @@ int fetch_file_entry(
     int partition_id,
     int entry_id,
     union FFSFileEntry *entry);
+
+int fetch_file_content(
+    const int partition_id,
+    const union FFSFileEntry *entry,
+    char buffer[FS_BLOCK_SIZE],
+    const int file_block_id);

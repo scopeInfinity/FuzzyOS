@@ -2,6 +2,7 @@
 
 global call_main
 global syscall_strncpy_user_to_kernel
+global syscall_strncpy_kernel_to_user
 
 [SECTION .text]
 
@@ -78,6 +79,32 @@ global syscall_strncpy_user_to_kernel
         rep movsb
 
         pop ds
+        pop edi
+        pop esi
+        pop ebx
+
+        pop ebp
+        ret
+
+    syscall_strncpy_kernel_to_user:
+        push ebp
+        mov ebp, esp
+        ; callee save register
+        push ebx
+        push esi
+        push edi
+        push es
+
+        mov eax, [ebp + 0x08]         ; user_ds
+        mov es, eax
+
+        ; strcpy
+        mov edi, [ebp + 0x0C]         ; es:edi, char *dest_address
+        mov esi, [ebp + 0x10]         ; ds:esi, char *src_address
+        mov ecx, [ebp + 0x14]         ; size_t size
+        rep movsb
+
+        pop es
         pop edi
         pop esi
         pop ebx

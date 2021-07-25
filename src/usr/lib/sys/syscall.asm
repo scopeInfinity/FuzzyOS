@@ -7,6 +7,10 @@ global syscall
     syscall:
         push ebp
         mov ebp, esp
+        ; callee save register
+        push ebx
+        push esi
+        push edi
 
         mov ebx, [ebp + 0x08]         ; (id)
         mov ecx, [ebp + 0x0c]         ; (arg0)
@@ -22,6 +26,9 @@ global syscall
         int 0x32
         add esp, 20
 
+        pop edi
+        pop esi
+        pop ebx
         mov esp, ebp
         pop ebp
         ret

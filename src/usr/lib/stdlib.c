@@ -1,5 +1,9 @@
 #include <stdlib.h>
 
+int min(int a, int b) {
+    return (a<b)?a:b;
+}
+
 int atoi (const char *s) {
     int neg = 0;
     if ((*s) == '-' || (*s) == '+') {
