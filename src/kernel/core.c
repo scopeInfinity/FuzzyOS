@@ -45,9 +45,9 @@ void kernel_core_entry() {
 
     process_handler_init();
 
-    union FFSFileEntry entry;
-    int err = fetch_file_entry(0, 2, &entry);
-    PANIC(err, entry.content.filename);
+    // union FFSFileEntry entry;
+    // int err = fetch_file_entry(0, 2, &entry);
+    // PANIC(err, entry.content.filename);
 
 
     need_to_clear_hack = 1;
@@ -79,9 +79,9 @@ void kernel_core_entry() {
 
         if(run)  {
             need_to_clear_hack = 1;
-            int exit_code = syscall(1, sector_start, sector_count, 0,0);
+            int exit_code = syscall(1, sector_start, sector_count, 0, 0);
             if(exit_code<0) {
-                PANIC(1, "Failed to execute the process.");
+                PANIC(exit_code, "Failed to execute the process.");
             } else {
                 print_log("App exit_code: %d", exit_code);
             }
