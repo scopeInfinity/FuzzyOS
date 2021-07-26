@@ -83,7 +83,7 @@ void kernel_core_entry() {
 
         if(run)  {
             need_to_clear_hack = 1;
-            int exit_code = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_LBA_SC, lba_start, sector_count, 0);
+            int exit_code = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_LBA_SC, lba_start, sector_count, 0);
             if(exit_code<0) {
                 PANIC(exit_code, "Failed to execute the process.");
             } else {
