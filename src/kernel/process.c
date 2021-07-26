@@ -55,7 +55,7 @@ GS ; same as DS
 SS ...    <- 0xDFFF  ; user stack
 SS 0xE000 <- 0xFFFF  ; kernel stack
 */
-int process_exec(int lba_index, int sector_count) {
+int process_spawn(int lba_index, int sector_count) {
     int id = process_reserve_new_id();
     if(id<0) {
         print_log("Failed to reserved a new process ID");
@@ -72,6 +72,7 @@ int process_exec(int lba_index, int sector_count) {
     }
     int idt_cs_entry = (id<<1)+5;
     int idt_ds_entry = (id<<1)+6;
+
     // Application Code Segment Selector
     populate_gct_entry(
         &gdt_table[idt_cs_entry],
@@ -103,14 +104,25 @@ int process_exec(int lba_index, int sector_count) {
     return exit_code;
 }
 
+int process_exec(int lba_index, int sector_count) {
+    // Not yet implemented
+    return -1;
+}
+
 int syscall_1_process_spawn_lba_sc(int lba_start, int sector_count) {
+    return process_spawn(lba_start, sector_count);
+}
+
+int syscall_1_process_exec_lba_sc(int lba_start, int sector_count) {
     return process_exec(lba_start, sector_count);
 }
 
 int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds) {
     switch (operation) {
-        case SYSCALL_PROCESS_SUB_LBA_SC:
+        case SYSCALL_PROCESS_SUB_SPAWN_LBA_SC:
             return syscall_1_process_spawn_lba_sc(a0, a1);
+        case SYSCALL_PROCESS_SUB_EXEC_LBA_SC:
+            return syscall_1_process_exec_lba_sc(a0, a1);
     }
     return -1;
 }
