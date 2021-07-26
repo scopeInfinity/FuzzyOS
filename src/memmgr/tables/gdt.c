@@ -1,24 +1,7 @@
+#include <fuzzy/memmgr/tables/gdt.h>
 #include <lib/utils/logging.h>
 
-// Min GDT_TABLE_SIZE:    5
-// Max GDT_TABLE_SIZE: 8192
-
-#pragma pack(push, 1)
-struct GDTReference {
-    unsigned short size;
-    unsigned int base_address;
-};
-struct GDTEntry {
-    unsigned short limit0;
-    unsigned short base0;
-    unsigned char base1;
-    unsigned char access_byte;
-    unsigned char flags_limit1;
-    unsigned char base2;
-};
-#pragma pack(pop)
-
-void populate_gct_entry(struct GDTEntry *entry,
+void populate_gdt_entry(struct GDTEntry *entry,
     unsigned int base,
     unsigned int limit,  // 20 bits
     unsigned char flags, //  4 bits
@@ -47,29 +30,29 @@ void populate_gdt_table(
     print_log("Populating GDT Table at 0x%d", gdt_table);
 
     // NULL selector
-    populate_gct_entry(
+    populate_gdt_entry(
         &gdt_table[0],
         0,0,0,0);
     // Kernel Code Segment Selector
-    populate_gct_entry(
+    populate_gdt_entry(
         &gdt_table[1],
         MEMORY_LOCATION_KERNEL, MEMORY_LOCATION_KERNEL+0xFFFF,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Kernel Data Segment Selector
-    populate_gct_entry(
+    populate_gdt_entry(
         &gdt_table[2],
         MEMORY_LOCATION_KERNEL, MEMORY_LOCATION_KERNEL+0xFFFF,
         0b0100,  // 32-bit protected mode
         0x92);
     // Absolute Code Segment Selector
-    populate_gct_entry(
+    populate_gdt_entry(
         &gdt_table[3],
         0, 0xfffff,
         0b0000,  // 16-bit protected mode
         0x9a);
     // Absolute Data Segment Selector
-    populate_gct_entry(
+    populate_gdt_entry(
         &gdt_table[4],
         0, 0xfffff,
         0b0000,  // 16-bit protected mode

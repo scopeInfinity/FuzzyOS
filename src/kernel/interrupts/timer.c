@@ -1,4 +1,5 @@
 #include <fuzzy/kernel/interrupts.h>
+#include <fuzzy/kernel/process/process.h>
 #include <fuzzy/drivers/pic/pic.h>
 #include <lib/utils/logging.h>
 
@@ -27,7 +28,7 @@ inline int get_time_since_boot_ms() {
     return ms;
 }
 
-void irq0_pit_handler() {
+void irq0_pit_handler(int e_ip, int e_cs, int e_sp, int e_ss) {
     // called every X milli seconds.
     // time period is defined by pic_pit_set_counter.
     unsigned short ticks_jumped =  pic_pit_get_counter();
@@ -36,7 +37,7 @@ void irq0_pit_handler() {
     timer_add_ticks(ticks_jumped);
     int newtime_ms = get_time_since_boot_ms();
     if (oldtime_ms/1000 != newtime_ms/1000) {
-        print_log(">> +1 second.");
+        process_scheduler(&e_ip, &e_cs, &e_sp, &e_ss);
     }
 }
 

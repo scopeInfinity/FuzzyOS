@@ -11,12 +11,12 @@
 #include <sys/syscall.h>
 #include <fuzzy/fs/ffs.h>
 #include <fuzzy/kernel/interrupts/timer.h>
+#include <fuzzy/kernel/process/process.h>
 
 #include <process.h>
 
 #include "kernel/essentials.c"
 #include "kernel/interrupts.c"
-#include "kernel/process.c"
 
 extern void kernel_enable_interrupts();
 extern void kernel_core_entry_asm();
@@ -47,7 +47,7 @@ void kernel_core_entry() {
     kernel_enable_interrupts();
     keyboard_init();
 
-    process_handler_init();
+    process_scheduler_init();
 
     interrupt_pit_enable();
     print_log("EXIT");

@@ -127,6 +127,7 @@ include $(SRC_REALMODE)/Makefile.mk
 
 include $(SRC_KERNEL)/Makefile.mk
 include $(SRC_KERNEL)/interrupts/Makefile.mk
+include $(SRC_KERNEL)/process/Makefile.mk
 include $(SRC_KERNEL)/syscall/Makefile.mk
 
 include $(SRC_DRIVERS)/disk/Makefile.mk
