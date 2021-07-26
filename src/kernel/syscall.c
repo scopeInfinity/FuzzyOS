@@ -1,9 +1,9 @@
 #include <fuzzy/kernel/interrupts.h>
+#include <fuzzy/kernel/process/process.h>
 #include <lib/utils/logging.h>
 #include <drivers/keyboard/keyboard.h>
 
 #include "kernel/extern.h"
-#include "kernel/process.c"
 #include "kernel/syscall/file_handler.h"
 
 #define SYSCALL_SIZE 30

@@ -6,8 +6,12 @@ extern pic_pit_reset
 
 %macro _int_irq0_start 0
         CLI  ; should get restored on iret
-        pushad
+        pushad ; 8*4 bytes
         mov ebp, esp
+
+        mov ecx, [ebp+36] ; cs
+        mov edi, [ebp+32] ; ip
+        push ebp
 
         ; segment register
         push ds
@@ -17,8 +21,6 @@ extern pic_pit_reset
         ; ignore ss; will handle later
 
         mov edx, ss
-        mov ebx, ds
-        mov ecx, cs
         mov esi, esp
 
         ; new stack and segment area
@@ -30,19 +32,18 @@ extern pic_pit_reset
         mov fs, eax
         mov gs, eax
 
-        push edx ; previous ss
-        push esi ; previous esp
-
-        push ebx  ; arg1: previous ds
-        push ecx  ; arg0: previous cs
+        push edx  ; arg3: previous ss
+        push esi  ; arg2: previous esp
+        push ecx  ; arg1: previous cs
+        push edi  ; arg0: previous ip
 %endmacro
 
 %macro _int_irq0_end 0
         ; meant to placed at end of irq handler
-        add esp, 8
-
-        pop esi ; previous esp
-        pop edx ; previous ss
+        pop edi  ; new ip
+        pop ecx  ; new cs
+        pop esi  ; new esp
+        pop edx  ; new ss
 
         mov ss, edx
         mov esp, esi
@@ -51,6 +52,10 @@ extern pic_pit_reset
         pop fs
         pop es
         pop ds
+
+        pop ebp
+        mov [ebp+36], ecx ; cs
+        mov [ebp+32], edi ; ip
 
         popad
 %endmacro
