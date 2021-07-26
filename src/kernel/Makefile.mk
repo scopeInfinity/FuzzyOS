@@ -1,5 +1,3 @@
-include $(SELF_SRC_DIR)/syscall/Makefile.mk
-
 MEMORY_LOCATION_APP = 0x20000
 
 debug_kernel: $(kernel_core)
@@ -18,11 +16,13 @@ $(kernel_core): $(SRC_KERNEL)/core.asm \
 		$(SRC_KERNEL)/interrupts.asm  \
 		$(BUILD_DIR)/fs/libffs \
 		$(BUILD_KERNEL)/syscall/libsyscall \
+		$(BUILD_KERNEL)/interrupts/libinterrupts \
 		$(BUILD_DIR)/real_mode/librealmodeclient \
 		$(SRC_LIB_UTILS)/output.h \
 		$(SRC_DRIVERS)/keyboard/keyboard.h \
 		$(BUILD_LIB_UTILS)/libutils \
 		$(BUILD_DRIVERS)/keyboard/libkeyboard \
+		$(BUILD_DRIVERS)/pic/libpic \
 		$(BUILD_DRIVERS)/display/libtm_vga \
 		$(BUILD_DRIVERS)/disk/libdisk \
 		$(BUILD_USR_LIB)/libfuzzyc
@@ -51,8 +51,10 @@ $(kernel_core): $(SRC_KERNEL)/core.asm \
 		$(BUILD_KERNEL)/core_c.o \
 		$(BUILD_KERNEL)/interrupts_asm.o \
 		$(BUILD_KERNEL)/syscall/libsyscall \
+		$(BUILD_KERNEL)/interrupts/libinterrupts \
 		$(BUILD_DIR)/fs/libffs \
 		$(BUILD_DRIVERS)/keyboard/libkeyboard \
+		$(BUILD_DRIVERS)/pic/libpic \
 		$(BUILD_LIB_UTILS)/libutils \
 		$(BUILD_DRIVERS)/display/libtm_vga \
 		$(BUILD_LIB_DS)/libds \

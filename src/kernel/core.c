@@ -10,6 +10,8 @@
 #include <lib/utils/time.h>
 #include <sys/syscall.h>
 #include <fuzzy/fs/ffs.h>
+#include <fuzzy/kernel/interrupts/timer.h>
+
 #include <process.h>
 
 #include "kernel/essentials.c"
@@ -27,6 +29,7 @@ char command[30];
 int need_to_clear_hack;
 int run;
 int lba_start, sector_count;
+extern void enable_timer_interrupt();
 
 void kernel_core_entry() {
     set_color_bg(C_BLUE);
@@ -45,6 +48,11 @@ void kernel_core_entry() {
     keyboard_init();
 
     process_handler_init();
+
+    interrupt_pit_enable();
+    print_log("EXIT");
+    while (1);
+
 
     need_to_clear_hack = 1;
     while(1) {

@@ -9,6 +9,8 @@ SELF_BUILD_DIR = $(patsubst $(SRC_DIR)/%,$(BUILD_DIR)/%,$(SELF_SRC_DIR))
 
 SELF_SRC_ALL_C = $(shell find $(SELF_SRC_DIR) -name '*.c')
 SELF_BUILD_ALL_C = $(patsubst $(SELF_SRC_DIR)/%.c,$(SELF_BUILD_DIR)/%.o,$(SELF_SRC_ALL_C))
+SELF_SRC_ALL_ASM = $(shell find $(SELF_SRC_DIR) -name '*.asm')
+SELF_BUILD_ALL_ASM = $(patsubst $(SELF_SRC_DIR)/%.asm,$(SELF_BUILD_DIR)/%_asm.o,$(SELF_SRC_ALL_ASM))
 
 SRC_BOOTLOADER = $(SRC_DIR)/bootloader
 SRC_KERNEL = $(SRC_DIR)/kernel
@@ -122,11 +124,15 @@ include $(SRC_DIR)/usr/lib/Makefile.mk
 
 include $(SRC_BOOTLOADER)/Makefile.mk
 include $(SRC_REALMODE)/Makefile.mk
+
 include $(SRC_KERNEL)/Makefile.mk
+include $(SRC_KERNEL)/interrupts/Makefile.mk
+include $(SRC_KERNEL)/syscall/Makefile.mk
 
 include $(SRC_DRIVERS)/disk/Makefile.mk
 include $(SRC_DRIVERS)/display/Makefile.mk
 include $(SRC_DRIVERS)/keyboard/Makefile.mk
+include $(SRC_DRIVERS)/pic/Makefile.mk
 
 include $(SRC_DIR)/fs/Makefile.mk
 
