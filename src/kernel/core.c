@@ -8,7 +8,8 @@
 #include <lib/utils/input.h>
 #include <lib/utils/panic.h>
 #include <lib/utils/time.h>
-#include <lib/syscall/syscall.h>
+#include <sys/syscall.h>
+#include <fuzzy/fs/ffs.h>
 
 #include "kernel/essentials.c"
 #include "kernel/interrupts.c"
@@ -24,7 +25,7 @@ int send_int(int a,int b) {
 char command[30];
 int need_to_clear_hack;
 int run;
-int sector_start, sector_count;
+int lba_start, sector_count;
 
 void kernel_core_entry() {
     set_color_bg(C_BLUE);
@@ -56,12 +57,20 @@ void kernel_core_entry() {
         command[0]='\0';
         print_log("Command: '%s'", command);
         if(RUN_APP_ID == 1 || strcmpi(command, "run ttt")==0) {
-            sector_start = SECTOR_START_APP_TTT;
+            lba_start = SECTOR_START_APP_TTT;
             sector_count = SECTOR_COUNT_APP_TTT;
             run = 1;
         } else if(RUN_APP_ID == 2 || strcmpi(command, "run calculator")==0) {
-            sector_start = SECTOR_START_APP_CALC;
+            lba_start = SECTOR_START_APP_CALC;
             sector_count = SECTOR_COUNT_APP_CALC;
+            run = 1;
+        } else if(RUN_APP_ID == 3 || strcmpi(command, "run ls")==0) {
+            lba_start = SECTOR_START_APP_LS;
+            sector_count = SECTOR_COUNT_APP_LS;
+            run = 1;
+        } else if(RUN_APP_ID == 4 || strcmpi(command, "run cat")==0) {
+            lba_start = SECTOR_START_APP_CAT;
+            sector_count = SECTOR_COUNT_APP_CAT;
             run = 1;
         } else if(strcmpi(command, "exit")==0) {
             PANIC(0, "No Panic, it's a normal exit.");
@@ -69,9 +78,9 @@ void kernel_core_entry() {
 
         if(run)  {
             need_to_clear_hack = 1;
-            int exit_code = syscall(1, sector_start, sector_count, 0,0);
+            int exit_code = syscall(1, lba_start, sector_count, 0, 0);
             if(exit_code<0) {
-                print_log("Failed to execute the process.");
+                PANIC(exit_code, "Failed to execute the process.");
             } else {
                 print_log("App exit_code: %d", exit_code);
             }

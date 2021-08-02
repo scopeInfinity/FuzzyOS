@@ -44,24 +44,31 @@ int process_new_allocated_memory(int id) {
 
 extern int call_main(int cs, int ds, int argc, char *argv[]);
 
-int process_exec(int sector_index, int sector_count) {
+/*
+TODO: fix documentation.
+User side memory view
+CS 0x0000 -> ...
+DS 0x0000 -> 0xFFFF
+FS ; same as DS
+GS ; same as DS
+SS ...    <- 0xDFFF  ; user stack
+SS 0xE000 <- 0xFFFF  ; kernel stack
+*/
+int process_exec(int lba_index, int sector_count) {
     int id = process_reserve_new_id();
     if(id<0) {
         print_log("Failed to reserved a new process ID");
         return -1;
     }
+    print_log("[process] pid:%d, lba: %d, sector_count: %d",
+        id, lba_index, sector_count);
     int memory_location = process_new_allocated_memory(id);
 
-    print_log("Starting process exec for sector: %d count: %d as id: %d at %x memory",
-        sector_index, sector_count, id, memory_location);
-
-    int err = load_sectors(memory_location, 0x80, sector_index, sector_count);
+    int err = load_sectors(memory_location, 0x80, lba_index, sector_count);
     if(err) {
         print_log("Failed to load app in memory, Error: ", err);
         return -1;
     }
-    print_log("application loaded in memory.");
-
     int idt_cs_entry = (id<<1)+5;
     int idt_ds_entry = (id<<1)+6;
     // Application Code Segment Selector

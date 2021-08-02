@@ -1,22 +1,32 @@
-extern int _low_disk_read_sectors_real(
-    unsigned char count,
-    unsigned short cylinder_sector,  // 10 bit + 6bit
-    unsigned short head_driveindex, // 8 bit + 8bit
-    unsigned short memory_es,       // 16 bit
-    unsigned short memory_address);   // 16bit
+#include <lib/utils/logging.h>
+#include <fuzzy/real_mode/client.h>
 
-int load_sectors(unsigned int address,
+int load_sectors(unsigned int full_address,
                  unsigned char drive,
-                 unsigned int sector_index, // 1-based
+                 unsigned int lba, // 0-based
                  unsigned char count) {
-    int memory_es = (address&0xF0000)>>4;
-    address = address&0xFFFF;
-    int cylinder_head = (sector_index/63);
-    sector_index = sector_index%63 + 1;
-    _low_disk_read_sectors_real(
-        count,
+    int es = (full_address&0xF0000)>>4;
+    int es_address = full_address&0xFFFF;
+    int cylinder_head = (lba/63);
+    int sector_index = lba%63 + 1;
+    // https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=02h:_Read_Sectors_From_Drive
+    real_mode_client(
+        (0x02<<8) | count,
+        es_address,
         ((cylinder_head>>2)&0xFFC0) | (sector_index),
         ((cylinder_head<<8)&0xFF00) | (drive),
-        memory_es,
-        address);
+        es
+    );
+    // https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=01h:_Get_Status_of_Last_Drive_Operation
+    int eax = real_mode_client(
+        (0x01<<8),
+        0,
+        0,
+        drive,
+        0
+    );
+    unsigned int status = eax >> 8;
+    print_info("[load_sectors] [dev %x]:%x -> mem:%x, cnt: %d; err: %x",
+        drive, lba, full_address, count, status);
+    return status;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #define SYSCALL_KEYBOARD 0
+#define SYSCALL_FILE_OP 2
 
 #define SYSCALL_A0(id) \
     syscall((id), 0, 0, 0, 0)
@@ -14,3 +15,4 @@
     syscall((id), (a0), (a1), (a2), (a3))
 
 extern int syscall(int id, int arg0, int arg1, int arg2, int arg3);
+

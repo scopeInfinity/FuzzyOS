@@ -11,3 +11,8 @@ void print_log(const char *strfmt, ...) {
     printf_low(strfmt, va_base+1);
     print_char('\n');
 }
+
+void print_info(const char *strfmt, ...) {
+    // Do nothing for now.
+    // TODO: Log appropriately
+}
