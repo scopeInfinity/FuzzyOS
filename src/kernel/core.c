@@ -1,22 +1,22 @@
-#include <string.h>
 
-#include <drivers/display/text_mode.h>
-#include <drivers/keyboard/keyboard.h>
-#include <drivers/disk/disk.h>
-#include <lib/utils/logging.h>
-#include <lib/utils/output.h>
-#include <lib/utils/input.h>
-#include <lib/utils/panic.h>
-#include <lib/utils/time.h>
-#include <sys/syscall.h>
 #include <fuzzy/fs/ffs.h>
+#include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/kernel/interrupts/timer.h>
 #include <fuzzy/kernel/process/process.h>
 
+#include <string.h>
 #include <process.h>
+#include <sys/syscall.h>
 
-#include "kernel/essentials.c"
-#include "kernel/interrupts.c"
+#include <drivers/disk/disk.h>
+#include <drivers/display/text_mode.h>
+#include <drivers/keyboard/keyboard.h>
+
+#include <lib/utils/input.h>
+#include <lib/utils/logging.h>
+#include <lib/utils/output.h>
+#include <lib/utils/panic.h>
+#include <lib/utils/time.h>
 
 extern void kernel_enable_interrupts();
 extern void kernel_core_entry_asm();
@@ -49,10 +49,11 @@ void kernel_core_entry() {
 
     process_scheduler_init();
 
-    interrupt_pit_enable();
-    print_log("EXIT");
-    while (1);
-
+    // int syscall_out = -1;
+    // syscall_out = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_LBA_SC, SECTOR_START_APP_LS, SECTOR_COUNT_APP_LS, 0);
+    // print_log("EXIT, syscall: %d", syscall_out);
+    // interrupt_pit_enable();
+    // while (1);
 
     need_to_clear_hack = 1;
     while(1) {

@@ -4,33 +4,9 @@ debug_kernel: $(kernel_core)
 	objdump -b binary -mi386 -Maddr16,data16 -D $<
 	xxd $<
 
-$(kernel_core): $(SRC_KERNEL)/core.asm \
-		$(SRC_KERNEL)/core.c \
-		$(SRC_KERNEL)/essentials.c \
-		$(SRC_KERNEL)/interrupts.c \
-		$(SRC_KERNEL)/syscall.c \
-		$(INCLUDE_DIR)/memmgr/tables/gdt.h \
-		$(SRC_MEMMGR)/tables/gdt.c \
-		$(SRC_REALMODE)/stub.asm \
-		$(SRC_KERNEL)/interrupts.c \
-		$(SRC_KERNEL)/interrupts.asm  \
-		$(BUILD_DIR)/fs/libffs \
-		$(BUILD_KERNEL)/syscall/libsyscall \
-		$(BUILD_KERNEL)/interrupts/libinterrupts \
-		$(BUILD_KERNEL)/process/libprocess \
-		$(BUILD_DIR)/real_mode/librealmodeclient \
-		$(SRC_LIB_UTILS)/output.h \
-		$(SRC_DRIVERS)/keyboard/keyboard.h \
-		$(BUILD_LIB_UTILS)/libutils \
-		$(BUILD_DRIVERS)/keyboard/libkeyboard \
-		$(BUILD_DRIVERS)/pic/libpic \
-		$(BUILD_DRIVERS)/display/libtm_vga \
-		$(BUILD_DRIVERS)/disk/libdisk \
-		$(BUILD_USR_LIB)/libfuzzyc
-	mkdir -p $$(dirname $(kernel_core))
-	nasm -o $(BUILD_KERNEL)/core_asm.o -f elf32 -i $(SRC_REALMODE)/ $(SRC_KERNEL)/core.asm
-	nasm -o $(BUILD_KERNEL)/interrupts_asm.o -f elf32 $(SRC_KERNEL)/interrupts.asm
-	$(KERNEL_CC) -c \
+$(SELF_BUILD_DIR)/%.o: $(SELF_SRC_DIR)/%.c $(BUILD_USR_INCLUDE_ALL)
+	mkdir -p $(dir $@)
+	$(KERNEL_CC) -c -o $@ \
 		-D RUN_APP_ID=$(RUN_APP_ID) \
 		-D SECTOR_START_APP_TTT=$(SECTOR_START_APP_TTT) \
 		-D SECTOR_COUNT_APP_TTT=$(SECTOR_COUNT_APP_TTT) \
@@ -44,14 +20,18 @@ $(kernel_core): $(SRC_KERNEL)/core.asm \
 		-D SECTOR_COUNT_APP_CAT=$(SECTOR_COUNT_APP_CAT) \
 		-D SECTOR_START_APP_SH=$(SECTOR_START_APP_SH) \
 		-D SECTOR_COUNT_APP_SH=$(SECTOR_COUNT_APP_SH) \
-		-o $(BUILD_KERNEL)/core_c.o $(SRC_KERNEL)/core.c
-	$(LD) --oformat binary -m elf_i386 -Ttext 0x0000 -T linker.ld -o $(kernel_core) \
-		$(BUILD_KERNEL)/core_asm.o \
-		$(BUILD_KERNEL)/core_c.o \
-		$(BUILD_KERNEL)/interrupts_asm.o \
-		$(BUILD_KERNEL)/syscall/libsyscall \
+		$<
+
+$(SELF_BUILD_DIR)/%_asm.o: $(SELF_SRC_DIR)/%.asm
+	mkdir -p $(dir $@)
+	nasm -o $@ -f elf32 -i $(SRC_REALMODE)/ $<
+
+$(kernel_core): $(BUILD_KERNEL)/core_asm.o \
+		$(BUILD_KERNEL)/core.o \
 		$(BUILD_KERNEL)/interrupts/libinterrupts \
+		$(BUILD_KERNEL)/syscall/libsyscall \
 		$(BUILD_KERNEL)/process/libprocess \
+		$(BUILD_DIR)/memmgr/tables/libgdt \
 		$(BUILD_DIR)/fs/libffs \
 		$(BUILD_DRIVERS)/keyboard/libkeyboard \
 		$(BUILD_DRIVERS)/pic/libpic \
@@ -61,4 +41,6 @@ $(kernel_core): $(SRC_KERNEL)/core.asm \
 		$(BUILD_DRIVERS)/disk/libdisk \
 		$(BUILD_DIR)/real_mode/librealmodeclient \
 		$(BUILD_USR_LIB)/libfuzzyc
+	mkdir -p $(dir $@)
+	$(LD) --oformat binary -m elf_i386 -Ttext 0x0000 -T linker.ld -o $@ $^
 	truncate --size=%512 $(kernel_core)

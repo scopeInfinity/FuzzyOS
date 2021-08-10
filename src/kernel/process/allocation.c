@@ -1,8 +1,7 @@
-#include <fuzzy/memmgr/tables/gdt.h>
 #include <fuzzy/kernel/process/process.h>
-#include <lib/utils/panic.h>
+#include <fuzzy/memmgr/tables/gdt.h>
 
-#include "memmgr/tables/gdt.c"
+#include <lib/utils/panic.h>
 
 #define PID_KERNEL 0
 
@@ -21,14 +20,18 @@ int get_idt_cs_entry(int process_id) {
     if(process_id == PID_KERNEL) {
         return 1;
     }
-    return (process_id<<1)+5;
+    return (process_id<<1)+3;
 }
 
 int get_idt_ds_entry(int process_id) {
      if(process_id == PID_KERNEL) {
         return 2;
     }
-   return (process_id<<1)+6;
+   return (process_id<<1)+4;
+}
+
+int get_gdt_number_from_entry_id(int id) {
+    return id*sizeof(struct GDTEntry);
 }
 
 int get_idt_reverse_pid_lookup(int cs) {
@@ -54,7 +57,7 @@ int get_process_memory(int pid) {
     if(pid == PID_KERNEL) {
         return MEMORY_LOCATION_KERNEL;
     }
-    return MEMORY_LOCATION_APP+0x20000*pid;
+    return MEMORY_LOCATION_APP+0x20000*(pid-1);
 }
 
 // operations
@@ -62,7 +65,7 @@ static struct Process processes[MAX_PROCESS] = {0};
 struct GDTEntry gdt_table[GDT_TABLE_SIZE];
 struct GDTReference gdtr;
 
-struct Process *process_get(int pid) {
+struct Process *get_process(int pid) {
     return &processes[pid];
 }
 
@@ -88,13 +91,27 @@ int process_create() {
         }
     }
     if(pid < 0) return pid;
-    processes[pid].state = STATE_LOADING;
+    struct Process *process = &processes[pid];
 
     int memory_location = get_process_memory(pid);
     int idt_cs_entry = get_idt_cs_entry(pid);
     int idt_ds_entry = get_idt_ds_entry(pid);
 
-    // TODO: avoid populating GDT entry if already exists.
+    process->state = STATE_LOADING;
+    process->cs = get_gdt_number_from_entry_id(idt_cs_entry);
+    process->ip = 0; //
+    // initially ds == ss
+    process->ss = get_gdt_number_from_entry_id(idt_ds_entry);
+    // should be compatible with create_infant_process_irq0_stack
+    process->sp = 0xFFF0-60;  // keep offset in sync with _int_irq0_start
+    // TODO:
+    // return -1;
+
+
+
+    // Potential improvement:
+    // - avoid populating GDT entry if already exists.
+
     // Application Code Segment Selector
     populate_gdt_entry(
         &gdt_table[idt_cs_entry],
@@ -107,17 +124,16 @@ int process_create() {
         memory_location, memory_location+0xFFFF,
         0b0100,  // 32-bit protected mode
         0x92);
-    return -1;
+    print_log("PROCESS_SS: %x", process->ss);
+    create_infant_process_irq0_stack(process->ss);
+    return pid;
 }
 
 int process_load_from_disk(int pid, int lba_index, int sector_count) {
     int memory_location = get_process_memory(pid);
     int err = load_sectors(memory_location, 0x80, lba_index, sector_count);
     if(err) {
-        print_log("failed to load app %d in memory, Error: ", pid, err);
-        return -1;
+        return err;
     }
-    // TODO(scopeinfinity): fix launch registers.
-    processes[pid].state = STATE_READY;
     return 0;
 }

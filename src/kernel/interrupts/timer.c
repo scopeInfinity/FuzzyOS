@@ -1,6 +1,8 @@
-#include <fuzzy/kernel/interrupts.h>
-#include <fuzzy/kernel/process/process.h>
 #include <fuzzy/drivers/pic/pic.h>
+#include <fuzzy/kernel/interrupts/interrupts.h>
+#include <fuzzy/kernel/interrupts/timer.h>
+#include <fuzzy/kernel/process/process.h>
+
 #include <lib/utils/logging.h>
 
 #define INT_MAX_VALUE 0x7FFFFFFF
@@ -36,7 +38,9 @@ void irq0_pit_handler(int e_ip, int e_cs, int e_sp, int e_ss) {
     int oldtime_ms = get_time_since_boot_ms();
     timer_add_ticks(ticks_jumped);
     int newtime_ms = get_time_since_boot_ms();
-    if (oldtime_ms/1000 != newtime_ms/1000) {
+    // TODO: Cleanup
+    if (1 || oldtime_ms/1000 != newtime_ms/1000) {
+        // print_log("+1 second");
         process_scheduler(&e_ip, &e_cs, &e_sp, &e_ss);
     }
 }

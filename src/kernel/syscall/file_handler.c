@@ -1,8 +1,9 @@
+#include <fuzzy/fs/ffs.h>
+
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
-#include <fuzzy/fs/ffs.h>
-#include "kernel/extern.h"
+
 #include <lib/utils/logging.h>
 
 const int partition_id = 0;

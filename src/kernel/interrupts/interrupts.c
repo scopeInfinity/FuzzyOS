@@ -1,7 +1,6 @@
-#include <fuzzy/kernel/interrupts.h>
-#include <lib/utils/logging.h>
+#include <fuzzy/kernel/syscall/syscall.h>
 
-#include "syscall.c"
+#include <lib/utils/logging.h>
 
 #define IDT_SIZE 128
 
@@ -58,12 +57,6 @@ void populate_idt_entry_32bit(int id,
         );
 }
 
-extern int SYSCALL_TABLE[];
-int syscall_selector(int id, int arg0, int arg1, int arg2, int arg3, int user_ds) {
-    return ((int(*)(int,int,int,int,int))(SYSCALL_TABLE[id]))(arg0, arg1, arg2, arg3, user_ds);
-}
-
-
 void populate_and_load_idt_table() {
     print_log("Populating IDT Table");
     for (int i = 0; i < IDT_SIZE; ++i) {
@@ -74,7 +67,7 @@ void populate_and_load_idt_table() {
     print_log("  Placed custom interrupts (if any)");
 
     interrupt_register_0x08_pit();
-    register_syscalls();
+    interrupt_register_0x32_syscall();
 
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
     idtr.base_address = ((int)idt_table + MEMORY_LOCATION_KERNEL);

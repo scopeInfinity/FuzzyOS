@@ -46,7 +46,7 @@ kernel_core = $(BUILD_DIR)/kernel/core
 # 3 - ls
 # 4 - cat
 # 5 - sh
-RUN_APP_ID = 5
+RUN_APP_ID = 1
 
 # Apps
 SRC_APP = $(SRC_DIR)/usr/local/src
@@ -136,6 +136,7 @@ include $(SRC_DRIVERS)/keyboard/Makefile.mk
 include $(SRC_DRIVERS)/pic/Makefile.mk
 
 include $(SRC_DIR)/fs/Makefile.mk
+include $(SRC_DIR)/memmgr/tables/Makefile.mk
 
 include $(SRC_LIB)/app/Makefile.mk
 include $(SRC_LIB_DS)/Makefile.mk

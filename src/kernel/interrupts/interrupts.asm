@@ -6,7 +6,7 @@ global kernel_enable_interrupts
 global kernel_disable_interrupts
 global idt_table
 
-global syscall_selector_low
+global interrupt_handler_0x32_syscall_handler
 extern syscall_selector
 global syscall_copy_es_to_ss
 
@@ -154,7 +154,7 @@ KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
         CLI
         ret
 
-    syscall_selector_low:
+    interrupt_handler_0x32_syscall_handler:
         _int_start
         call syscall_selector
         _int_end
