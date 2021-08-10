@@ -1,5 +1,8 @@
 #include <fuzzy/kernel/process/process.h>
+#include <fuzzy/kernel/interrupts/timer.h>
+
 #include <process.h>
+
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
 
@@ -25,37 +28,24 @@ SS ...    <- 0xDFFF  ; user stack
 SS 0xE000 <- 0xFFFF  ; kernel stack
 */
 int process_spawn(int lba_index, int sector_count) {
-    // int id = process_reserve_new_id();
-    // if(id<0) {
-    //     print_log("Failed to reserved a new process ID");
-    //     return -1;
-    // }
-    // print_log("[process] pid:%d, lba: %d, sector_count: %d",
-    //     id, lba_index, sector_count);
-    // int memory_location = process_new_allocated_memory(id);
-
-    // int err = load_sectors(memory_location, 0x80, lba_index, sector_count);
-    // if(err) {
-    //     print_log("Failed to load app in memory, Error: ", err);
-    //     return -1;
-    // }
-
-    // int relative_address = memory_location-MEMORY_LOCATION_KERNEL;
-    // print_log("App loaded at 0x%x, relative_address: 0x%x: %x...",
-    //     memory_location, relative_address,
-    //     *(int*)relative_address);
-
-    // int code_segment = idt_cs_entry*sizeof(struct GDTEntry);
-    // int data_segment = idt_ds_entry*sizeof(struct GDTEntry);
-    // int argc = 0;
-    // int argv = 0;
-    // print_log("call_main(0x%x, 0x%x, %d, %d)", code_segment, data_segment, argc, argv);
-
-    // int exit_code = call_main(code_segment, data_segment, argc, argv);
-
-    // process_free_id(id);
-    // io_low_flush();
-    // return exit_code;
+    print_log("[process_spawn] create");
+    int pid = process_create();
+    if(pid<0) {
+        print_log("Failed to reserved a new pid");
+        return -1;
+    }
+    print_log("[process_spawn] loading, pid: %d", pid);
+    int err = process_load_from_disk(pid, lba_index, sector_count);
+    if (err) {
+        print_log("Failed to load app in memory, Error: ", err);
+        return -2;
+    }
+    print_log("[process_spawn] ready, pid: %d", pid);
+    struct Process *process = get_process(pid);
+    // TODO(scopeinfinity): Uncomment when create_infant_process_irq0_stack is ready.
+    process->state = STATE_READY;
+    // TODO(scopeinfinity): Remove call_main once process_scheduler starts working.
+    call_main(process->cs, process->ss, 0, 0);
     return 0;
 }
 

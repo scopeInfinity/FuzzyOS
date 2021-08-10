@@ -1,4 +1,5 @@
 #include <fuzzy/memmgr/tables/gdt.h>
+
 #include <lib/utils/logging.h>
 
 void populate_gdt_entry(struct GDTEntry *entry,
