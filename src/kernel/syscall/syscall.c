@@ -18,7 +18,7 @@ extern int interrupt_handler_0x32_syscall_handler();
 
 void interrupt_register_0x32_syscall() {
     print_log("Registering syscalls.");
-    populate_idt_entry_32bit(0x32, (unsigned int)interrupt_handler_0x32_syscall_handler, 0, 1);
+    populate_idt_entry_32bit(IDT_SYSCALL, (unsigned int)interrupt_handler_0x32_syscall_handler, 0, 1);
     SYSCALL_TABLE[0]=syscall_0_keyboard_getch;
     SYSCALL_TABLE[1]=syscall_1_process;
     SYSCALL_TABLE[2]=syscall_2_file_handler;

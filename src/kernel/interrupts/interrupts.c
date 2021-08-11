@@ -1,8 +1,8 @@
 #include <fuzzy/kernel/syscall/syscall.h>
+#include <fuzzy/kernel/interrupts/interrupts.h>
+#include <fuzzy/kernel/interrupts/timer.h>
 
 #include <lib/utils/logging.h>
-
-#define IDT_SIZE 128
 
 extern void interrupt_nohup();
 extern void load_idt_table_low(unsigned int idtr_address);
@@ -66,7 +66,7 @@ void populate_and_load_idt_table() {
 
     print_log("  Placed custom interrupts (if any)");
 
-    interrupt_register_0x08_pit();
+    interrupt_register_0x20_irq0_pit();
     interrupt_register_0x32_syscall();
 
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;

@@ -9,6 +9,13 @@ global pic_pit_set_counter
 global pic_pit_get_counter
 global pic_pit_reset
 
+PIC1 EQU 0x20
+PIC2 EQU 0xA0
+PIC1_CMD EQU PIC1
+PIC2_CMD EQU PIC2
+PIC1_DATA EQU (PIC1+1)
+PIC2_DATA EQU (PIC2+1)
+
 [SECTION .text]
 
     _pic_init_low:
@@ -16,23 +23,24 @@ global pic_pit_reset
         mov ebp, esp
 
         mov al, 0x11
-        out 0x20, al
-        out 0xA0, al
+        out PIC1_CMD, al
+        out PIC2_CMD, al
 
-        ; Mapping same as BIOS default (for now)
-        mov al, 0x08
-        out 0x21, al
-        mov al, 0x10
-        out 0xA1, al
+        ; Remap IRQ
+        ; FuzzyOS won't be using IRQ0 in real mode.
+        mov eax, [ebp + 0x08] ; idt_irq0_pic1
+        out PIC1_DATA, al
+        mov eax, [ebp + 0x0C] ; idt_irq0_pic2
+        out PIC2_DATA, al
 
         mov al, 4
-        out 0x21, al
+        out PIC1_DATA, al
         mov al, 2
-        out 0xA1, al
+        out PIC2_DATA, al
 
         mov al, 0x01
-        out 0x21, al
-        out 0xA1, al
+        out PIC1_DATA, al
+        out PIC2_DATA, al
 
         pop ebp
         ret
@@ -53,8 +61,8 @@ global pic_pit_reset
 
     pic_pit_reset:
         mov al, 0x20
-        out 0x20, al
-        out 0xA0, al
+        out PIC1_CMD, al
+        out PIC2_CMD, al
 
         call pic_pit_reload_counter
 
@@ -88,9 +96,9 @@ global pic_pit_reset
         push ebp
         mov ebp, esp
 
-        in al, 0xA1
+        in al, PIC2_DATA
         mov ah, al
-        in al, 0x21
+        in al, PIC1_DATA
 
         pop ebp
         ret
@@ -101,9 +109,9 @@ global pic_pit_reset
 
         mov eax, [ebp + 0x8]
 
-        out 0x21, al
+        out PIC1_DATA, al
         mov al, ah
-        out 0xA1, al
+        out PIC2_DATA, al
 
         pop ebp
         ret

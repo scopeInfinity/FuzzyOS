@@ -39,9 +39,9 @@ void irq0_pit_handler(int e_ip, int e_cs, int e_sp, int e_ss) {
     timer_add_ticks(ticks_jumped);
     int newtime_ms = get_time_since_boot_ms();
     // TODO: Cleanup
-    if (1 || oldtime_ms/1000 != newtime_ms/1000) {
-        // print_log("+1 second");
-        process_scheduler(&e_ip, &e_cs, &e_sp, &e_ss);
+    if (oldtime_ms/1000 != newtime_ms/1000) {
+        print_log("+1 second");
+        // process_scheduler(&e_ip, &e_cs, &e_sp, &e_ss);
     }
 }
 
@@ -50,8 +50,7 @@ void interrupt_pit_enable() {
     pic_irq_enable(PIC_IRQ_PIT);
 }
 
-void interrupt_register_0x08_pit() {
-    // As we are using BIOS default PIC mapping.
-    populate_idt_entry_32bit(0x08, (unsigned int)irq0_pit_handler_low, 0, 0);
+void interrupt_register_0x20_irq0_pit() {
+    populate_idt_entry_32bit(IDT_IRQ0_PIC, (unsigned int)irq0_pit_handler_low, 0, 0);
     pic_init();
 }

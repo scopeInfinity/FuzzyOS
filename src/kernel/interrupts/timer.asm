@@ -7,7 +7,6 @@ extern pic_pit_reset
 global create_infant_process_irq0_stack
 
 %macro _int_irq0_start 0
-        ; HLT
         NOP
         ; eflag, cs, ip should be at start: 0 bytes
         CLI  ; should get restored on iret
@@ -47,10 +46,10 @@ global create_infant_process_irq0_stack
         ; meant to placed at end of irq handler
         ; HLT
         NOP
-        pop edi  ; new ip, 0x571
-        pop ecx  ; new cs, 0x08
-        pop esi  ; new esp, 0x6920
-        pop edx  ; new ss, 0x10
+        pop edi  ; new ip
+        pop ecx  ; new cs
+        pop esi  ; new esp
+        pop edx  ; new ss
 
         mov ss, edx
         mov esp, esi
@@ -79,7 +78,6 @@ global create_infant_process_irq0_stack
         call irq0_pit_handler
         call pic_pit_reset
         _int_irq0_end
-        ; HLT
         iret
 
     create_infant_process_irq0_stack:
