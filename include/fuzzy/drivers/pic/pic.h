@@ -5,7 +5,6 @@
 
 #define PIC_IRQ_PIT 0
 
-void interrupt_register_0x08_pit();
 void interrupt_pit_enable();
 
 void pic_irq_enable(int irq);

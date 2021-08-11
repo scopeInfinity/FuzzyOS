@@ -1,7 +1,8 @@
 #include <fuzzy/drivers/pic/pic.h>
+#include <fuzzy/kernel/interrupts/interrupts.h>
 #include <lib/utils/logging.h>
 
-extern void _pic_init_low();
+extern void _pic_init_low(int idt_irq0_pic1, int idt_irq0_pic2);
 extern void _pic_pit_init();
 
 extern void pic_timer_set_counter(unsigned short counter);
@@ -13,7 +14,7 @@ extern void _pic_writemask(unsigned short mask);
 
 void pic_init() {
     print_log("PIC init.");
-    _pic_init_low();
+    _pic_init_low(IDT_IRQ_OFFSET, IDT_IRQ_OFFSET+8);
 
     // disable all IRQs
     _pic_writemask(0xFFFF);
