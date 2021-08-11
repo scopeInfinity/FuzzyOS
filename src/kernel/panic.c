@@ -1,4 +1,4 @@
-#include <lib/utils/panic.h>
+#include <fuzzy/kernel/panic.h>
 
 extern void panic_just_halt();
 

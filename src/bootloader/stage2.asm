@@ -35,7 +35,6 @@ global label_exit
         lgdt [eax]
 
         ; Enter Protected mode
-        set_protected_mode_entry_address_frm 0
         mov eax, cr0
         or eax, 0x00000001
         mov cr0, eax

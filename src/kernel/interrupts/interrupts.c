@@ -66,6 +66,7 @@ void populate_and_load_idt_table() {
 
     print_log("  Placed custom interrupts (if any)");
 
+    interrupt_register_0x00_0x1F_exceptions();
     interrupt_register_0x20_irq0_pit();
     interrupt_register_0x32_syscall();
 
