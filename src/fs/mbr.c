@@ -2,7 +2,7 @@
 #include <fuzzy/fs/mbr.h>
 #include <drivers/disk/disk.h>
 #include <lib/utils/logging.h>
-#include <lib/utils/panic.h>
+#include <fuzzy/kernel/panic.h>
 
 char _cache_mbrblock[FS_BLOCK_SIZE];
 int _cache_mbrblock_ready = 0;

@@ -8,6 +8,8 @@ global idt_table
 
 global interrupt_handler_0x32_syscall_handler
 extern syscall_selector
+global _interrupt_handler_0x00_0x1F_exception
+extern interrupt_handler_0x00_0x1F_exception
 global syscall_copy_es_to_ss
 
 KERNEL_STACK_MARKER_NEW    EQU 0x10000001
@@ -159,3 +161,7 @@ KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
         call syscall_selector
         _int_end
         iret
+
+    _interrupt_handler_0x00_0x1F_exception:
+        call interrupt_handler_0x00_0x1F_exception
+        HLT

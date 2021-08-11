@@ -16,19 +16,6 @@ global kernel_core_entry_asm
         mov fs, ax
         mov gs, ax
 
-        ; transfer control to the desired entry point.
-        get_protected_mode_entry
-        cmp eax, 0
-        je kernel_core_entry_init
-
-        unshelve_protected_mode_and_ret_entry_address
-        push eax
-        call reload_idt_table
-        STI
-        pop eax
-        jmp eax
-
-    kernel_core_entry_init:
         ; TODO: Increase kernel code stack memory size
         ; The value also depends on kernel handler stack size
         mov esp, 0x699C  ; init stack pointer

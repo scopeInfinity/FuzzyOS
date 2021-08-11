@@ -3,7 +3,7 @@
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
 #include <lib/utils/time.h>
-#include <lib/utils/panic.h>
+#include <fuzzy/kernel/panic.h>
 
 #include "scancode_handler.c"
 

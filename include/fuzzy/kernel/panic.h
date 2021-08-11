@@ -1,7 +1,4 @@
 #pragma once
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <lib/utils/output.h>
 
@@ -12,7 +9,3 @@ extern "C" {
 void panic_just_halt();
 int panic(int err, const char *message, const char *src_file,
     unsigned int line_number);
-
-#ifdef __cplusplus
-}
-#endif

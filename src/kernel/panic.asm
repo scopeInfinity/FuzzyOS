@@ -1,4 +1,4 @@
-[BITS 16]
+[BITS 32]
 
 global panic_just_halt
 

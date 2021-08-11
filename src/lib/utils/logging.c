@@ -1,6 +1,5 @@
 #include <lib/utils/basic.h>
 #include <lib/utils/output.h>
-#include <lib/utils/panic.h>
 
 // User should override LOG_PREFIX is required.
 #define LOG_PREFIX ""

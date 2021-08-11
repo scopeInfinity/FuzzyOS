@@ -8,6 +8,7 @@ $(SELF_BUILD_DIR)/%.o: $(SELF_SRC_DIR)/%.c $(BUILD_USR_INCLUDE_ALL)
 	mkdir -p $(dir $@)
 	$(KERNEL_CC) -c -o $@ \
 		-D RUN_APP_ID=$(RUN_APP_ID) \
+		-D __SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) \
 		-D SECTOR_START_APP_TTT=$(SECTOR_START_APP_TTT) \
 		-D SECTOR_COUNT_APP_TTT=$(SECTOR_COUNT_APP_TTT) \
 		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
@@ -26,8 +27,7 @@ $(SELF_BUILD_DIR)/%_asm.o: $(SELF_SRC_DIR)/%.asm
 	mkdir -p $(dir $@)
 	nasm -o $@ -f elf32 -i $(SRC_REALMODE)/ $<
 
-$(kernel_core): $(BUILD_KERNEL)/core_asm.o \
-		$(BUILD_KERNEL)/core.o \
+$(kernel_core): $(SELF_BUILD_DIR)/core_asm.o $(SELF_BUILD_DIR)/panic_asm.o $(SELF_BUILD_ALL_C) \
 		$(BUILD_KERNEL)/interrupts/libinterrupts \
 		$(BUILD_KERNEL)/syscall/libsyscall \
 		$(BUILD_KERNEL)/process/libprocess \

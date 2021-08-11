@@ -61,7 +61,7 @@ global create_infant_process_irq0_stack
 
         pop ebp
         mov [ebp+36], ecx ; cs
-        mov [ebp+32], edi ; ip
+        mov [ebp+32], edi ; ip  BROKEN!!!!
 
         ; jmp aaa
         ; aaa:

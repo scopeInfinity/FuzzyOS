@@ -1,7 +1,7 @@
 #include <fuzzy/kernel/process/process.h>
 #include <fuzzy/memmgr/tables/gdt.h>
 
-#include <lib/utils/panic.h>
+#include <fuzzy/kernel/panic.h>
 
 #define PID_KERNEL 0
 

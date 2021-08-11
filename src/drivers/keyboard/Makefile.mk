@@ -1,6 +1,14 @@
 
-$(BUILD_DRIVERS)/keyboard/libkeyboard: $(SRC_DRIVERS)/keyboard/keyboard.c $(SRC_DRIVERS)/keyboard/keyboard.asm $(SRC_DRIVERS)/keyboard/keyboard.h $(SRC_DRIVERS)/keyboard/scancode_handler.c $(SRC_LIB_UTILS)/time.h $(SRC_LIB_DS)/queue.h $(BUILD_LIB_DS)/libds
-	mkdir -p $(BUILD_DRIVERS)/keyboard/
-	$(CC) -m32 -fno-pie -c -Isrc -o $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(SRC_DRIVERS)/keyboard/keyboard.c
-	nasm -o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o -f elf32 $(SRC_DRIVERS)/keyboard/keyboard.asm
-	ar rc $@ $(BUILD_DRIVERS)/keyboard/keyboard_c.o $(BUILD_DRIVERS)/keyboard/keyboard_asm.o
+$(SELF_BUILD_DIR)/%.o: $(SELF_SRC_DIR)/%.c $(BUILD_USR_INCLUDE_ALL)
+	mkdir -p $(dir $@)
+	$(KERNEL_CC) -c -o $@ \
+		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
+		$<
+
+$(SELF_BUILD_DIR)/%_asm.o: $(SELF_SRC_DIR)/%.asm
+	mkdir -p $(dir $@)
+	nasm -o $@ -f elf32 $<
+
+$(SELF_BUILD_DIR)/libkeyboard: $(SELF_BUILD_ALL_C) $(SELF_BUILD_ALL_ASM)
+	ar rc $@ $^
+
