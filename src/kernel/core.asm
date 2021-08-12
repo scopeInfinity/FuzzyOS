@@ -18,7 +18,7 @@ global kernel_core_entry_asm
 
         ; TODO: Increase kernel code stack memory size
         ; The value also depends on kernel handler stack size
-        mov esp, 0x699C  ; init stack pointer
+        mov esp, 0xC000  ; init stack pointer
         jmp kernel_core_entry
 
         ; kernel_core_entry_asm currently exists only for tests.

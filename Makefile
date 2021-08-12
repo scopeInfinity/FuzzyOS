@@ -64,11 +64,28 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 # General Assumptions
 ## Integer is 4 bytes
 
+# Debugging controller
+DEBUG?=
+ifdef DEBUG
+CC_DEBUG=-g
+LD_DEBUG=
+else
+CC_DEBUG=
+LD_DEBUG=--strip-all
+endif
+
 # Tools
-CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static
 HOST_CC = gcc -std=c11 -Iinclude
+
+CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static $(CC_DEBUG)
 KERNEL_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR) -Iinclude -Isrc/usr/include
-LD=ld  -nostdlib -nostartfiles -nodefaultlibs --strip-all # --print-map
+USER_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR)
+
+LD=ld -nostdlib -nostartfiles -nodefaultlibs $(LD_DEBUG)
+KERNEL_LD=$(LD) -m elf_i386 -T linker.ld -Ttext 0x0
+USER_LD= $(LD) -m elf_i386 -T linker.ld -Ttext 0x0
+
+FLAT_FROM_ELF=objcopy -O binary
 
 # Targets
 all_artifacts: images binaries external

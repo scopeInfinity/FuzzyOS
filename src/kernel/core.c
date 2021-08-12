@@ -21,10 +21,6 @@
 extern void kernel_enable_interrupts();
 extern void kernel_core_entry_asm();
 
-int send_int() {
-    __asm__("int $0x18");
-}
-
 char command[30];
 int need_to_clear_hack;
 int run;
@@ -53,7 +49,6 @@ void kernel_core_entry() {
     // syscall_out = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_LBA_SC, SECTOR_START_APP_LS, SECTOR_COUNT_APP_LS, 0);
     // print_log("EXIT, syscall: %d", syscall_out);
     // interrupt_pit_enable();
-    // send_int();
     // while (1);
 
     need_to_clear_hack = 1;
