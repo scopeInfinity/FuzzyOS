@@ -22,7 +22,7 @@ void timer_add_ticks(unsigned int inc) {
 }
 
 // absolute time
-inline int get_time_since_boot_ms() {
+int get_time_since_boot_ms() {
     // This isn't accurate.
     // TODO: use boot_ticks_1
     int cycle_per_ms = PIC_PIT_FREQ/1000;
@@ -33,16 +33,16 @@ inline int get_time_since_boot_ms() {
 void irq0_pit_handler(int e_ip, int e_cs, int e_sp, int e_ss) {
     // called every X milli seconds.
     // time period is defined by pic_pit_set_counter.
-    unsigned short ticks_jumped =  pic_pit_get_counter();
+    // unsigned short ticks_jumped =  pic_pit_get_counter();
 
-    int oldtime_ms = get_time_since_boot_ms();
-    timer_add_ticks(ticks_jumped);
-    int newtime_ms = get_time_since_boot_ms();
-    // TODO: Cleanup
-    if (oldtime_ms/1000 != newtime_ms/1000) {
+    // int oldtime_ms = get_time_since_boot_ms();
+    // timer_add_ticks(ticks_jumped);
+    // int newtime_ms = get_time_since_boot_ms();
+    // // TODO: Cleanup
+    // if (1 || oldtime_ms/1000 != newtime_ms/1000) {
         print_log("+1 second");
         // process_scheduler(&e_ip, &e_cs, &e_sp, &e_ss);
-    }
+    // }
 }
 
 void interrupt_pit_enable() {

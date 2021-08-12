@@ -4,6 +4,7 @@ set $SS_BASE = 0x20000
 
 # config
 set architecture i386:x86-64
+
 set pagination off
 set prompt \033[32mgdb$ \033[0m
 
@@ -21,7 +22,11 @@ define cprintdata
 end
 
 define casm
-    x/20i ($CS_BASE+$pc)
+    x/10i ($CS_BASE+$pc)
+end
+
+define ccode
+    list *$pc
 end
 
 define cstack
@@ -43,6 +48,8 @@ define clayout
     echo \033c
     _clayout_title ASM
     casm
+    _clayout_title Code
+    ccode
     _clayout_title Register
     creg
     _clayout_title Stack
@@ -60,6 +67,7 @@ define view_realmode
     set $CS_BASE = 0x0000
     set $DS_BASE = 0x0000
     set $SS_BASE = 0x0000
+    symbol-file
     clayout
 end
 
@@ -67,6 +75,7 @@ define view_kernelmode
     set $CS_BASE = 0xC000
     set $DS_BASE = 0xC000
     set $SS_BASE = 0xC000
+    symbol-file build/kernel/core.elf
     clayout
 end
 
@@ -74,6 +83,7 @@ define view_usermode
     set $CS_BASE = 0x20000
     set $DS_BASE = 0x20000
     set $SS_BASE = 0x20000
+    symbol-file
     clayout
 end
 

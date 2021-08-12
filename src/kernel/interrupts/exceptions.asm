@@ -43,16 +43,24 @@ global _interrupt_handler_0x1F_exception
         ; is no need to save context for now.
         mov eax, %1
         push eax
+        ; arg0: exception number
+        ; arg1: return IP
+        ; arg2: return CS
         call interrupt_handler_0x00_0x1F_exception
         HLT
 %endmacro
 
-    create_low__interrupt_handler_xy_exception 0x00
+%macro create_low__interrupt_handler_xy_exception_nohup 1
+    _interrupt_handler_%1_exception:
+        iret
+%endmacro
+
+    create_low__interrupt_handler_xy_exception_nohup 0x00  ; divide-by-zero
     create_low__interrupt_handler_xy_exception 0x01
     create_low__interrupt_handler_xy_exception 0x02
     create_low__interrupt_handler_xy_exception 0x03
     create_low__interrupt_handler_xy_exception 0x04
-    create_low__interrupt_handler_xy_exception 0x05
+    create_low__interrupt_handler_xy_exception_nohup 0x05  ; bound-range-exceeded
     create_low__interrupt_handler_xy_exception 0x06
     create_low__interrupt_handler_xy_exception 0x07
     create_low__interrupt_handler_xy_exception 0x08

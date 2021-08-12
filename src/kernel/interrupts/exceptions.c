@@ -33,11 +33,9 @@ extern void _interrupt_handler_0x1D_exception();
 extern void _interrupt_handler_0x1E_exception();
 extern void _interrupt_handler_0x1F_exception();
 
-// https://en.wikipedia.org/wiki/Interrupt_descriptor_table
-void interrupt_handler_0x00_0x1F_exception(int id) {
-    PANIC(id, "[hw_exception] triggered");
+void interrupt_handler_0x00_0x1F_exception(int id,int ip, int cs) {
+    PANIC(id, "[hw_exception] triggered: no handler");
 }
-
 
 void interrupt_register_0x00_0x1F_exceptions() {
     print_log("[interrupts] register 0x00-0x1F exceptions");

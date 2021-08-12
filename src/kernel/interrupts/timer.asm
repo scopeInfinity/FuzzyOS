@@ -7,7 +7,6 @@ extern pic_pit_reset
 global create_infant_process_irq0_stack
 
 %macro _int_irq0_start 0
-        NOP
         ; eflag, cs, ip should be at start: 0 bytes
         CLI  ; should get restored on iret
         pushad ; ADD: 8*4 bytes; start: 12 bytes
@@ -44,8 +43,6 @@ global create_infant_process_irq0_stack
 
 %macro _int_irq0_end 0
         ; meant to placed at end of irq handler
-        ; HLT
-        NOP
         pop edi  ; new ip
         pop ecx  ; new cs
         pop esi  ; new esp
@@ -61,6 +58,7 @@ global create_infant_process_irq0_stack
 
         pop ebp
         mov [ebp+36], ecx ; cs
+        ; I'm TELLING YOU THIS IS BROKEN!!!!!!!!!!
         mov [ebp+32], edi ; ip  BROKEN!!!!
 
         ; jmp aaa
@@ -74,9 +72,12 @@ global create_infant_process_irq0_stack
 [SECTION .text]
 
     irq0_pit_handler_low:
+        ; HLT
+        NOP
         _int_irq0_start
         call irq0_pit_handler
         call pic_pit_reset
+        ; b *0xcbf8
         _int_irq0_end
         iret
 
