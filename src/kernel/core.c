@@ -45,11 +45,11 @@ void kernel_core_entry() {
 
     process_scheduler_init();
 
-    // int syscall_out = -1;
-    // syscall_out = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_LBA_SC, SECTOR_START_APP_LS, SECTOR_COUNT_APP_LS, 0);
-    // print_log("EXIT, syscall: %d", syscall_out);
-    // interrupt_pit_enable();
-    // while (1);
+    int syscall_out = -1;
+    syscall_out = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_LBA_SC, SECTOR_START_APP_LS, SECTOR_COUNT_APP_LS, 0);
+    print_log("Create process: %d", syscall_out);
+    interrupt_pit_enable();
+    while (1);
 
     need_to_clear_hack = 1;
     while(1) {

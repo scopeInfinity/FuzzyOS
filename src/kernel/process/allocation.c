@@ -103,7 +103,7 @@ int process_create() {
     // initially ds == ss
     process->ss = get_gdt_number_from_entry_id(idt_ds_entry);
     // should be compatible with create_infant_process_irq0_stack
-    process->sp = 0xFFF0-60;  // keep offset in sync with _int_irq0_start
+    process->sp = 0xFFF0-56;  // keep offset in sync with _int_irq0_start
     // TODO:
     // return -1;
 

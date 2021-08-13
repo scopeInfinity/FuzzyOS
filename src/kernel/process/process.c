@@ -43,9 +43,9 @@ int process_spawn(int lba_index, int sector_count) {
     print_log("[process_spawn] ready, pid: %d", pid);
     struct Process *process = get_process(pid);
     // TODO(scopeinfinity): Uncomment when create_infant_process_irq0_stack is ready.
-    // process->state = STATE_READY;
+    process->state = STATE_READY;
     // TODO(scopeinfinity): Remove call_main once process_scheduler starts working.
-    call_main(process->cs, process->ss, 0, 0);
+    // call_main(process->cs, process->ss, 0, 0);
     return 0;
 }
 
