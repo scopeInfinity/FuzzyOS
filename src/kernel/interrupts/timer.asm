@@ -10,17 +10,15 @@ global create_infant_process_irq0_stack
         ; eflag, cs, ip should be at start: 0 bytes
         CLI  ; should get restored on iret
         pushad ; ADD: 8*4 bytes; start: 12 bytes
-        mov ebp, esp
 
-        mov ecx, [ebp+36] ; cs
-        mov edi, [ebp+32] ; ip
-        push ebp  ; ADD: 4 bytes; start: 44 bytes
+        mov ecx, [esp+36] ; cs
+        mov edi, [esp+32] ; ip
 
         ; segment register
-        push ds   ; ADD: 4 bytes; start: 48 bytes
-        push es   ; ADD: 4 bytes; start: 52 bytes
-        push fs   ; ADD: 4 bytes; start: 56 bytes
-        push gs   ; ADD: 4 bytes; start: 60 bytes
+        push ds   ; ADD: 4 bytes; start: 44 bytes
+        push es   ; ADD: 4 bytes; start: 48 bytes
+        push fs   ; ADD: 4 bytes; start: 52 bytes
+        push gs   ; ADD: 4 bytes; start: 56 bytes
         ; ignore ss; will handle later
 
         mov edx, ss
@@ -68,9 +66,8 @@ global create_infant_process_irq0_stack
         pop es
         pop ds
 
-        pop ebp
-        mov [ebp+36], ecx ; cs
-        mov [ebp+32], edi ; ip
+        mov [esp+36], ecx ; cs
+        mov [esp+32], edi ; ip
 
         popad
 %endmacro
@@ -97,14 +94,8 @@ global create_infant_process_irq0_stack
         mov ecx, [ebp+0x08]     ; arg0
 
         mov ds, ecx
-        ; jmp aaa
-        ; aaa:
-        ; HLT
-
 
         ; user stack creation start
-        ; HLT
-        NOP
         ; user initial stack
         mov eax, 0xFFF0 ; keep in sync with _int_irq0_start
         ; kernel offset
@@ -119,18 +110,13 @@ global create_infant_process_irq0_stack
         mov [eax-12-24], ecx ; pushad esp
         ; do_not_care: next three are ebp, esi, edi
 
-        ; ebp = esp after pushd in _int_irq0_start
-        mov ecx, eax
-        sub ecx, 44
-        mov [eax-44], ecx       ; user: ebp
-
         mov ecx, [ebp+0x08]     ; arg0
-        mov [eax-48], ecx       ; user: ds
-        mov [eax-52], ecx       ; user: es
-        mov [eax-56], ecx       ; user: fs
-        mov [eax-60], ecx       ; user: gs
+        mov [eax-44], ecx       ; user: ds
+        mov [eax-48], ecx       ; user: es
+        mov [eax-52], ecx       ; user: fs
+        mov [eax-56], ecx       ; user: gs
 
-        ; user: esp = eax-60 = 0xFFF0-60
+        ; user: esp = eax-56 = 0xFFF0-56
         ; should be compatible with process_create
         ; user stack creation end
 
