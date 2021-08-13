@@ -35,13 +35,25 @@ global create_infant_process_irq0_stack
         mov fs, eax
         mov gs, eax
 
-        push edx  ; arg3: previous ss
-        push esi  ; arg2: previous esp
-        push ecx  ; arg1: previous cs
-        push edi  ; arg0: previous ip
+        push edx  ; previous ss
+        push esi  ; previous esp
+        push ecx  ; previous cs
+        push edi  ; previous ip
+
+        ; C code will be using DS to read stack
+        mov eax, esp
+        add eax, 12
+        push eax  ; arg3: &previous_ss
+        sub eax, 4
+        push eax  ; arg2: &previous_esp
+        sub eax, 4
+        push eax  ; arg1: &previous_cs
+        sub eax, 4
+        push eax  ; arg0: &previous_ip
 %endmacro
 
 %macro _int_irq0_end 0
+        add esp, 16
         ; meant to placed at end of irq handler
         pop edi  ; new ip
         pop ecx  ; new cs
@@ -58,26 +70,17 @@ global create_infant_process_irq0_stack
 
         pop ebp
         mov [ebp+36], ecx ; cs
-        ; I'm TELLING YOU THIS IS BROKEN!!!!!!!!!!
-        mov [ebp+32], edi ; ip  BROKEN!!!!
+        mov [ebp+32], edi ; ip
 
-        ; jmp aaa
-        ; aaa:
-        ; HLT
-        NOP
-        ; TODO: BREAKING HEREEEEEEEEEEEEEE
         popad
 %endmacro
 
 [SECTION .text]
 
     irq0_pit_handler_low:
-        ; HLT
-        NOP
         _int_irq0_start
         call irq0_pit_handler
         call pic_pit_reset
-        ; b *0xcbf8
         _int_irq0_end
         iret
 
