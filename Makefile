@@ -68,14 +68,18 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 DEBUG?=
 ifdef DEBUG
 CC_DEBUG=-g
+NASM_DEBUG=-g
 LD_DEBUG=
 else
 CC_DEBUG=
+NASM_DEBUG=
 LD_DEBUG=--strip-all
 endif
 
 # Tools
 HOST_CC = gcc -std=c11 -Iinclude
+
+NASM=nasm -f elf32 $(NASM_DEBUG)
 
 CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static $(CC_DEBUG)
 KERNEL_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR) -Iinclude -Isrc/usr/include

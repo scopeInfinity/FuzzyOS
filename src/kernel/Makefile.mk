@@ -25,7 +25,7 @@ $(SELF_BUILD_DIR)/%.o: $(SELF_SRC_DIR)/%.c $(BUILD_USR_INCLUDE_ALL)
 
 $(SELF_BUILD_DIR)/%_asm.o: $(SELF_SRC_DIR)/%.asm
 	mkdir -p $(dir $@)
-	nasm -o $@ -f elf32 -i $(SRC_REALMODE)/ $<
+	$(NASM) -o $@ -i $(SRC_REALMODE)/ $<
 
 $(kernel_core).elf: $(SELF_BUILD_DIR)/core_asm.o $(SELF_BUILD_DIR)/panic_asm.o $(SELF_BUILD_ALL_C) \
 		$(BUILD_KERNEL)/interrupts/libinterrupts \
