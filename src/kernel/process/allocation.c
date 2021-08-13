@@ -124,7 +124,6 @@ int process_create() {
         memory_location, memory_location+0xFFFF,
         0b0100,  // 32-bit protected mode
         0x92);
-    print_log("PROCESS_SS: %x", process->ss);
     create_infant_process_irq0_stack(process->ss);
     return pid;
 }

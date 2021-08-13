@@ -1,5 +1,9 @@
 #pragma once
 
 int atoi (const char *s);
-void itoa(int num, char *s);
+
+// only base 2, 8, 10 and 16 are supported
+// for others the result can be undefined.
+// And only base 10 is considered as signed int.
+void itoa(int num, char *s, int base);
 int min(int, int);

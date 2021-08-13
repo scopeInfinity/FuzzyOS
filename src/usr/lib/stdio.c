@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include <conio.h>
 #include <lib/utils/output.h>
 #include <sys/syscall.h>
@@ -19,6 +21,55 @@ int puts(const char *s) {
         c++;
     }
     return c;
+}
+
+int printf(const char *fmt, ...) {
+    int len = 0;
+    int rv = 0;
+    va_list args;
+    va_start(args, fmt);
+    for(;rv >= 0 && (*fmt)!='\0' ; fmt++) {
+        if((*fmt)!='%') {
+            putchar((*fmt));
+            len++;
+            continue;
+        }
+        fmt++;
+        if((*fmt)=='\0') break;
+
+        // formatting options
+        switch(*fmt) {
+            char sbuffer[68];
+            case '%':
+                putchar('%');
+                len++;
+                break;
+            case 'c':
+                putchar(va_arg(args, char));
+                len++;
+                break;
+            case 's':
+                rv = puts(va_arg(args, const char*));
+                if(rv>0) len+=rv;
+                break;
+            case 'd':
+                itoa(va_arg(args, int), sbuffer, 10);
+                rv = puts(sbuffer);
+                if(rv>0) len+=rv;
+                break;
+            case 'X':
+            case 'x':  // not an priority for now :)
+                itoa(va_arg(args, int), sbuffer, 16);
+                rv = puts(sbuffer);
+                if(rv>0) len+=rv;
+                break;
+            default:
+                return -1;  // invalid format char
+        }
+    }
+    va_end(args);
+    if(rv < 0) return rv;
+    return len;
 }
 
 char* gets(char *s) {

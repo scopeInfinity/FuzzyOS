@@ -3,14 +3,11 @@
 #include <string.h>
 
 void process(char filename[]) {
-    puts("file: ");
-    puts(filename);
-    putchar('\n');
+    printf("file: %s\n", filename);
 
     FILE *handler = fopen(filename, "r");
     if(handler==NULL) {
-        puts("file open: failed: ");
-        puts(filename);
+        printf("file open: failed: %s", filename);
         return;
     }
     puts("content: \n");

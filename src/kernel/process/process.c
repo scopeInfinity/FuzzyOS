@@ -28,19 +28,19 @@ SS ...    <- 0xDFFF  ; user stack
 SS 0xE000 <- 0xFFFF  ; kernel stack
 */
 int process_spawn(int lba_index, int sector_count) {
-    print_log("[process_spawn] create");
+    print_info("[process_spawn] create");
     int pid = process_create();
     if(pid<0) {
         print_log("Failed to reserved a new pid");
         return -1;
     }
-    print_log("[process_spawn] loading, pid: %d", pid);
+    print_info("[process_spawn] loading, pid: %d", pid);
     int err = process_load_from_disk(pid, lba_index, sector_count);
     if (err) {
         print_log("Failed to load app in memory, Error: ", err);
         return -2;
     }
-    print_log("[process_spawn] ready, pid: %d", pid);
+    print_info("[process_spawn] ready, pid: %d", pid);
     struct Process *process = get_process(pid);
     // TODO(scopeinfinity): Uncomment when create_infant_process_irq0_stack is ready.
     process->state = STATE_READY;

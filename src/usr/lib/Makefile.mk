@@ -3,7 +3,11 @@ BUILD_USR_LIB=$(BUILD_DIR)/usr/lib
 
 $(BUILD_USR_LIB)/%.o: $(SRC_USR_LIB)/%.c $(BUILD_USR_INCLUDE_ALL) $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB)/app/entry.h
 	mkdir -p $(dir $@)
-	$(KERNEL_CC) -c -o $@ $<
+	# TODO: Clean up sector location
+	$(KERNEL_CC) -c -o $@  \
+		-D SECTOR_START_APP_LS=$(SECTOR_START_APP_LS) \
+		-D SECTOR_COUNT_APP_LS=$(SECTOR_COUNT_APP_LS) \
+		$<
 
 $(BUILD_USR_LIB)/%_asm.o: $(SRC_USR_LIB)/%.asm
 	mkdir -p $(dir $@)

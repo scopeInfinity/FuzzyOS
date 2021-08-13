@@ -119,9 +119,9 @@ SECTOR_COUNT_APP_CALC = $(shell cut -d' ' -f6 configure 2> /dev/null || echo 30 
 SECTOR_START_APP_LS =  $(shell expr $(SECTOR_START_APP_CALC) + $(SECTOR_COUNT_APP_CALC) )
 SECTOR_COUNT_APP_LS = $(shell cut -d' ' -f7 configure 2> /dev/null || echo 30 )
 SECTOR_START_APP_CAT =  $(shell expr $(SECTOR_START_APP_LS) + $(SECTOR_COUNT_APP_LS) )
-SECTOR_COUNT_APP_CAT = $(shell cut -d' ' -f7 configure 2> /dev/null || echo 30 )
+SECTOR_COUNT_APP_CAT = $(shell cut -d' ' -f8 configure 2> /dev/null || echo 30 )
 SECTOR_START_APP_SH =  $(shell expr $(SECTOR_START_APP_CAT) + $(SECTOR_COUNT_APP_CAT) )
-SECTOR_COUNT_APP_SH = $(shell cut -d' ' -f7 configure 2> /dev/null || echo 30 )
+SECTOR_COUNT_APP_SH = $(shell cut -d' ' -f9 configure 2> /dev/null || echo 30 )
 
 # configure file stores the sector size of each sub images.
 configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat) $(app_sh)

@@ -16,50 +16,11 @@ void reset(struct State *s) {
             s->mat[i][j]=' ';
 }
 
-int _print_int(int x) {
-    int is_negative = 0;
-    int tailing_zero = 0;
-    if(x<0) {
-        is_negative = 1;
-        x=-x;
-    }
-    int rev = 0;
-    while(x && x%10==0) {
-        x/=10;
-        tailing_zero++;
-    }
-    if(x==0) {
-        // If the initial number is zero, add one here.
-        tailing_zero++;
-    }
-    while(x) {
-        rev = rev*10 + x%10;
-        x/=10;
-    }
-    if(is_negative) {
-        putchar('-');
-    }
-    while(rev) {
-        putchar((char)(rev%10+'0'));
-        rev/=10;
-    }
-    while(tailing_zero) {
-        putchar('0');
-        tailing_zero--;
-    }
-}
-
 void print_board(struct State *s) {
     for (int i = 0; i < 3; ++i) {
-        puts("   ");
-        putchar(s->mat[i][0]);
-        putchar('|');
-        putchar(s->mat[i][1]);
-        putchar('|');
-        putchar(s->mat[i][2]);
-        putchar('\n');
+        printf("   %c|%c|%c\n", s->mat[i][0], s->mat[i][1], s->mat[i][2]);
         if(i<2) {
-            puts("   -----\n");
+            printf("   -----\n");
         }
     }
 }
@@ -73,8 +34,7 @@ void redraw(struct State *s) {
     puts("Player 1 : X\n");
     puts("Player 2 : O\n");
     puts("\n");
-    puts("Turn: Player ");
-    _print_int(s->turn+1);
+    printf("Turn: Player %d", s->turn+1);
     puts("\n");
     puts("Controls: Use 1-9 in numpad keys pattern\n");
     puts("        : R to reset game\n");
@@ -129,7 +89,7 @@ int main(int argc,char *argv[]) {
                 play_move(&s, row, col);
                 break;
             } else {
-                _print_int(c);
+                printf("KeyPressed: %d\n", c);
             }
         }
     }

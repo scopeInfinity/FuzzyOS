@@ -10,39 +10,6 @@ char op;
 int t;
 int tl;
 
-int _print_int(int x) {
-    int is_negative = 0;
-    int tailing_zero = 0;
-    if(x<0) {
-        is_negative = 1;
-        x=-x;
-    }
-    int rev = 0;
-    while(x && x%10==0) {
-        x/=10;
-        tailing_zero++;
-    }
-    if(x==0) {
-        // If the initial number is zero, add one here.
-        tailing_zero++;
-    }
-    while(x) {
-        rev = rev*10 + x%10;
-        x/=10;
-    }
-    if(is_negative) {
-        putchar('-');
-    }
-    while(rev) {
-        putchar((char)(rev%10+'0'));
-        rev/=10;
-    }
-    while(tailing_zero) {
-        putchar('0');
-        tailing_zero--;
-    }
-}
-
 int solve(char s[]) {
     t=0;
     tl=0;
@@ -111,14 +78,10 @@ int handle_expression(char str[]) {
     }
     result = solve(str);
     if(err) {
-        puts("  Error[");
-        _print_int(err);
-        puts("]: Only '<num> [+-*/] <num>' syntax supported!\n");
-        puts("  Type 'HELP' for instructions!\n\n");
+        printf("  Error[%d]: Only '<num> [+-*/] <num>' syntax supported!\n", err);
+        printf("  Type 'HELP' for instructions!\n\n");
     } else {
-        puts("  Result: ");
-        _print_int(result);
-        puts("\n\n");
+        printf("  Result: %d\n\n", result);
     }
     return 1;
 }
