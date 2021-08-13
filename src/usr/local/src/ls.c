@@ -9,9 +9,7 @@ void process() {
     struct dirent *dp;
 
     while ((dp = readdir(&dir)) !=NULL) {
-        puts("- ");
-        puts(dp->d_name);
-        puts("\n");
+        printf("- %s \n", dp->d_name);
     }
 }
 

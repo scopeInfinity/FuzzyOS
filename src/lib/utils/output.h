@@ -32,7 +32,6 @@ void print_memory_hex(const char *str,unsigned short count);
 void print_int(int x);
 
 void printf_low(const char *strfmt, int* va_base);
-void printf(const char *strfmt, ...);
 
 #ifdef __cplusplus
 }

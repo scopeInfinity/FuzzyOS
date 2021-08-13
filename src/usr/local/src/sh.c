@@ -1,5 +1,6 @@
 // simple shell
 #include <stdio.h>
+#include <process.h>
 #include <dirent.h>
 
 const int COMMAND_SIZE = 200;
@@ -11,7 +12,7 @@ void banner() {
 
 void handle_command(char *cmd) {
     if (strcmp(cmd, "ls")==0) {
-        spawn("ls");
+        int x = spawn("ls");
     } else {
         puts("error\n");
     }

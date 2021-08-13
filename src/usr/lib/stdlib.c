@@ -4,7 +4,7 @@ int min(int a, int b) {
     return (a<b)?a:b;
 }
 
-int atoi (const char *s) {
+int atoi(const char *s) {
     int neg = 0;
     if ((*s) == '-' || (*s) == '+') {
         neg = ((*s) == '-');
@@ -18,27 +18,29 @@ int atoi (const char *s) {
     return num;
 }
 
-void itoa (int num, char *s) {
-    // base-10 for now.
+void itoa(int num, char *s, int base) {
+    // TODO: add assert on non-positive base.
     if(num==0) {
         *(s++)='0';
         *(s++)='\0';
         return;
     }
-    if (num<0) {
+    if (base == 10 && num<0) {
         *(s++) = '-';
         num=-num;
     }
 
-    int num_og = num;
-    while (num) {
-        num/=10;
-        s++;
+    int digit_count = 0;
+    int bnum = num;
+    while(bnum) {
+        digit_count++;
+        bnum/=base;
     }
-    *(s)='\0';
-    num=num_og;
-    while (num) {
-        *(--s)='0'+num%10;
-        num/=10;
+
+    *(s+digit_count) = '\0';
+    while((digit_count--)>0) {
+        int c = num%base;
+        num /= base;
+        *(s+digit_count) = (c<10)?'0'+c:'A'-10+c;
     }
 }

@@ -6,6 +6,7 @@
 
 int putchar(int c);
 int puts(const char *s);
+int printf(const char *strfmt, ...);
 
 char* gets (char *s);
 
