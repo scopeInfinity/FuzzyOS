@@ -1,5 +1,3 @@
-app_dashboard = $(BUILD_APP)/dashboard.out
-
 # User Applications
 $(BUILD_APP)/%.o: $(SRC_APP)/%.c $(BUILD_USR_INCLUDE_ALL) $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/time.h
 	mkdir -p $(BUILD_APP)

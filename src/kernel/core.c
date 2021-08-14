@@ -47,7 +47,7 @@ void kernel_core_entry() {
 
     int syscall_out = -1;
     syscall_out = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_LBA_SC, SECTOR_START_APP_SH, SECTOR_COUNT_APP_SH, 0);
-    syscall_out = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_LBA_SC, SECTOR_START_APP_LS, SECTOR_COUNT_APP_LS, 0);
+    // syscall_out = syscall(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_LBA_SC, SECTOR_START_APP_LS, SECTOR_COUNT_APP_LS, 0);
     print_log("Create process: %d", syscall_out);
     interrupt_pit_enable();
     while (1);
