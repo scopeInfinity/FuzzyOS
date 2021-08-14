@@ -1,3 +1,12 @@
+# Program to auto start when kernel is ready.
+# List of program can be found at build/usr/bin/
+# Some of them are
+#  sh.out
+#  ls.out
+#  tictactoe.out
+#  calc.out
+INIT_APPNAME ?= sh.out
+
 ROOT_DIR = .
 BUILD_DIR = build
 INCLUDE_DIR = include/fuzzy
@@ -42,23 +51,9 @@ kernel_core = $(BUILD_DIR)/kernel/core
 
 MINIMAL_DISK = $(BUILD_DIR)/minimal_disk
 
-
-# Program to auto start when kernel is ready.
-# 1 - Tic Tac Toe
-# 2 - Calculator
-# 3 - ls
-# 4 - cat
-# 5 - sh
-RUN_APP_ID = 1
-
 # Apps
 SRC_APP = $(SRC_DIR)/usr/local/src
 BUILD_APP = $(BUILD_DIR)/usr/local/bin
-app_calc = $(BUILD_APP)/calc.out
-app_tic_tac_toe = $(BUILD_APP)/tictactoe.out
-app_ls = $(BUILD_APP)/ls.out
-app_cat = $(BUILD_APP)/cat.out
-app_sh = $(BUILD_APP)/sh.out
 
 MEMORY_LOCATION_KERNEL = 0xC000
 

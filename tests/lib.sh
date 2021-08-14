@@ -6,6 +6,7 @@ BUILD_TEST_DIR="build_test"
 MONITOR_PORT=55555
 QEMU_SCREENSHOT="/tmp/$(basename $0 .sh).ppm"
 QEMU_SCREENSHOT_ARTIFACT="${QEMU_SCREENSHOT%.ppm}.png"
+INIT_APPNAME="tictactoe.out"
 
 MAGIC_WORD_SLEEP="##SLEEP-10s##"
 
@@ -88,7 +89,8 @@ export -f inject_test_code_c
 ##########################################
 function sync_to_src_test() {
     # Prepare source code directory for tests.
-    rsync -r "${SRC_DIR:?}" "${SRC_TEST_DIR:?}"
+    rm -r "${SRC_TEST_DIR:?}"
+    cp -r "${SRC_DIR:?}" "${SRC_TEST_DIR:?}"
 
     find "${SRC_TEST_DIR:?}" -iname '*.asm' -exec bash -c 'inject_test_code_asm "$0" "$1"' {} "$1" \;
     find "${SRC_TEST_DIR:?}" -iname '*.c' -exec bash -c 'inject_test_code_c "$0" "$1"' {} "$1" \;
@@ -100,6 +102,7 @@ function sync_to_src_test() {
 #   COMMAND_OUTPUT
 #   SCREEN_CONTENT
 #   QEMU_PID
+#   INIT_APPNAME
 # Arguments:
 #   Magic Word
 #   Inject Keyword
@@ -115,7 +118,10 @@ function os_test_up() {
     sync_to_src_test "${test_inject_keyword:?}"
 
     # Turn up QEMU in background
-    make qemu \
+    make clean BUILD_DIR="${BUILD_TEST_DIR:?}" \
+        && make configure \
+        && make qemu \
+        INIT_APPNAME="${INIT_APPNAME:?}" \
         SRC_DIR="${SRC_TEST_DIR:?}" \
         BUILD_DIR="${BUILD_TEST_DIR:?}" \
         QEMU_SHUT_FLAGS="" \
