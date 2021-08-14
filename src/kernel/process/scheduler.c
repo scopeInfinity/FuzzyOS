@@ -42,7 +42,6 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
         e_ss, e_sp);
     int pid = get_idt_reverse_pid_lookup_cs(e_cs);
     int npid = process_scheduler_get_next_pid(pid);
-
     if (pid != npid) {
         print_log("[process_scheduler] pid: %d -> %d", pid, npid);
         struct Process *process = get_process(pid);

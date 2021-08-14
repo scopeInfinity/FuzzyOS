@@ -8,7 +8,10 @@
  */
 #define IDT_SIZE        256
 #define IDT_IRQ_OFFSET  0x20
+
+// Used by /usr/lib/process.c
 #define IDT_IRQ0_PIC    (IDT_IRQ_OFFSET+0)
+// Used by /usr/lib/sys/syscall.asm
 #define IDT_SYSCALL     0x32
 
 
