@@ -23,7 +23,7 @@ void process(char filename[]) {
 }
 
 int main(int argc,char *argv[]) {
-    char filename[] = "lib.sh";
+    char filename[] = "README.md";
     process(filename);
     puts("Press return key to exit...\n");
     getch();

@@ -56,7 +56,7 @@ void write_nofile(int file_id, FILE *out) {
 
 
 int create_partition(char *src_dir, char *out_filepath) {
-    printf("%s, %s\n", src_dir, out_filepath);
+    printf("dir:%s partition: %s\n", src_dir, out_filepath);
     FILE *src = opendir(src_dir);
     FILE *out = fopen(out_filepath, "wb");
     if (!out) {
