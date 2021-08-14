@@ -7,7 +7,7 @@ void process(char filename[]) {
 
     FILE *handler = fopen(filename, "r");
     if(handler==NULL) {
-        printf("file open: failed: %s", filename);
+        printf("file open: failed: %s\n", filename);
         return;
     }
     puts("content: \n");
@@ -25,6 +25,7 @@ void process(char filename[]) {
 int main(int argc,char *argv[]) {
     char filename[] = "lib.sh";
     process(filename);
-    while (1);
+    puts("Press return key to exit...\n");
+    getch();
     return 0;
 }

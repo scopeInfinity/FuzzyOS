@@ -47,23 +47,38 @@ void io_low_scroll_screen(char count, unsigned char color,
             }
         }
     } else if (count > 0) {
-        // Not yet tested.
+        // scroll up
         int width = x2-x1+1;
-        for (int r_dest=y1,r_src = y1+count; r_src <= y2; r_src++,r_dest++) {
+        for (int r_dst=y1,r_src = y1+count; r_src <= y2; r_src++,r_dst++) {
             int s_index = r_src*TEXT_WINDOW_WIDTH+x1;
-            int d_index = r_dest*TEXT_WINDOW_WIDTH+x1;
+            int d_index = r_dst*TEXT_WINDOW_WIDTH+x1;
             for (int j = x1; j <= x2; ++j) {
                 buffer[d_index++]=buffer[s_index++];
             }
         }
+        // clear bottom rows
+        for (int r=y2-count+1; r <= y2; r++) {
+            int x = r*TEXT_WINDOW_WIDTH+x1;
+            for (int j = x1; j <= x2; ++j) {
+                buffer[x++]=(((unsigned short)color)<<8)|' ';
+            }
+        }
     } else {
-        // Not yet tested.
+        // scroll down
         int width = x2-x1+1;
-        for (int r_dest=y2,r_src = y2+count; r_src >= y1; r_src--,r_dest--) {
+        for (int r_dst=y2,r_src = y2+count; r_src >= y1; r_src--,r_dst--) {
             int s_index = r_src*TEXT_WINDOW_WIDTH+x1;
-            int d_index = r_dest*TEXT_WINDOW_WIDTH+x1;
+            int d_index = r_dst*TEXT_WINDOW_WIDTH+x1;
             for (int j = x1; j <= x2; ++j) {
                 buffer[d_index++]=buffer[s_index++];
+            }
+        }
+
+        // clear top rows
+        for (int r=y1; r<=y1+count-1; r++) {
+            int x = r*TEXT_WINDOW_WIDTH+x1;
+            for (int j = x1; j <= x2; ++j) {
+                buffer[x++]=(((unsigned short)color)<<8)|' ';
             }
         }
     }
@@ -73,6 +88,8 @@ void io_low_scroll_screen(char count, unsigned char color,
 void io_low_put_char(char c, unsigned char color) {
     _low_put_char(c,color, location_xy);
     buffer[location_xy]=(((unsigned short)color)<<8)|c;
+    // slows down char printing but good enough for now.
+    io_low_flush();
 }
 
 void io_low_flush() {

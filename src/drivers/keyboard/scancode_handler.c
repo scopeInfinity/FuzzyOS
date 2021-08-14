@@ -1,5 +1,6 @@
 #include <lib/ds/queue.h>
 
+// Scan Code Set 2
 // P in naming in prefix code
 // RP in naming in additonal prefix code for release key
 #define  KEYBOARD_SC_RPF0_F1                 0x05

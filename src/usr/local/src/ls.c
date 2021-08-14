@@ -15,7 +15,7 @@ void process() {
 
 int main(int argc,char *argv[]) {
     process();
-    puts("Press return key to exit...");
+    puts("Press return key to exit...\n");
     getch();
     return 0;
 }

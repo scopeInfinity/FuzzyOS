@@ -66,6 +66,9 @@ void entry_stage() {
 
     // Enter_protected_mode never returns.
     print_log("Loading GDT Table and entering protected mode");
+
+    // move cursor to end of screen to not bother protected mode.
+    set_display_text_xy(TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
     enter_protected_mode();
     // And thus PC should never reach here :)
 }
