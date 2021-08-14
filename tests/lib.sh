@@ -119,7 +119,6 @@ function os_test_up() {
 
     # Turn up QEMU in background
     make clean BUILD_DIR="${BUILD_TEST_DIR:?}" \
-        && make configure \
         && make qemu \
         INIT_APPNAME="${INIT_APPNAME:?}" \
         SRC_DIR="${SRC_TEST_DIR:?}" \
