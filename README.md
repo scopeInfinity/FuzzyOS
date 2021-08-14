@@ -14,9 +14,15 @@ The VMDK image can be found under `Assets` for the corresponding release.
 
 The screenshots can be located as `Artifacts` under completed run on [Actions/CI](https://github.com/scopeInfinity/FuzzyOS/actions/workflows/ci.yaml?query=branch%3Amaster+event%3Apush+is%3Asuccess).
 
- Bootloader  |  Kernel Turnup | Simple Application
--------------|----------------|-------------------
- ![image](https://user-images.githubusercontent.com/9819066/119272271-12b67700-bbfd-11eb-8036-1466d39ebe8e.png) | ![image](https://user-images.githubusercontent.com/9819066/119273658-ca4e8780-bc03-11eb-8353-2dcf41354c82.png) | ![image](https://user-images.githubusercontent.com/9819066/119272299-2bbf2800-bbfd-11eb-9e8a-350946e1218b.png)
+
+ Bootloader  |  Kernel Turnup
+-------------|----------------
+ ![image](https://user-images.githubusercontent.com/9819066/119272271-12b67700-bbfd-11eb-8036-1466d39ebe8e.png) | ![image](https://user-images.githubusercontent.com/9819066/129453488-1950ca70-25cc-4801-842f-b25ea88ab25f.png)
+
+
+ Simple Shell | TicTacToe Game
+--------------| ------------------
+![image](https://user-images.githubusercontent.com/9819066/129453427-41e9322f-5e87-4d46-a4dc-0fd70b68e4a7.png) | ![image](https://user-images.githubusercontent.com/9819066/119272299-2bbf2800-bbfd-11eb-9e8a-350946e1218b.png)
 
 ### Boot OS
 
