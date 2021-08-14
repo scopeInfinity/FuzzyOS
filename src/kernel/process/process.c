@@ -40,7 +40,7 @@ int process_spawn(int lba_index, int sector_count) {
         print_log("Failed to load app in memory, Error: ", err);
         return -2;
     }
-    print_info("[process_spawn] ready, pid: %d", pid);
+    print_log("[process_spawn] ready, pid: %d", pid);
     struct Process *process = get_process(pid);
     // TODO(scopeinfinity): Uncomment when create_infant_process_irq0_stack is ready.
     process->state = STATE_READY;
@@ -54,6 +54,11 @@ int process_exec(int lba_index, int sector_count) {
     return -1;
 }
 
+int syscall_1_process_exit(int user_ds, int status) {
+    process_kill(user_ds, status);
+    return 0;
+}
+
 int syscall_1_process_spawn_lba_sc(int lba_start, int sector_count) {
     return process_spawn(lba_start, sector_count);
 }
@@ -64,6 +69,9 @@ int syscall_1_process_exec_lba_sc(int lba_start, int sector_count) {
 
 int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds) {
     switch (operation) {
+        case SYSCALL_PROCESS_SUB_EXIT:
+            syscall_1_process_exit(user_ds, a0);
+            return 0;
         case SYSCALL_PROCESS_SUB_SPAWN_LBA_SC:
             return syscall_1_process_spawn_lba_sc(a0, a1);
         case SYSCALL_PROCESS_SUB_EXEC_LBA_SC:
