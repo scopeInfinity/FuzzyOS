@@ -1,8 +1,9 @@
 #include <fuzzy/kernel/process/process.h>
+#include <fuzzy/kernel/panic.h>
 
 int process_scheduler_rr(int lastpid) {
     // Round Robin Scheduler.
-    int best_id = lastpid;
+    int best_id = -1;  // not found
     for (int i = 1; i <= MAX_PROCESS; ++i) {
         int nid = (lastpid+i)%MAX_PROCESS;
         struct Process *process = get_process(nid);
@@ -16,9 +17,10 @@ int process_scheduler_rr(int lastpid) {
 
 int process_scheduler_largestpid(int lastpid) {
     // Run largest READY pid
-    int best_id = lastpid;
+    int best_id = -1;  // not found
     for (int nid = MAX_PROCESS-1; nid >= 0; --nid) {
         struct Process *process = get_process(nid);
+
         if (process->state == STATE_READY) {
             best_id = nid;
             break;
@@ -27,7 +29,22 @@ int process_scheduler_largestpid(int lastpid) {
     return best_id;
 }
 
+void process_scheduler_stash_state() {
+    for (int id = 0; id < MAX_PROCESS; id++) {
+        struct Process *process = get_process(id);
+
+        if(process->state == STATE_EXIT) {
+            // process unallocate ready to be killed
+            process->state = STATE_COLD;
+        } else if(process->state == STATE_RUNNING) {
+            // process move running process to ready
+            process->state = STATE_READY;
+        }
+    }
+}
+
 int process_scheduler_get_next_pid(int lastpid) {
+    process_scheduler_stash_state();
     // execute one of the scheduling algorithm
     return process_scheduler_largestpid(lastpid);
 }
@@ -40,33 +57,30 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
     print_info("[process_scheduler] cs:ip %x:%x,  ss:sp %x:%x",
         e_cs, e_ip,
         e_ss, e_sp);
+
     int pid = get_idt_reverse_pid_lookup_cs(e_cs);
     int npid = process_scheduler_get_next_pid(pid);
-    if (pid != npid) {
-        print_log("[process_scheduler] pid: %d -> %d", pid, npid);
-        struct Process *process = get_process(pid);
-        int pstate = process->state;
 
-        // unallocate ready to be killed process
-        if(pstate == STATE_EXIT) {
-            process->state = STATE_COLD;
-        } else {
-            process->state = STATE_READY;
-        }
+    if(npid<0) {
+        PANIC(0, "[process_scheduler] no STATE_READY process alive");
+    }
 
-        // brace for next process
+    print_log("[process_scheduler] pid: %d -> %d", pid, npid);
+    struct Process *process = get_process(pid);
+    if(process->state != STATE_COLD) {
+        // if last process is still alive
         process->cs = e_cs;
         process->ip = e_ip;
         process->ss = e_ss;
         process->sp = e_sp;
-
-        struct Process *nprocess = get_process(npid);
-        nprocess->state = STATE_RUNNING;
-        e_cs = nprocess->cs;
-        e_ip = nprocess->ip;
-        e_ss = nprocess->ss;
-        e_sp = nprocess->sp;
     }
+
+    struct Process *nprocess = get_process(npid);
+    nprocess->state = STATE_RUNNING;
+    e_cs = nprocess->cs;
+    e_ip = nprocess->ip;
+    e_ss = nprocess->ss;
+    e_sp = nprocess->sp;
 
     *_e_ip = e_ip;
     *_e_cs = e_cs;

@@ -39,14 +39,14 @@ void print_rectangle(unsigned char x1,unsigned char y1,
 }
 
 void scroll(char count,
-            unsigned char x1,unsigned char y1,
+            unsigned char x1, unsigned char y1,
             unsigned char x2, unsigned char y2) {
     io_low_scroll_screen(count, get_color_fgbg(), x1, y1, x2, y2);
 }
 
 void move_to_next_line() {
     if (get_display_text_y()>=TEXT_WINDOW_HEIGHT-1) {
-        scroll(1, 0, 0, TEXT_WINDOW_WIDTH, TEXT_WINDOW_HEIGHT);
+        scroll(1, 0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
     } else {
         move_y_diff(1);
     }

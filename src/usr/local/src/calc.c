@@ -87,10 +87,11 @@ int handle_expression(char str[]) {
 }
 
 
-int main(int argc,char *argv[]) {
+int main(int argc, char *argv[]) {
     puts("Simple Calculator\n");
     puts("-----------------\n");
     puts("\n");
+
     show_usage();
     while(1) {
         err = 0;
