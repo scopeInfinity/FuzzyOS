@@ -8,13 +8,12 @@
 
 #define GDT_TABLE_SIZE 5
 struct GDTEntry gdt_table[GDT_TABLE_SIZE];
+struct GDTReference gdtr;
 
 char DIGIT_TO_HEX[] = "0123456789ABCDEF";
 
-extern struct GDTReference* _low_get_gdtr_address();
 extern void enter_protected_mode();
 extern void label_exit();
-
 
 char *get_memdump_8byte(void *address) {
     static char shared_memdump[17];
@@ -61,8 +60,7 @@ void entry_stage() {
     load_static_library();
     load_kernel();
 
-    struct GDTReference* gdtr = _low_get_gdtr_address();
-    populate_gdt_table(gdtr, gdt_table, GDT_TABLE_SIZE, 0);
+    populate_gdt_table(&gdtr, gdt_table, GDT_TABLE_SIZE, 0);
 
     // Enter_protected_mode never returns.
     print_log("Loading GDT Table and entering protected mode");

@@ -1,5 +1,3 @@
-%include "stub.asm"
-
 [BITS 32]
 
 extern kernel_core_entry

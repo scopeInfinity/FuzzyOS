@@ -1,37 +1,33 @@
 ; Fuzzy Bootloader Stage 2
 %include "constants.asm"
 %include "io.asm"
-%include "stub.asm"
 
 [BITS 16]
 
 extern entry_stage
-global _low_get_gdtr_address
+extern gdtr
 global enter_protected_mode
 global label_exit
 
 [SECTION .text]
-        MOV ax, 0x0000
-        MOV es, ax                  ; es := 0
+        mov eax, 0x0
+        mov es, eax
+        mov ss, eax
+        mov ds, eax
+        mov fs, eax
+        mov gs, eax
+        mov eax, 0xBFFC  ; create stack
+        mov esp, eax
+
         set_blinking 0
         print_string_ext bl_stage_2, bl_stage_2_len, 04, 09, C_WHITE, C_BLACK, 0
         call entry_stage
-
-    _low_get_gdtr_address:
-        push ebp
-        mov ebp, esp
-
-        get_gdtr_address
-
-        pop ebp
-        ret
-
 
     enter_protected_mode:
         ; Never returns.
 
         ; Load GDT Table
-        get_gdtr_address
+        mov eax, gdtr
         lgdt [eax]
 
         ; Enter Protected mode

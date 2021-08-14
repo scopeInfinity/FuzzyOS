@@ -1,5 +1,3 @@
-%include "stub.asm"
-
 [BITS 32]
 
 extern reload_idt_table
