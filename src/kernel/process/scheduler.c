@@ -37,20 +37,25 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
     int e_cs = *_e_cs;
     int e_sp = *_e_sp;
     int e_ss = *_e_ss;
-    print_info("[process_scheduler] cs:ip %x:%x,  ss:sp %x:%x",
+    print_log("[process_scheduler] cs:ip %x:%x,  ss:sp %x:%x",
         e_cs, e_ip,
         e_ss, e_sp);
-    // TODO: Fix cavets
-    //  - CS is not reliable it won't work if user code is inside a syscall.
-    //  - two syscall won't be able to execute at a time.
-    // Potential fix: ensure the process_scheduler won't execute during a syscall.
-    int pid = get_idt_reverse_pid_lookup(e_cs);
+    int pid = get_idt_reverse_pid_lookup_cs(e_cs);
     int npid = process_scheduler_get_next_pid(pid);
 
     if (pid != npid) {
         print_log("[process_scheduler] pid: %d -> %d", pid, npid);
         struct Process *process = get_process(pid);
-        process->state = STATE_READY;
+        int pstate = process->state;
+
+        // unallocate ready to be killed process
+        if(pstate == STATE_EXIT) {
+            process->state = STATE_COLD;
+        } else {
+            process->state = STATE_READY;
+        }
+
+        // brace for next process
         process->cs = e_cs;
         process->ip = e_ip;
         process->ss = e_ss;

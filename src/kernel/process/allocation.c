@@ -34,22 +34,36 @@ int get_gdt_number_from_entry_id(int id) {
     return id*sizeof(struct GDTEntry);
 }
 
-int get_idt_reverse_pid_lookup(int cs) {
+int get_idt_reverse_pid_lookup_cs(int cs) {
     if(cs%sizeof(struct GDTEntry)!=0) {
         PANIC(cs, "get_idt_reverse_pid_lookup(cs) called with cs%8!=0.");
     }
-    if(cs<=0) {
-        PANIC(cs, "get_idt_reverse_pid_lookup(cs) called with cs<=0.");
-    }
     int segment_id = cs/sizeof(struct GDTEntry);
-    int idt_ss_entry = (segment_id-1)/2;
-    if(idt_ss_entry==0) {
-        return PID_KERNEL;
-    } else if(idt_ss_entry==-1) {
-        // TODO: Maybe add process manager as separate process.
-        return -1; // process manager
+    if(segment_id<=0) {
+        PANIC(cs, "get_idt_reverse_pid_lookup(cs) called with segment_id<=0.");
     }
-    return (idt_ss_entry-6)/2;
+    int cs_index = (segment_id-1)/2;
+    if(cs_index==0) {
+        return PID_KERNEL;
+    }
+    // cs_index == 1 is absolute segment gdt entry
+    return cs_index-1;
+}
+
+int get_idt_reverse_pid_lookup_ds(int ds) {
+    if(ds%sizeof(struct GDTEntry)!=0) {
+        PANIC(ds, "get_idt_reverse_pid_lookup(ds) called with ds%8!=0.");
+    }
+    int segment_id = ds/sizeof(struct GDTEntry);
+    if(segment_id<0) {
+        PANIC(ds, "get_idt_reverse_pid_lookup(ds) called with segment_id<2.");
+    }
+    int ds_index = segment_id/2-1;
+    if(ds_index==0) {
+        return PID_KERNEL;
+    }
+    // ds_index == 1 is absolute segment gdt entry
+    return ds_index-1;
 }
 
 // memory mapping
@@ -74,6 +88,10 @@ void process_scheduler_init() {
     for (int i = 0; i < MAX_PROCESS; ++i) {
         processes[i].state=STATE_COLD;
     }
+    // after the process scheduler starts
+    // main thread kernel is ready to be killed.
+    processes[PID_KERNEL].state=STATE_EXIT;
+
     populate_gdt_table(
         &gdtr, gdt_table, GDT_TABLE_SIZE,
         MEMORY_LOCATION_KERNEL);
@@ -126,6 +144,13 @@ int process_create() {
         0x92);
     create_infant_process_irq0_stack(process->ss);
     return pid;
+}
+
+void process_kill(int user_ds, int status) {
+    int pid = get_idt_reverse_pid_lookup_ds(user_ds);
+    struct Process *process = &processes[pid];
+    process->status_code = status;
+    process->state = STATE_EXIT;
 }
 
 int process_load_from_disk(int pid, int lba_index, int sector_count) {

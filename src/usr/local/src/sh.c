@@ -4,6 +4,7 @@
 #include <dirent.h>
 
 const int COMMAND_SIZE = 200;
+int last_status_code = 0;
 
 void banner() {
     puts("Simple Shell\n");
@@ -12,10 +13,12 @@ void banner() {
 
 void handle_command(char *cmd) {
     if (strcmp(cmd, "ls")==0) {
-        int x = spawn("ls");
+        last_status_code = spawn("ls");
     } else {
-        puts("error\n");
+        printf("'%s' command not found\n", cmd);
+        last_status_code = 404;
     }
+    printf("status code: %d\n", last_status_code);
 }
 
 int main(int argc,char *argv[]) {

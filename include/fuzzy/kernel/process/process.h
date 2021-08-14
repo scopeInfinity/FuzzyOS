@@ -10,7 +10,7 @@ enum process_state{
     STATE_LOADING,  // resources allocated but not ready.
     STATE_READY,
     STATE_RUNNING,
-    STATE_EXIT,
+    STATE_EXIT,    // should be unallocated in next scheduling cycle
 };
 
 struct Process {
@@ -19,7 +19,7 @@ struct Process {
     unsigned int ss, cs, sp, ip;
     unsigned int *e;
 
-    int exit_code;
+    int status_code;
 };
 
 void process_scheduler_init();
@@ -34,6 +34,10 @@ int get_gdt_number_from_entry_id(int id);
 int get_idt_cs_entry(int process_id);
 int get_idt_ds_entry(int process_id);
 int get_idt_reverse_pid_lookup(int cs);
+
+// process create or kill
+int process_create();
+void process_kill(int user_ds, int status);
 
 // scheduler
 

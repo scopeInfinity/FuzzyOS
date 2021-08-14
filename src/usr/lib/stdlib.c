@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <process.h>
+#include <sys/syscall.h>
 
 int min(int a, int b) {
     return (a<b)?a:b;
@@ -43,4 +45,11 @@ void itoa(int num, char *s, int base) {
         num /= base;
         *(s+digit_count) = (c<10)?'0'+c:'A'-10+c;
     }
+}
+
+void exit(int status) {
+    SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_EXIT, status);
+    // process should be marked as ready to kill, wait util it's killed
+    // process yield can be a potential optimization here.
+    while(1);
 }
