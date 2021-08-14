@@ -49,7 +49,8 @@ void itoa(int num, char *s, int base) {
 
 void exit(int status) {
     SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_EXIT, status);
-    // process should be marked as ready to kill, wait util it's killed
-    // process yield can be a potential optimization here.
+    // process should be marked as ready to kill, wait util it's killed.
+    // process yield should be enough complete kill.
+    yield();
     while(1);
 }

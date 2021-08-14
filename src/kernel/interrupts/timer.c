@@ -38,11 +38,7 @@ void irq0_pit_handler(int *e_ip, int *e_cs, int *e_sp, int *e_ss) {
     int oldtime_ms = get_time_since_boot_ms();
     timer_add_ticks(ticks_jumped);
     int newtime_ms = get_time_since_boot_ms();
-    // TODO: Cleanup
-    if (oldtime_ms/1000 != newtime_ms/1000) {
-        print_log("+1 second");
-        process_scheduler(e_ip, e_cs, e_sp, e_ss);
-    }
+    process_scheduler(e_ip, e_cs, e_sp, e_ss);
 }
 
 void interrupt_pit_enable() {

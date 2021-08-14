@@ -9,3 +9,5 @@
 //   then it's the pid of the new process
 //   otherwise it's some error code
 int spawn(char *path);
+
+void yield();

@@ -13,13 +13,12 @@ void banner() {
 }
 
 int cmd_help() {
-    // dir
     printf("allowed expression\n");
     printf("  $ <cmd> [arg0]\n");
     printf("\n");
-    printf("defined <cmd>:\n");
-    printf("   - help\n");
-    printf("   - dir\n");
+    printf(" > help\n");
+    printf(" > dir\n");
+    printf(" > run <filename>\n");
     return 0;
 }
 
@@ -37,7 +36,6 @@ int cmd_dir() {
 int cmd_execute(int fname) {
     return spawn(fname);
 }
-
 void handle_command(char *full_cmd) {
     // syntax: <cmd> [arg0]
     char cmd[12];  // for now: excepts no cmd to use all bytes.
@@ -59,7 +57,7 @@ void handle_command(char *full_cmd) {
         last_status_code = cmd_help();
     } else if (strcmp(cmd, "dir")==0) {
         last_status_code = cmd_dir();
-    } else if (strcmp(cmd, "execute")==0) {
+    } else if (strcmp(cmd, "run")==0) {
         last_status_code = cmd_execute(arg0);
     } else {
         printf("'%s' command not found\n", cmd);
