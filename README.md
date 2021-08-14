@@ -14,7 +14,7 @@ The VMDK image can be found under `Assets` for the corresponding release.
 
 The screenshots can be located as `Artifacts` under completed run on [Actions/CI](https://github.com/scopeInfinity/FuzzyOS/actions/workflows/ci.yaml?query=branch%3Amaster+event%3Apush+is%3Asuccess).
 
- Bootloader  |  Kernel Turnup | Simple Application 
+ Bootloader  |  Kernel Turnup | Simple Application
 -------------|----------------|-------------------
  ![image](https://user-images.githubusercontent.com/9819066/119272271-12b67700-bbfd-11eb-8036-1466d39ebe8e.png) | ![image](https://user-images.githubusercontent.com/9819066/119273658-ca4e8780-bc03-11eb-8353-2dcf41354c82.png) | ![image](https://user-images.githubusercontent.com/9819066/119272299-2bbf2800-bbfd-11eb-9e8a-350946e1218b.png)
 
@@ -22,7 +22,7 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
 
 #### How to get boot image?
   - Download image from one of the [Release](#Release).
-  - Or directly build image using `make configure && make images` after cloning the repository.
+  - Or directly build image using `make images` after cloning the repository.
 
 #### Boot on VMware
   - Create *Virtual Machine Disk* with fixed size of *4MB*.
@@ -33,7 +33,7 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
 ##### Boot on a real machine
   - Use `dd` or `scripts/burn.sh` to burn image into the disk (potentially destructive).
   - `bash scripts/burn.sh build/image.vmdk /path/to/devicefile`
- 
+
 ###### If boot from Flash Drive doesn't work
   - Try formatting device MBR with a FAT partition.
   - And then burn the image again.
@@ -46,7 +46,6 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
 ```
 bash before_install.sh
 make clean
-make configure
 ```
 
 #### QEMU Quick Launch

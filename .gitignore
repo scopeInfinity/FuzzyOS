@@ -1,6 +1,5 @@
 *.vmdk
 *.o
-configure
 local_notes/
 build/
 src_test/

@@ -101,29 +101,27 @@ binaries: $(bt_stage1) $(bt_stage2) $(kernel_core) $(rm_static)
 
 # Build dependecies for configure and $(image_vmdk) are ordered based on their position on disk.
 # Note: Relying on default value doesn't guarantee bin size.
-SECTOR_START_BT_STAGE1 = 0
-SECTOR_COUNT_BT_STAGE1 = $(shell cut -d' ' -f1 configure 2> /dev/null || echo 1 )
-SECTOR_START_SHARED_LIBRARY = $(shell expr $(SECTOR_START_BT_STAGE1) + $(SECTOR_COUNT_BT_STAGE1) )
-SECTOR_COUNT_SHARED_LIBRARY = $(shell cut -d' ' -f2 configure 2> /dev/null || echo 1 )
-SECTOR_START_BT_STAGE2 = $(shell expr $(SECTOR_START_SHARED_LIBRARY) + $(SECTOR_COUNT_SHARED_LIBRARY) )
-SECTOR_COUNT_BT_STAGE2 = $(shell cut -d' ' -f3 configure 2> /dev/null || echo 30 )
-SECTOR_START_KERNEL = $(shell expr $(SECTOR_START_BT_STAGE2) + $(SECTOR_COUNT_BT_STAGE2) )
-SECTOR_COUNT_KERNEL = $(shell cut -d' ' -f4 configure 2> /dev/null || echo 30 )
+SECTOR_COUNT_BT_STAGE1 = 1
+SECTOR_COUNT_SHARED_LIBRARY = 1
+SECTOR_COUNT_BT_STAGE2 = 11
+SECTOR_COUNT_KERNEL = 44
 
-# configure file stores the sector size of each sub images.
-configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core)
-	bash scripts/build_image.sh /dev/null $^ > $@
-	rm -r $(BUILD_DIR)/ && "Cleared build directory" || echo "Build directory is clean."
+SECTOR_START_BT_STAGE1 = 0
+SECTOR_START_SHARED_LIBRARY = $(shell expr $(SECTOR_START_BT_STAGE1) + $(SECTOR_COUNT_BT_STAGE1) )
+SECTOR_START_BT_STAGE2 = $(shell expr $(SECTOR_START_SHARED_LIBRARY) + $(SECTOR_COUNT_SHARED_LIBRARY) )
+SECTOR_START_KERNEL = $(shell expr $(SECTOR_START_BT_STAGE2) + $(SECTOR_COUNT_BT_STAGE2) )
 
 $(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(BUILD_DIR)/external/bin/mbr_builder $(MINIMAL_DISK)
-	test -s configure || { echo -e "\033[0;31mFailed! Please execute 'make configure' first.\033[0m" >&2; exit 1; }
-	bash scripts/build_image.sh $(BUILD_DIR)/temp_vmdk $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core)
+	bash scripts/build_image.sh $(BUILD_DIR)/temp_vmdk \
+		$(bt_stage1) $(SECTOR_COUNT_BT_STAGE1) \
+		$(rm_static) $(SECTOR_COUNT_SHARED_LIBRARY) \
+		$(bt_stage2) $(SECTOR_COUNT_BT_STAGE2) \
+		$(kernel_core) $(SECTOR_COUNT_KERNEL)
 	./$(BUILD_DIR)/external/bin/mbr_builder $@  $(BUILD_DIR)/temp_vmdk $(MINIMAL_DISK)
 	@echo "Image Size : $$(stat -c %s $@) byte(s)"
 
 clean:
 	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."
-	rm -f configure
 
 include emulator/Makefile.mk
 
