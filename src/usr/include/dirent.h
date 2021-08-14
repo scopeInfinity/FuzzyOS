@@ -9,7 +9,7 @@ struct dirent {
 
 struct DIR {
     struct dirent entry;
-    int kernel_file_id;
+    int kernel_file_id;  // iterator
 };
 
 // There is only one global directory in FFS.

@@ -37,7 +37,7 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
     int e_cs = *_e_cs;
     int e_sp = *_e_sp;
     int e_ss = *_e_ss;
-    print_log("[process_scheduler] cs:ip %x:%x,  ss:sp %x:%x",
+    print_info("[process_scheduler] cs:ip %x:%x,  ss:sp %x:%x",
         e_cs, e_ip,
         e_ss, e_sp);
     int pid = get_idt_reverse_pid_lookup_cs(e_cs);

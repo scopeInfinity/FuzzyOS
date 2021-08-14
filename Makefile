@@ -40,6 +40,9 @@ rm_static = $(BUILD_REALMODE)/static_library
 # Kernel
 kernel_core = $(BUILD_DIR)/kernel/core
 
+MINIMAL_DISK = $(BUILD_DIR)/minimal_disk
+
+
 # Program to auto start when kernel is ready.
 # 1 - Tic Tac Toe
 # 2 - Calculator
@@ -128,10 +131,10 @@ configure: $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_t
 	bash scripts/build_image.sh /dev/null $^ > $@
 	rm -r $(BUILD_DIR)/ && "Cleared build directory" || echo "Build directory is clean."
 
-$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat) $(app_sh) $(BUILD_DIR)/external/bin/mbr_builder $(BUILD_DIR)/external/example/sample_fs
+$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat) $(app_sh) $(BUILD_DIR)/external/bin/mbr_builder $(MINIMAL_DISK)
 	test -s configure || { echo -e "\033[0;31mFailed! Please execute 'make configure' first.\033[0m" >&2; exit 1; }
 	bash scripts/build_image.sh $(BUILD_DIR)/temp_vmdk $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(app_tic_tac_toe) $(app_calc) $(app_ls) $(app_cat) $(app_sh)
-	./$(BUILD_DIR)/external/bin/mbr_builder $@  $(BUILD_DIR)/temp_vmdk $(BUILD_DIR)/external/example/sample_fs
+	./$(BUILD_DIR)/external/bin/mbr_builder $@  $(BUILD_DIR)/temp_vmdk $(MINIMAL_DISK)
 	@echo "Image Size : $$(stat -c %s $@) byte(s)"
 
 clean:
