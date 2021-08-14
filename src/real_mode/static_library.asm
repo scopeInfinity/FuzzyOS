@@ -1,6 +1,4 @@
-%include "stub.asm"
-
-; Code must be within 256 bytes.
+; Code must be within 512 bytes.
 [ORG 0x7E00]
 [BITS 16]
 

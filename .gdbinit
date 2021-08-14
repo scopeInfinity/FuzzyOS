@@ -67,7 +67,7 @@ define view_realmode
     set $CS_BASE = 0x0000
     set $DS_BASE = 0x0000
     set $SS_BASE = 0x0000
-    symbol-file
+    symbol-file build/bootloader/stage2.elf
     clayout
 end
 
