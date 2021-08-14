@@ -18,6 +18,7 @@ Number of file which can be stored: 64
 #include <stdint.h>
 
 #define FS_FFS_FILENAME_LIMIT 120  // including NULL
+#define FFS_UNIQUE_PARITION_ID  0  // only paritition 0 is supported for now
 
 union FFSMetaData {
     struct {
@@ -44,6 +45,8 @@ union FFSFileEntry {
 
 #define FS_FFS_SIGNATURE "__FuzzyOS__FFS__"  // 16 chars
 
+
+int resolve_abs_lba(int parition_id, int partition_relative_lba);
 
 int partition_read_block(int block_index, void *wr_buffer);
 

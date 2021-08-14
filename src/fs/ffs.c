@@ -18,6 +18,13 @@ int fetch_first_block(
     return partition_read_block(0, block->bytes);
 }
 
+int resolve_abs_lba(int partition_id, int partition_relative_lba) {
+    // fetch parition info
+    struct PartitionEntry partition;
+    read_partition_entry(partition_id, &partition);
+    return partition.lba + partition_relative_lba;
+}
+
 int fetch_file_entry(
     int partition_id,
     int entry_id,
