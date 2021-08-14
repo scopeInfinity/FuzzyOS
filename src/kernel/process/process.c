@@ -1,3 +1,4 @@
+#include <fuzzy/fs/ffs.h>
 #include <fuzzy/kernel/process/process.h>
 #include <fuzzy/kernel/interrupts/timer.h>
 
@@ -67,6 +68,21 @@ int syscall_1_process_exec_lba_sc(int lba_start, int sector_count) {
     return process_exec(lba_start, sector_count);
 }
 
+int syscall_1_process_spawn_fname(int user_ds, char *_us_filename) {
+    char filename[FS_FFS_FILENAME_LIMIT];
+    syscall_strncpy_user_to_kernel(user_ds, _us_filename, filename, sizeof(filename));
+
+
+    union FFSFileEntry entry;
+    int file_id = file_handler_find(filename, &entry);
+    if (file_id < 0) return file_id;
+
+
+    int lba_start = resolve_abs_lba(FFS_UNIQUE_PARITION_ID, entry.content.start_block_id);
+    int sector_count = (entry.content.filesize + FS_BLOCK_SIZE -1)/FS_BLOCK_SIZE;
+    return syscall_1_process_spawn_lba_sc(lba_start, sector_count);
+}
+
 int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds) {
     switch (operation) {
         case SYSCALL_PROCESS_SUB_EXIT:
@@ -76,6 +92,8 @@ int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds
             return syscall_1_process_spawn_lba_sc(a0, a1);
         case SYSCALL_PROCESS_SUB_EXEC_LBA_SC:
             return syscall_1_process_exec_lba_sc(a0, a1);
+        case SYSCALL_PROCESS_SUB_SPAWN_FNAME:
+            return syscall_1_process_spawn_fname(user_ds, (char*)a0);
     }
     return -1;
 }

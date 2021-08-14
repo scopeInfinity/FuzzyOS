@@ -34,6 +34,10 @@ int cmd_dir() {
     return 0;
 }
 
+int cmd_execute(int fname) {
+    return spawn(fname);
+}
+
 void handle_command(char *full_cmd) {
     // syntax: <cmd> [arg0]
     char cmd[12];  // for now: excepts no cmd to use all bytes.
@@ -55,6 +59,8 @@ void handle_command(char *full_cmd) {
         last_status_code = cmd_help();
     } else if (strcmp(cmd, "dir")==0) {
         last_status_code = cmd_dir();
+    } else if (strcmp(cmd, "execute")==0) {
+        last_status_code = cmd_execute(arg0);
     } else {
         printf("'%s' command not found\n", cmd);
         last_status_code = 404;
