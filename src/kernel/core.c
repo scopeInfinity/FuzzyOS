@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include <process.h>
+#include <stddef.h>
 #include <sys/syscall.h>
 #include <conio.h>
 
@@ -48,7 +49,7 @@ void kernel_core_entry() {
 
     clrscr();
 
-    int init_pid = spawn(INIT_APPNAME);
+    int init_pid = spawnl(INIT_APPNAME, INIT_APPNAME, NULL);
     print_log("init process created: %d", init_pid);
 
     // interrupt_pit_enable();
