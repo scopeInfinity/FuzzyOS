@@ -5,9 +5,13 @@
 #define SYSCALL_PROCESS_SUB_EXEC_LBA_SC  2
 #define SYSCALL_PROCESS_SUB_SPAWN_FNAME  3
 
+#define PROCESS_MAX_ARGC     32
+#define PROCESS_MAX_ARG_LEN  64
+
 // if non-negative value is returned
 //   then it's the pid of the new process
 //   otherwise it's some error code
-int spawn(char *path);
+int spawnl(char *path, char *arg0, ...);
+int spawnv(char *path, char *argv[]);
 
 void yield();

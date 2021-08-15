@@ -28,7 +28,7 @@ int cmd_run(char *fname) {
         printf("usage: run <filename>\n");
         return -2;
     }
-    return spawn(fname);
+    return spawnl(fname, fname, NULL);
 }
 
 int cmd_echo(char *text) {
