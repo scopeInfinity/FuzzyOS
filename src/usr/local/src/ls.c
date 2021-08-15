@@ -3,19 +3,16 @@
 #include <dirent.h>
 
 void process() {
-    puts("list files:\n");
     struct DIR dir;
     opendir(&dir);
     struct dirent *dp;
 
     while ((dp = readdir(&dir)) !=NULL) {
-        printf("- %s \n", dp->d_name);
+        printf("%s\n", dp->d_name);
     }
 }
 
 int main(int argc,char *argv[]) {
     process();
-    puts("Press return key to exit...\n");
-    getch();
     return 0;
 }

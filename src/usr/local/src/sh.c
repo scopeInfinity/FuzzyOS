@@ -1,7 +1,6 @@
 // simple shell
 #include <stdio.h>
 #include <process.h>
-#include <dirent.h>
 #include <string.h>
 
 const int COMMAND_SIZE = 200;
@@ -15,22 +14,11 @@ void banner() {
 int cmd_help() {
     printf("commands\n");
     printf(" > help\n");
-    printf(" > dir\n");
+    printf(" > run ls\n");
     printf(" > run <filename>\n");
     printf(" > echo <text>\n");
     printf(" > status\n");
     printf(" > exit\n");
-    return 0;
-}
-
-int cmd_dir() {
-    struct DIR dir;
-    opendir(&dir);
-    struct dirent *dp;
-
-    while ((dp = readdir(&dir)) !=NULL) {
-        printf("%s \n", dp->d_name);
-    }
     return 0;
 }
 
@@ -52,25 +40,12 @@ int cmd_echo(char *text) {
     return printf("%s\n", text);
 }
 
-int cmd_status_code() {
-    printf("last cmd status code: %d\n", last_status_code);
-    return 0;
-}
-
 int cmd_exit() {
     exit(0);
     return 0;
 }
 
 void handle_command(char *full_cmd) {
-    // BUG
-    //  program executes even if arg0 is not provided
-    //  if followed by invalid instruction containing the
-    //  arg0.
-    //  steps to reproduce:
-    //  - execute ls.out
-    //  - run
-
     // syntax: <cmd> [arg0]
     char cmd[12];  // for now: excepts no cmd to use all bytes.
     memcpy(cmd, full_cmd, sizeof(cmd));
@@ -78,7 +53,7 @@ void handle_command(char *full_cmd) {
     {
         // <cmd>
         int i = 0;
-        while(i+1<sizeof(cmd) && cmd[i]!=' ') i++;
+        while(i+1<sizeof(cmd) && cmd[i]!=' ' && cmd[i]!='\0') i++;
         cmd[i++]='\0';
 
         // [arg0]
@@ -91,14 +66,10 @@ void handle_command(char *full_cmd) {
 
     if (strcmp(cmd, "help")==0) {
         last_status_code = cmd_help();
-    } else if (strcmp(cmd, "dir")==0) {
-        last_status_code = cmd_dir();
     } else if (strcmp(cmd, "run")==0) {
         last_status_code = cmd_run(arg0);
     } else if (strcmp(cmd, "echo")==0) {
         last_status_code = cmd_echo(arg0);
-    } else if (strcmp(cmd, "status")==0) {
-        last_status_code = cmd_status_code();
     } else if (strcmp(cmd, "exit")==0) {
         last_status_code = cmd_exit();
     } else {
@@ -113,7 +84,7 @@ int main(int argc,char *argv[]) {
     cmd_help();
     int c = 0;
     while (1) {
-        puts("$ ");
+        printf("[%d] $ ", last_status_code);
         gets(command);
         handle_command(command);
     }

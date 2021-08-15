@@ -1,7 +1,10 @@
 #include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/kernel/process/process.h>
 #include <fuzzy/kernel/syscall/file_handler.h>
+#include <fuzzy/kernel/syscall/console.h>
 #include <fuzzy/kernel/syscall/syscall.h>
+
+#include <sys/syscall.h>
 
 #include <drivers/keyboard/keyboard.h>
 #include <lib/utils/logging.h>
@@ -19,9 +22,10 @@ extern int interrupt_handler_0x32_syscall_handler();
 void interrupt_register_0x32_syscall() {
     print_log("Registering syscalls.");
     populate_idt_entry_32bit(IDT_SYSCALL, (unsigned int)interrupt_handler_0x32_syscall_handler, 0, 1);
-    SYSCALL_TABLE[0]=syscall_0_keyboard_getch;
-    SYSCALL_TABLE[1]=syscall_1_process;
-    SYSCALL_TABLE[2]=syscall_2_file_handler;
+    SYSCALL_TABLE[SYSCALL_KEYBOARD]=syscall_0_keyboard_getch;
+    SYSCALL_TABLE[SYSCALL_PROCESS]=syscall_1_process;
+    SYSCALL_TABLE[SYSCALL_FILE_OP]=syscall_2_file_handler;
+    SYSCALL_TABLE[SYSCALL_CONSOLE]=syscall_3_console;
 }
 
 int syscall_selector(int id, int arg0, int arg1, int arg2, int arg3, int user_ds) {

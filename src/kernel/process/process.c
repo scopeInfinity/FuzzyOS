@@ -26,7 +26,7 @@ int process_spawn(int lba_index, int sector_count) {
         print_log("Failed to load app in memory, Error: ", err);
         return -2;
     }
-    print_log("[process_spawn] ready, pid: %d", pid);
+    print_info("[process_spawn] ready, pid: %d", pid);
     struct Process *process = get_process(pid);
     process->state = STATE_READY;
     return 0;

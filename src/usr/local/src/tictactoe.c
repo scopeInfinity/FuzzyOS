@@ -27,7 +27,6 @@ void print_board(struct State *s) {
 
 void redraw(struct State *s) {
     clrscr();
-    gotoxy(0, 0);
     puts("TicTacToe\n");
     puts("---------\n");
     puts("\n");
