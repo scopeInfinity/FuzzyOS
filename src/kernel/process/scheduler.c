@@ -65,7 +65,7 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
         PANIC(0, "[process_scheduler] no STATE_READY process alive");
     }
 
-    print_log("[process_scheduler] pid: %d -> %d", pid, npid);
+    print_info("[process_scheduler] pid: %d -> %d", pid, npid);
     struct Process *process = get_process(pid);
     if(process->state != STATE_COLD) {
         // if last process is still alive

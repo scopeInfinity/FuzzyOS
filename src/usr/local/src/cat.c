@@ -25,7 +25,5 @@ void process(char filename[]) {
 int main(int argc,char *argv[]) {
     char filename[] = "README.md";
     process(filename);
-    puts("Press return key to exit...\n");
-    getch();
     return 0;
 }

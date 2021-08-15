@@ -1,7 +1,7 @@
 SRC_USR_LIB=$(SRC_DIR)/usr/lib
 BUILD_USR_LIB=$(BUILD_DIR)/usr/lib
 
-$(BUILD_USR_LIB)/%.o: $(SRC_USR_LIB)/%.c $(BUILD_USR_INCLUDE_ALL) $(SRC_LIB_UTILS)/output.h $(SRC_LIB_UTILS)/input.h $(SRC_LIB)/app/entry.h
+$(BUILD_USR_LIB)/%.o: $(SRC_USR_LIB)/%.c $(BUILD_USR_INCLUDE_ALL)
 	mkdir -p $(dir $@)
 	# TODO: Clean up sector location
 	$(KERNEL_CC) -c -o $@  \

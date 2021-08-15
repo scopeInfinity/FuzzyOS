@@ -2,7 +2,8 @@
 
 #include <stddef.h>
 
-// TODO: define stdio, stdout, stderr
+#define SYSCALL_CONSOLE_SUB_CLRSCR       0
+#define SYSCALL_CONSOLE_SUB_PUTCHAR      1
 
 int putchar(int c);
 int puts(const char *s);

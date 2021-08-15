@@ -7,6 +7,7 @@
 #include <string.h>
 #include <process.h>
 #include <sys/syscall.h>
+#include <conio.h>
 
 #include <drivers/disk/disk.h>
 #include <drivers/display/text_mode.h>
@@ -45,8 +46,11 @@ void kernel_core_entry() {
 
     process_scheduler_init();
 
+    clrscr();
+
     int init_pid = spawn(INIT_APPNAME);
     print_log("init process created: %d", init_pid);
-    interrupt_pit_enable();
+
+    // interrupt_pit_enable();
     while (1);
 }

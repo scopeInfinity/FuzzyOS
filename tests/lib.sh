@@ -6,7 +6,7 @@ BUILD_TEST_DIR="build_test"
 MONITOR_PORT=55555
 QEMU_SCREENSHOT="/tmp/$(basename $0 .sh).ppm"
 QEMU_SCREENSHOT_ARTIFACT="${QEMU_SCREENSHOT%.ppm}.png"
-INIT_APPNAME="tictactoe.out"
+INIT_APPNAME="tictactoe"
 
 MAGIC_WORD_SLEEP="##SLEEP-10s##"
 

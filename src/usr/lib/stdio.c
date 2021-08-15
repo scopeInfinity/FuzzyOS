@@ -4,20 +4,17 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <conio.h>
-#include <lib/utils/output.h>
 #include <sys/syscall.h>
 
 int putchar(int c) {
-    print_char(c);
-    // TODO: Fix putchar return value.
-    return 0;
+    return SYSCALL_A2(SYSCALL_CONSOLE, SYSCALL_CONSOLE_SUB_PUTCHAR, c);
 }
 
 int puts(const char *s) {
     if(!s) return 0;
     int c = 0;
     while ((*s)!='\0') {
-        print_char(*(s++));
+        putchar(*(s++));
         c++;
     }
     return c;

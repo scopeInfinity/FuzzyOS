@@ -5,7 +5,7 @@
 #  ls.out
 #  tictactoe.out
 #  calc.out
-INIT_APPNAME ?= sh.out
+INIT_APPNAME ?= sh
 
 ROOT_DIR = .
 BUILD_DIR = build
