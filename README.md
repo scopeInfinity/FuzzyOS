@@ -22,7 +22,7 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
 
  Simple Shell | TicTacToe Game
 --------------| ------------------
-![image](https://user-images.githubusercontent.com/9819066/129453427-41e9322f-5e87-4d46-a4dc-0fd70b68e4a7.png) | ![image](https://user-images.githubusercontent.com/9819066/119272299-2bbf2800-bbfd-11eb-9e8a-350946e1218b.png)
+![image](https://user-images.githubusercontent.com/9819066/129463788-94686a08-236e-49a9-b81b-6325e4b2ab58.png) | ![image](https://user-images.githubusercontent.com/9819066/129463802-d9a0bc77-74eb-4438-b553-e1439ada95a1.png)
 
 ### Boot OS
 
