@@ -5,8 +5,8 @@
 #define SYSCALL_PROCESS_SUB_EXEC_LBA_SC  2
 #define SYSCALL_PROCESS_SUB_SPAWN_FNAME  3
 
-#define PROCESS_MAX_ARGC     32
-#define PROCESS_MAX_ARG_LEN  64
+#define PROCESS_MAX_ARGC     6
+#define PROCESS_MAX_ARG_LEN  32
 
 // if non-negative value is returned
 //   then it's the pid of the new process

@@ -7,11 +7,9 @@
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
 
-extern int call_main(int cs, int ds, int argc, char *argv[]);
-
-int process_spawn(int lba_index, int sector_count) {
+int process_spawn(int lba_index, int sector_count, char *argv[]) {
     print_info("[process_spawn] create");
-    int pid = process_create();
+    int pid = process_create(argv);
     if(pid<0) {
         print_log("Failed to reserved a new pid");
         return -1;
@@ -39,7 +37,8 @@ int syscall_1_process_exit(int user_ds, int status) {
 }
 
 int syscall_1_process_spawn_lba_sc(int lba_start, int sector_count) {
-    return process_spawn(lba_start, sector_count);
+    char *fake_argv[]={"fake_spawn", NULL};
+    return process_spawn(lba_start, sector_count, fake_argv);
 }
 
 int syscall_1_process_exec_lba_sc(int lba_start, int sector_count) {
@@ -48,19 +47,23 @@ int syscall_1_process_exec_lba_sc(int lba_start, int sector_count) {
 
 int syscall_1_process_spawn_fname(int user_ds, char *_us_filename, char *_us_argv[]) {
     char filename[FS_FFS_FILENAME_LIMIT];
-    char argv_with_uspointer[PROCESS_MAX_ARGC];
-    char *argv_with_kspointer[PROCESS_MAX_ARGC];
-    char argv[PROCESS_MAX_ARGC][PROCESS_MAX_ARG_LEN];  // data store
+    char argv_data[PROCESS_MAX_ARGC][PROCESS_MAX_ARG_LEN];
+    char *argv_with_uspointer[PROCESS_MAX_ARGC];
+    char *argv[PROCESS_MAX_ARGC];  // kernel mode
     syscall_strncpy_user_to_kernel(user_ds, _us_filename, filename, sizeof(filename));
     syscall_strncpy_user_to_kernel(user_ds, _us_argv, argv_with_uspointer, sizeof(argv_with_uspointer));
-    // if src string is NULL, then dst should be null.
+    // if src string is NULL, then dst string also should be null.
     for (int i = 0; i < PROCESS_MAX_ARGC; i++) {
         if(argv_with_uspointer[i]==NULL) {
-            argv_with_kspointer[i]=NULL;
+            argv[i]=NULL;
             break;
         }
-        syscall_strncpy_user_to_kernel(user_ds, argv[i], argv_with_uspointer[i], sizeof(argv[i]));
-        argv_with_kspointer[i] = argv[i];
+        syscall_strncpy_user_to_kernel(user_ds, argv_with_uspointer[i], argv_data[i], sizeof(argv_data[i]));
+        argv[i] = argv_data[i];
+    }
+
+    for (int i = 0; argv[i]; i++) {
+        printf("[kernel] arg%d: %s\n", i, argv[i]);
     }
 
     union FFSFileEntry entry;
@@ -71,8 +74,7 @@ int syscall_1_process_spawn_fname(int user_ds, char *_us_filename, char *_us_arg
     int lba_start = resolve_abs_lba(FFS_UNIQUE_PARITION_ID, entry.content.start_block_id);
     int sector_count = (entry.content.filesize + FS_BLOCK_SIZE -1)/FS_BLOCK_SIZE;
 
-    // TODO: process created should have argv pushed on top of stack.
-    return syscall_1_process_spawn_lba_sc(lba_start, sector_count);
+    return process_spawn(lba_start, sector_count, argv);
 }
 
 int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds) {
