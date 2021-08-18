@@ -9,7 +9,7 @@
  *  pid 2 : user app 2 and so on...
  *
  * Process Cycle
- *  - process_create()
+ *  - process_create(...)
  *  - process_load_from_disk()
  *  - OR process_load_from_ram()
  */
@@ -88,7 +88,7 @@ void process_scheduler_init() {
     load_gdt_table(&gdtr);
 }
 
-int process_create() {
+int process_create(char *argv[]) {
     // returnd pid >= 0 if success
     int pid = -1;
     for (int i = 0; i < MAX_PROCESS; ++i) {
@@ -130,6 +130,7 @@ int process_create() {
     // initially ds == ss
     process->ss = get_gdt_number_from_entry_id(idt_ds_entry);
     process->sp = create_infant_process_irq0_stack(process->ss);
+    // TODO: Push argv in process stack
     return pid;
 }
 

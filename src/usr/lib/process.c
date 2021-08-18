@@ -10,7 +10,8 @@ int spawnl(char *file_path, char *arg0, ...) {
 
     // prepare argv
     {
-        int i = 0;
+        argv[0] = arg0;
+        int i = 1;
         while(i<PROCESS_MAX_ARGC-1) {
             char *arg = va_arg(args, char *);
             if(arg==NULL) break;

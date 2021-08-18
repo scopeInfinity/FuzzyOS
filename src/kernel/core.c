@@ -33,6 +33,7 @@ void kernel_core_entry() {
     set_color_bg(C_BLUE);
     set_color_fg(C_WHITE);
     print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
+    move_xy(0, 0);
     print_log("Initializing Kernel");
 
 
@@ -50,7 +51,7 @@ void kernel_core_entry() {
     clrscr();
 
     int init_pid = spawnl(INIT_APPNAME, INIT_APPNAME, NULL);
-    print_log("init process created: %d", init_pid);
+    print_log("init process got created: %d", init_pid);
 
     // interrupt_pit_enable();
     while (1);

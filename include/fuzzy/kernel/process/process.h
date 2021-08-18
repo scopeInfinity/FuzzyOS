@@ -36,7 +36,7 @@ int get_idt_ds_entry(int process_id);
 int get_idt_reverse_pid_lookup(int cs);
 
 // process create or kill
-int process_create();
+int process_create(char *argv[]);
 void process_kill(int user_ds, int status);
 
 // scheduler
