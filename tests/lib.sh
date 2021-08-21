@@ -1,14 +1,16 @@
 #!/bin/bash
 
+set -e
+
 SRC_DIR="src/"
 SRC_TEST_DIR="src_test/"
 BUILD_TEST_DIR="build_test"
 MONITOR_PORT=55555
 QEMU_SCREENSHOT="/tmp/$(basename $0 .sh).ppm"
 QEMU_SCREENSHOT_ARTIFACT="${QEMU_SCREENSHOT%.ppm}.png"
-INIT_APPNAME="tictactoe"
 
 MAGIC_WORD_SLEEP="##SLEEP-10s##"
+MAGIC_WORD_NO_TEST_INJECT="TEST-INJECT-WORD-NOT-NEEDED"
 
 ##########################################
 # Raise error.
@@ -65,6 +67,27 @@ function test_screen_content() {
 }
 
 ##########################################
+# Test Helper: Create QEMU screen dump
+# Globals:
+#   QEMU_SCREENSHOT
+#   QEMU_SCREENSHOT_ARTIFACT
+# Output:
+#   raises error or screen dump in text.
+##########################################
+function test_create_screen_dump() {
+    python -m tests.qemu.monitor -qc screendump ${QEMU_SCREENSHOT:?}
+
+    if [ ! -f ${QEMU_SCREENSHOT:?} ]; then
+        err -1 "[create_screen_dump] failed to create qemu screen dump"
+    fi
+
+    convert ${QEMU_SCREENSHOT:?} ${QEMU_SCREENSHOT_ARTIFACT:?}
+
+    SCREEN_CONTENT="$(gocr -i ${QEMU_SCREENSHOT:?})"
+    echo "Screen Content: '${SCREEN_CONTENT:?}'"
+}
+
+##########################################
 # Activate Code for testing within source.
 # Arguments:
 #   Filename
@@ -92,6 +115,10 @@ function sync_to_src_test() {
     rm -r "${SRC_TEST_DIR:?}"
     cp -r "${SRC_DIR:?}" "${SRC_TEST_DIR:?}"
 
+    if [[ "${1:?}" == "${MAGIC_WORD_NO_TEST_INJECT}" ]]; then
+        return
+    fi
+
     find "${SRC_TEST_DIR:?}" -iname '*.asm' -exec bash -c 'inject_test_code_asm "$0" "$1"' {} "$1" \;
     find "${SRC_TEST_DIR:?}" -iname '*.c' -exec bash -c 'inject_test_code_c "$0" "$1"' {} "$1" \;
 }
@@ -102,7 +129,6 @@ function sync_to_src_test() {
 #   COMMAND_OUTPUT
 #   SCREEN_CONTENT
 #   QEMU_PID
-#   INIT_APPNAME
 # Arguments:
 #   Magic Word
 #   Inject Keyword
@@ -120,7 +146,6 @@ function os_test_up() {
     # Turn up QEMU in background
     make clean BUILD_DIR="${BUILD_TEST_DIR:?}" \
         && make qemu \
-        INIT_APPNAME="${INIT_APPNAME:?}" \
         SRC_DIR="${SRC_TEST_DIR:?}" \
         BUILD_DIR="${BUILD_TEST_DIR:?}" \
         QEMU_SHUT_FLAGS="" \
@@ -155,18 +180,8 @@ function os_test_up() {
     fi
 
     sleep 1s
-    ./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "screendump ${QEMU_SCREENSHOT:?}"
-    ./tests/qemu_monitor_expect.sh ${MONITOR_PORT:?} "quit"
 
-    if [ ! -f ${QEMU_SCREENSHOT:?} ]; then
-        echo "Magic word found but no screenshot found! :( " >&2
-        return -1
-    fi
-
-    convert ${QEMU_SCREENSHOT:?} ${QEMU_SCREENSHOT_ARTIFACT:?}
-
-    SCREEN_CONTENT="$(gocr -i ${QEMU_SCREENSHOT:?})"
-    echo "Screen Content: '${SCREEN_CONTENT:?}'"
+    test_create_screen_dump
 
     echo "os_up done."
     return 0

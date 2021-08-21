@@ -14,5 +14,6 @@ set -x
 test_screen_content $LINENO "Bootloader: Stage 1"
 test_screen_content $LINENO "Stage 2 Loaded: `build_8hexbyte bootloader/stage2`"
 
+python -m tests.qemu.monitor --quit
 wait ${QEMU_PID:?}
 echo "$0 passed!!!"
