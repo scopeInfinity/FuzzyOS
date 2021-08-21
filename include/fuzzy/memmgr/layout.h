@@ -4,12 +4,11 @@
 // and kernel's pid is 0.
 #define PID_KERNEL 0
 
-#define MEMORY_KERNEL_LOCATION 0x10000
-#define MEMORY_KERNEL_SIZE     0x0FFFF
+#define MEMORY_APPBASE_LOCATION 0x10000
+#define MEMORY_APP_SIZE         0x20000
 
-#define MEMORY_APPBASE_LOCATION 0x20000
-#define MEMORY_APP_SIZE         0x0FFFF
-
-// pid starts from 1
-#define memmgr_app_abs_location(pid) ((pid)!=0?(MEMORY_APPBASE_LOCATION+((pid)-1)*MEMORY_APP_SIZE):MEMORY_KERNEL_LOCATION)
+#define memmgr_app_abs_location(pid) (MEMORY_APPBASE_LOCATION + (pid)*MEMORY_APP_SIZE)
 #define memmgr_app_size(pid) (MEMORY_APP_SIZE)
+
+#define MEMORY_KERNEL_LOCATION memmgr_app_abs_location(PID_KERNEL)
+#define MEMORY_KERNEL_SIZE memmgr_app_size(PID_KERNEL)

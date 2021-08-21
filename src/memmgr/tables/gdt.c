@@ -38,13 +38,13 @@ void populate_gdt_table(
     // Kernel Code Segment Selector
     populate_gdt_entry(
         &gdt_table[1],
-        MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_LOCATION+MEMORY_KERNEL_SIZE,
+        MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_LOCATION+MEMORY_KERNEL_SIZE-1,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Kernel Data Segment Selector
     populate_gdt_entry(
         &gdt_table[2],
-        MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_LOCATION+MEMORY_KERNEL_SIZE,
+        MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_LOCATION+MEMORY_KERNEL_SIZE-1,
         0b0100,  // 32-bit protected mode
         0x92);
     // Absolute Code Segment Selector

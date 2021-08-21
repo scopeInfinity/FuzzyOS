@@ -121,13 +121,13 @@ int process_create() {
     // Application Code Segment Selector
     populate_gdt_entry(
         &gdt_table[idt_cs_entry],
-        memory_location, memory_location+0xFFFF,
+        memory_location, memory_location+memory_size-1,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Application Data Segment Selector
     populate_gdt_entry(
         &gdt_table[idt_ds_entry],
-        memory_location, memory_location+0xFFFF,
+        memory_location, memory_location+memory_size-1,
         0b0100,  // 32-bit protected mode
         0x92);
     create_infant_process_irq0_stack(process->ss);
