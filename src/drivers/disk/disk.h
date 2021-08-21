@@ -1,6 +1,6 @@
 #pragma once
 
-int load_sectors(unsigned int address,
+int load_sectors(unsigned int full_address,
                  unsigned char drive,
-                 unsigned int sector_index, // 1-based
+                 unsigned int lba, // 0-based
                  unsigned char count);
