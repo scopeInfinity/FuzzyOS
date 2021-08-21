@@ -59,6 +59,7 @@ def handle_qemu_quit(monitor, args):
         return
     logger.info("Handle: qemu quit")
     monitor.send_qemu_command("quit\n", wait_prompt=False)
+    time.sleep(1)
 
 def main():
     logging.basicConfig(level=logging.INFO)

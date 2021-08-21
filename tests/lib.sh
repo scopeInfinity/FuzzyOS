@@ -6,8 +6,8 @@ SRC_DIR="src/"
 SRC_TEST_DIR="src_test/"
 BUILD_TEST_DIR="build_test"
 MONITOR_PORT=55555
-QEMU_SCREENSHOT="/tmp/$(basename $0 .sh).ppm"
-QEMU_SCREENSHOT_ARTIFACT="${QEMU_SCREENSHOT%.ppm}.png"
+QEMU_SCREENSHOT_BASEDIR="/tmp"
+QEMU_SCREENSHOT_NAME="$(basename $0 .sh).ppm"  # subtests are expected to override
 
 MAGIC_WORD_SLEEP="##SLEEP-10s##"
 MAGIC_WORD_NO_TEST_INJECT="TEST-INJECT-WORD-NOT-NEEDED"
@@ -24,7 +24,6 @@ function err() {
     echo -e "\e[01;31m[`basename $0`:$1] error\e[0m: $2" >&1
     exit -1
 }
-
 
 ##########################################
 # Resolves filename from build target.
@@ -69,21 +68,27 @@ function test_screen_content() {
 ##########################################
 # Test Helper: Create QEMU screen dump
 # Globals:
-#   QEMU_SCREENSHOT
-#   QEMU_SCREENSHOT_ARTIFACT
+#   QEMU_SCREENSHOT_NAME
+#   SCREEN_CONTENT
 # Output:
 #   raises error or screen dump in text.
 ##########################################
 function test_create_screen_dump() {
-    python -m tests.qemu.monitor -qc screendump ${QEMU_SCREENSHOT:?}
+    qemu_screenshot_fname="${QEMU_SCREENSHOT_BASEDIR:?}/${QEMU_SCREENSHOT_NAME:?}"
+    qemu_screenshot_png="${qemu_screenshot_fname%.ppm}.png"  # lazy compute
 
-    if [ ! -f ${QEMU_SCREENSHOT:?} ]; then
+    # Cleanup from any old screenshot
+    rm -f ${qemu_screenshot_fname:?}
+
+    python -m tests.qemu.monitor -qc screendump ${qemu_screenshot_fname:?}
+
+    if [ ! -f ${qemu_screenshot_fname:?} ]; then
         err -1 "[create_screen_dump] failed to create qemu screen dump"
     fi
 
-    convert ${QEMU_SCREENSHOT:?} ${QEMU_SCREENSHOT_ARTIFACT:?}
+    convert ${qemu_screenshot_fname:?} ${qemu_screenshot_png:?}
 
-    SCREEN_CONTENT="$(gocr -i ${QEMU_SCREENSHOT:?})"
+    SCREEN_CONTENT="$(gocr -i ${qemu_screenshot_fname:?})"
     echo "Screen Content: '${SCREEN_CONTENT:?}'"
 }
 
@@ -115,7 +120,7 @@ function sync_to_src_test() {
     rm -r "${SRC_TEST_DIR:?}"
     cp -r "${SRC_DIR:?}" "${SRC_TEST_DIR:?}"
 
-    if [[ "${1:?}" == "${MAGIC_WORD_NO_TEST_INJECT}" ]]; then
+    if [[ "${1:?}" == "${MAGIC_WORD_NO_TEST_INJECT:?}" ]]; then
         return
     fi
 
@@ -157,9 +162,6 @@ function os_test_up() {
         sleep 1s
     done
     echo "QEMU monitor is available."
-
-    # Cleanup from any previous execution
-    rm -f ${QEMU_SCREENSHOT:?}
 
     # Keep polling QEMU monitor until we get our magic word!
     COMMAND_OUTPUT=""
