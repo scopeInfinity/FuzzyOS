@@ -1,3 +1,5 @@
+%include "fuzzy/memmgr/layout.asm"
+
 [BITS 32]
 
 extern kernel_core_entry
@@ -14,9 +16,7 @@ global kernel_core_entry_asm
         mov fs, ax
         mov gs, ax
 
-        ; TODO: Increase kernel code stack memory size
-        ; The value also depends on kernel handler stack size
-        mov esp, 0xC000  ; init stack pointer
+        mov esp, STACKINIT_KERNEL_CORE  ; init stack pointer
         jmp kernel_core_entry
 
         ; kernel_core_entry_asm currently exists only for tests.

@@ -106,15 +106,6 @@ int process_create() {
     int idt_cs_entry = get_idt_cs_entry(pid);
     int idt_ds_entry = get_idt_ds_entry(pid);
 
-    process->state = STATE_LOADING;
-    process->cs = get_gdt_number_from_entry_id(idt_cs_entry);
-    process->ip = 0; //
-    // initially ds == ss
-    process->ss = get_gdt_number_from_entry_id(idt_ds_entry);
-    // should be compatible with create_infant_process_irq0_stack
-    process->sp = 0xFFF0-56;  // keep offset in sync with _int_irq0_start
-
-
     // Potential improvement:
     // - avoid populating GDT entry if already exists.
 
@@ -130,7 +121,15 @@ int process_create() {
         memory_location, memory_location+memory_size-1,
         0b0100,  // 32-bit protected mode
         0x92);
-    create_infant_process_irq0_stack(process->ss);
+
+
+    // update process state
+    process->state = STATE_LOADING;
+    process->cs = get_gdt_number_from_entry_id(idt_cs_entry);
+    process->ip = 0;
+    // initially ds == ss
+    process->ss = get_gdt_number_from_entry_id(idt_ds_entry);
+    process->sp = create_infant_process_irq0_stack(process->ss);
     return pid;
 }
 

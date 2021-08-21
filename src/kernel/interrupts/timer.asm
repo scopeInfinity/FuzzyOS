@@ -1,3 +1,5 @@
+%include "fuzzy/memmgr/layout.asm"
+
 [BITS 32]
 
 global irq0_pit_handler_low
@@ -25,7 +27,7 @@ global create_infant_process_irq0_stack
         mov esi, esp
 
         ; new stack and segment area
-        mov esp, 0xFFF0  ; keep offset in sync with process_create(...) and create_infant_process_irq0_stack
+        mov esp, STACKINIT_KERNEL_EVENT
         mov eax, 0x10
         mov ss, eax
         mov ds, eax
@@ -82,6 +84,8 @@ global create_infant_process_irq0_stack
         iret
 
     create_infant_process_irq0_stack:
+        ; keep in sync with _int_irq0_start
+        ; return the esp for user stack
         push ebp
         mov ebp, esp
 
@@ -95,9 +99,8 @@ global create_infant_process_irq0_stack
 
         mov ds, ecx
 
-        ; user stack creation start
         ; user initial stack
-        mov eax, 0xFFF0 ; keep in sync with _int_irq0_start
+        mov eax, STACKINIT_APP
         ; kernel offset
         xor ecx, ecx
         mov [eax-0], ecx    ; user: eflag
@@ -116,9 +119,7 @@ global create_infant_process_irq0_stack
         mov [eax-52], ecx       ; user: fs
         mov [eax-56], ecx       ; user: gs
 
-        ; user: esp = eax-56 = 0xFFF0-56
-        ; should be compatible with process_create
-        ; user stack creation end
+        sub eax, 56 ; user stack pointer
 
         pop ds
 
