@@ -12,5 +12,7 @@ set -e
 test_screen_content $LINENO "Initializing Kernel"
 test_screen_content $LINENO "Registering syscalls"
 
+
+python -m tests.qemu.monitor --quit
 wait ${QEMU_PID:?}
 echo "$0 passed!!!"

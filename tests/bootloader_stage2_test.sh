@@ -15,5 +15,6 @@ test_screen_content $LINENO "Static library loaded at 0x00007E00: `build_8hexbyt
 test_screen_content $LINENO "Kernel loaded at 0x[0-9A-Fa-f]\+: `build_8hexbyte kernel/core`"
 test_screen_content $LINENO "Loading GDT Table and entering protected mode"
 
+python -m tests.qemu.monitor --quit
 wait ${QEMU_PID:?}
 echo "$0 passed!!!"

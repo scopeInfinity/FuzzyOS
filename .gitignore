@@ -4,3 +4,5 @@ local_notes/
 build/
 src_test/
 build_test/
+__pycache__/
+.vscode/
