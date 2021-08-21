@@ -2,6 +2,8 @@
 
 # Test is supposed to be sourced from shell_test.sh
 
+QEMU_SCREENSHOT_NAME="tictactoe_test.ppm"
+
 python3 -m tests.qemu.monitor -p ${MONITOR_PORT:?} -sc run tictactoe
 
 test_create_screen_dump
