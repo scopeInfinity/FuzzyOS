@@ -75,7 +75,7 @@ endif
 # Tools
 HOST_CC = gcc -std=c11 -Iinclude
 
-NASM=nasm -f elf32 $(NASM_DEBUG)
+NASM=nasm -f elf32 -i include/ $(NASM_DEBUG)
 
 CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static $(CC_DEBUG)
 KERNEL_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR) -Iinclude -Isrc/usr/include
