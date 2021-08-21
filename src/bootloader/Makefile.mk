@@ -28,7 +28,6 @@ $(bt_stage2).elf: $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(INCL
 		-D SECTOR_START_KERNEL=$(SECTOR_START_KERNEL) \
 		-D SECTOR_COUNT_KERNEL=$(SECTOR_COUNT_KERNEL) \
 		-D MEMORY_STATIC_LIBRARY=$(MEMORY_STATIC_LIBRARY) \
-		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
 		-o $(BUILD_BOOTLOADER)/stage2_c.o $(SRC_BOOTLOADER)/stage2.c
 	$(LD) -m elf_i386 -Ttext 0x8000 -T linker.ld -o $@ $(BUILD_BOOTLOADER)/stage2_asm.o $(BUILD_BOOTLOADER)/stage2_c.o  $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	truncate --size=%512 $@

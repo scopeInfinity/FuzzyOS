@@ -1,5 +1,3 @@
-MEMORY_LOCATION_APP = 0x20000
-
 debug_kernel: $(kernel_core)
 	objdump -b binary -mi386 -Maddr32,data32 -D $<
 	xxd $<
@@ -9,8 +7,6 @@ $(SELF_BUILD_DIR)/%.o: $(SELF_SRC_DIR)/%.c $(BUILD_USR_INCLUDE_ALL)
 	$(KERNEL_CC) -c -o $@ \
 		-D INIT_APPNAME=\"$(INIT_APPNAME)\" \
 		-D __SOURCE_SNAPSHOT__=$(SOURCE_SNAPSHOT) \
-		-D MEMORY_LOCATION_KERNEL=$(MEMORY_LOCATION_KERNEL) \
-		-D MEMORY_LOCATION_APP=$(MEMORY_LOCATION_APP) \
 		$<
 
 $(SELF_BUILD_DIR)/%_asm.o: $(SELF_SRC_DIR)/%.asm
