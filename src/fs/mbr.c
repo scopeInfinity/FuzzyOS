@@ -1,15 +1,17 @@
 #include <fuzzy/fs/ffs.h>
 #include <fuzzy/fs/mbr.h>
+#include <fuzzy/kernel/panic.h>
+#include <fuzzy/memmgr/layout.h>
+
 #include <drivers/disk/disk.h>
 #include <lib/utils/logging.h>
-#include <fuzzy/kernel/panic.h>
 
 char _cache_mbrblock[FS_BLOCK_SIZE];
 int _cache_mbrblock_ready = 0;
 
 char *get_mbrblock() {
     if(!_cache_mbrblock_ready) {
-        int memory_location = ((int)_cache_mbrblock)+MEMORY_LOCATION_KERNEL;
+        int memory_location = ((int)_cache_mbrblock)+MEMORY_KERNEL_LOCATION;
         int lba = 0;
         int err = load_sectors(memory_location, 0x80, lba, 1);
         if (err) {

@@ -7,10 +7,6 @@
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
 
-int process_new_allocated_memory(int id) {
-    return MEMORY_LOCATION_APP+0x10000*id;
-}
-
 extern int call_main(int cs, int ds, int argc, char *argv[]);
 
 int process_spawn(int lba_index, int sector_count) {

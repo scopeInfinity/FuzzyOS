@@ -1,5 +1,6 @@
 #include <fuzzy/fs/ffs.h>
 #include <fuzzy/fs/mbr.h>
+#include <fuzzy/memmgr/layout.h>
 #include <string.h>
 #include <drivers/disk/disk.h>
 #include <lib/utils/logging.h>
@@ -8,7 +9,7 @@
 // TODO: verify partition metadata
 
 int partition_read_block(int lba, void *wr_buffer) {
-    int memory_location = ((int)wr_buffer)+MEMORY_LOCATION_KERNEL;
+    int memory_location = ((int)wr_buffer)+MEMORY_KERNEL_LOCATION;
     int err = load_sectors(memory_location, 0x80, lba, 1);
     return err;
 }

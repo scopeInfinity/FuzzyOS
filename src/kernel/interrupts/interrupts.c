@@ -1,6 +1,7 @@
 #include <fuzzy/kernel/syscall/syscall.h>
 #include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/kernel/interrupts/timer.h>
+#include <fuzzy/memmgr/layout.h>
 
 #include <lib/utils/logging.h>
 
@@ -71,7 +72,7 @@ void populate_and_load_idt_table() {
     interrupt_register_0x32_syscall();
 
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
-    idtr.base_address = ((int)idt_table + MEMORY_LOCATION_KERNEL);
+    idtr.base_address = ((int)idt_table + MEMORY_KERNEL_LOCATION);
     print_log("IDTR: 0x%x; base address: 0x%x, size: %d",
         (int)&idtr, idtr.base_address, idtr.size);
     reload_idt_table();

@@ -55,8 +55,6 @@ MINIMAL_DISK = $(BUILD_DIR)/minimal_disk
 SRC_APP = $(SRC_DIR)/usr/local/src
 BUILD_APP = $(BUILD_DIR)/usr/local/bin
 
-MEMORY_LOCATION_KERNEL = 0xC000
-
 SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_unstaged')\""
 
 # General Assumptions

@@ -1,9 +1,7 @@
 #include <fuzzy/kernel/process/process.h>
 #include <fuzzy/memmgr/tables/gdt.h>
-
+#include <fuzzy/memmgr/layout.h>
 #include <fuzzy/kernel/panic.h>
-
-#define PID_KERNEL 0
 
 /* Process ID
  *  pid 0 : kernel core
@@ -66,14 +64,6 @@ int get_idt_reverse_pid_lookup_ds(int ds) {
     return ds_index-1;
 }
 
-// memory mapping
-int get_process_memory(int pid) {
-    if(pid == PID_KERNEL) {
-        return MEMORY_LOCATION_KERNEL;
-    }
-    return MEMORY_LOCATION_APP+0x20000*(pid-1);
-}
-
 // operations
 static struct Process processes[MAX_PROCESS] = {0};
 struct GDTEntry gdt_table[GDT_TABLE_SIZE];
@@ -94,7 +84,7 @@ void process_scheduler_init() {
 
     populate_gdt_table(
         &gdtr, gdt_table, GDT_TABLE_SIZE,
-        MEMORY_LOCATION_KERNEL);
+        MEMORY_KERNEL_LOCATION);
     load_gdt_table(&gdtr);
 }
 
@@ -111,7 +101,8 @@ int process_create() {
     if(pid < 0) return pid;
     struct Process *process = &processes[pid];
 
-    int memory_location = get_process_memory(pid);
+    int memory_location = memmgr_app_abs_location(pid);
+    int memory_size = memmgr_app_size(pid);
     int idt_cs_entry = get_idt_cs_entry(pid);
     int idt_ds_entry = get_idt_ds_entry(pid);
 
@@ -151,7 +142,7 @@ void process_kill(int user_ds, int status) {
 }
 
 int process_load_from_disk(int pid, int lba_index, int sector_count) {
-    int memory_location = get_process_memory(pid);
+    int memory_location = memmgr_app_abs_location(pid);
     int err = load_sectors(memory_location, 0x80, lba_index, sector_count);
     if(err) {
         return err;

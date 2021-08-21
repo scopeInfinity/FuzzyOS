@@ -1,3 +1,5 @@
+#include <fuzzy/memmgr/layout.h>
+
 #include <lib/utils/color.h>
 #include <drivers/disk/disk.h>
 #include <lib/utils/output.h>
@@ -29,12 +31,12 @@ char *get_memdump_8byte(void *address) {
 
 void load_kernel() {
     print_log("Loading Kernel");
-    int err = load_sectors(MEMORY_LOCATION_KERNEL, 0x80, SECTOR_START_KERNEL, SECTOR_COUNT_KERNEL);
+    int err = load_sectors(MEMORY_KERNEL_LOCATION, 0x80, SECTOR_START_KERNEL, SECTOR_COUNT_KERNEL);
     if(err) {
         print_log("Failed to load kernel in memory: %d", err);
         label_exit();
     } else {
-        print_log("Kernel loaded at 0x%x: %s...", MEMORY_LOCATION_KERNEL, get_memdump_8byte(MEMORY_LOCATION_KERNEL));
+        print_log("Kernel loaded at 0x%x: %s...", MEMORY_KERNEL_LOCATION, get_memdump_8byte(MEMORY_KERNEL_LOCATION));
     }
 }
 
