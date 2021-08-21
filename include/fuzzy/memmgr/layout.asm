@@ -13,5 +13,5 @@ STACKINIT_KERNEL_CORE EQU (STACKINIT_APP-4)
 ; Should be able to store
 ; - syscall and all internal calls
 ; - ISRs and all internal calls
-STACKINIT_KERNEL_EVENT EQU 0xC000
+STACKINIT_KERNEL_EVENT EQU 0x18000
 
