@@ -1,3 +1,5 @@
+%include "fuzzy/memmgr/layout.asm"
+
 [BITS 32]
 
 global interrupt_nohup
@@ -56,7 +58,7 @@ KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
         ; create new kernel stack
         mov ebp, esp
         mov ss, ax
-        mov esp, 0xFFFC
+        mov esp, STACKINIT_KERNEL_EVENT
         push ebp    ; old esp ; ASSUME ss == ds
         mov ebp, esp
         mov eax, KERNEL_STACK_MARKER_NEW
