@@ -1,20 +1,22 @@
 #include <fuzzy/fs/ffs.h>
 #include <fuzzy/kernel/process/process.h>
 #include <fuzzy/kernel/interrupts/timer.h>
+#include <fuzzy/memmgr/stackguard/stackguard.h>
 
 #include <process.h>
 
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
 
-int process_spawn(int lba_index, int sector_count, char *argv[]) {
+int process_spawn(int lba_index, int sector_count, int argc, char *argv[]) {
     print_info("[process_spawn] create");
-    int pid = process_create(argv);
+    int pid = process_create(argc, argv);
     if(pid<0) {
         print_log("Failed to reserved a new pid");
         return -1;
     }
     print_info("[process_spawn] loading, pid: %d", pid);
+
     int err = process_load_from_disk(pid, lba_index, sector_count);
     if (err) {
         print_log("Failed to load app in memory, Error: ", err);
@@ -23,6 +25,7 @@ int process_spawn(int lba_index, int sector_count, char *argv[]) {
     print_info("[process_spawn] ready, pid: %d", pid);
     struct Process *process = get_process(pid);
     process->state = STATE_READY;
+    VERIFY_STACKGUARD();
     return 0;
 }
 
@@ -37,8 +40,9 @@ int syscall_1_process_exit(int user_ds, int status) {
 }
 
 int syscall_1_process_spawn_lba_sc(int lba_start, int sector_count) {
-    char *fake_argv[]={"fake_spawn", NULL};
-    return process_spawn(lba_start, sector_count, fake_argv);
+    int fake_argc = 1;
+    ARGV fake_argv={"fake_spawn", NULL};
+    return process_spawn(lba_start, sector_count, fake_argc, fake_argv);
 }
 
 int syscall_1_process_exec_lba_sc(int lba_start, int sector_count) {
@@ -46,24 +50,20 @@ int syscall_1_process_exec_lba_sc(int lba_start, int sector_count) {
 }
 
 int syscall_1_process_spawn_fname(int user_ds, char *_us_filename, char *_us_argv[]) {
-    char filename[FS_FFS_FILENAME_LIMIT];
-    char argv_data[PROCESS_MAX_ARGC][PROCESS_MAX_ARG_LEN];
+    // User must send all PROCESS_MAX_ARGC arguments.
     char *argv_with_uspointer[PROCESS_MAX_ARGC];
-    char *argv[PROCESS_MAX_ARGC];  // kernel mode
+    char filename[FS_FFS_FILENAME_LIMIT];
+    int argc = 0; // kernel mode
+    ARGV argv={0};  // kernel mode
     syscall_strncpy_user_to_kernel(user_ds, _us_filename, filename, sizeof(filename));
     syscall_strncpy_user_to_kernel(user_ds, _us_argv, argv_with_uspointer, sizeof(argv_with_uspointer));
     // if src string is NULL, then dst string also should be null.
-    for (int i = 0; i < PROCESS_MAX_ARGC; i++) {
+    for (int i = 0; i < PROCESS_MAX_ARGC - 1; i++) {
         if(argv_with_uspointer[i]==NULL) {
-            argv[i]=NULL;
             break;
         }
-        syscall_strncpy_user_to_kernel(user_ds, argv_with_uspointer[i], argv_data[i], sizeof(argv_data[i]));
-        argv[i] = argv_data[i];
-    }
-
-    for (int i = 0; argv[i]; i++) {
-        printf("[kernel] arg%d: %s\n", i, argv[i]);
+        syscall_strncpy_user_to_kernel(user_ds, argv_with_uspointer[i], argv[i], sizeof(argv[i]));
+        argc++;
     }
 
     union FFSFileEntry entry;
@@ -74,7 +74,7 @@ int syscall_1_process_spawn_fname(int user_ds, char *_us_filename, char *_us_arg
     int lba_start = resolve_abs_lba(FFS_UNIQUE_PARITION_ID, entry.content.start_block_id);
     int sector_count = (entry.content.filesize + FS_BLOCK_SIZE -1)/FS_BLOCK_SIZE;
 
-    return process_spawn(lba_start, sector_count, argv);
+    return process_spawn(lba_start, sector_count, argc, argv);
 }
 
 int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds) {

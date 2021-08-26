@@ -2,6 +2,7 @@
 
 // START_ENSURE_SAME_layout_asm
 #define MEMORY_APP_SIZE         0x20000
+#define STACKINIT_APP           (MEMORY_APP_SIZE-4)
 // END_ENSURE_SAME_layout_asm
 
 // Most of the memory layout relies on the fact the kernel is first app

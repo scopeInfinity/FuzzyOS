@@ -3,7 +3,8 @@
 #include <process.h>
 #include <string.h>
 
-const int COMMAND_SIZE = 200;
+const int COMMAND_SIZE = 64;
+const char COMMAND_DELIM[] = " ";
 int last_status_code = 0;
 
 void banner() {
@@ -13,31 +14,41 @@ void banner() {
 
 int cmd_help() {
     printf("commands\n");
-    printf(" > help\n");
-    printf(" > run ls\n");
-    printf(" > run <filename>\n");
-    printf(" > echo <text>\n");
-    printf(" > status\n");
-    printf(" > exit\n");
+    printf(" > help                       print the available commands\n");
+    printf(" > exit                       kill the current shell\n");
+    printf(" > run ls                     print list of files\n");
+    printf(" > run <filename> [arg1]...   execute available program\n");
     return 0;
 }
 
-int cmd_run(char *fname) {
-    if(fname == NULL) {
-        printf("invalid syntax\n");
-        printf("usage: run <filename>\n");
-        return -2;
+static char *copy_arg(char *dst, char *src) {
+    int slen = strlen(src);
+    if (slen >= PROCESS_MAX_ARG_LEN) {
+        slen = PROCESS_MAX_ARG_LEN-1;
     }
-    return spawnl(fname, fname, "testing", "yoyo", NULL);
+    memcpy(dst, src, slen);
+    dst[slen] = NULL;
+    return dst;
 }
 
-int cmd_echo(char *text) {
-    if(text == NULL) {
+int cmd_run() {
+    char *argv[PROCESS_MAX_ARGC];
+    char argv_data[PROCESS_MAX_ARGC][PROCESS_MAX_ARG_LEN] = {0};
+
+    char *token;
+    int argc = 0;
+    while ((token = strtok(NULL, COMMAND_DELIM)) != NULL && argc < PROCESS_MAX_ARGC-1) {
+        argv[argc] = copy_arg(argv_data[argc], token);
+        argc++;
+    }
+    argv[argc] = NULL;
+    if (argc == 0) {
         printf("invalid syntax\n");
-        printf("usage: echo <text>\n");
+        printf("usage: run <filename> [arg1 [arg2 ...]]\n");
         return -2;
     }
-    return printf("%s\n", text);
+    char *filename = argv[0];
+    return spawnv(filename, argv);
 }
 
 int cmd_exit() {
@@ -46,39 +57,25 @@ int cmd_exit() {
 }
 
 void handle_command(char *full_cmd) {
-    // syntax: <cmd> [arg0]
-    char cmd[12];  // for now: excepts no cmd to use all bytes.
-    memcpy(cmd, full_cmd, sizeof(cmd));
-    char *arg0;
-    {
-        // <cmd>
-        int i = 0;
-        while(i+1<sizeof(cmd) && cmd[i]!=' ' && cmd[i]!='\0') i++;
-        cmd[i++]='\0';
+    // syntax: <cmd> [arg0]...
+    //  - handle locally if <cmd> is builtin
+    //  - update to err status code
 
-        // [arg0]
-        if(i<sizeof(cmd)) {
-            arg0 = full_cmd+i;
-        } else {
-            arg0 = NULL;
-        }
-    }
+    char *cmd = strtok(full_cmd, COMMAND_DELIM);
 
     if (strcmp(cmd, "help")==0) {
         last_status_code = cmd_help();
-    } else if (strcmp(cmd, "run")==0) {
-        last_status_code = cmd_run(arg0);
-    } else if (strcmp(cmd, "echo")==0) {
-        last_status_code = cmd_echo(arg0);
     } else if (strcmp(cmd, "exit")==0) {
         last_status_code = cmd_exit();
+    } else if (strcmp(cmd, "run")==0) {
+        last_status_code = cmd_run(cmd);
     } else {
         printf("'%s' command not found\n", cmd);
         last_status_code = 404;
     }
 }
 
-int main(int argc,char *argv[]) {
+int main(int argc, char *argv[]) {
     char command[COMMAND_SIZE];
     banner();
     cmd_help();

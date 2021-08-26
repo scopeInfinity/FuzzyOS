@@ -2,6 +2,7 @@
 #include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/kernel/interrupts/timer.h>
 #include <fuzzy/kernel/process/process.h>
+#include <fuzzy/memmgr/stackguard/stackguard.h>
 
 #include <lib/utils/logging.h>
 
@@ -39,6 +40,7 @@ void irq0_pit_handler(int *e_ip, int *e_cs, int *e_sp, int *e_ss) {
     timer_add_ticks(ticks_jumped);
     int newtime_ms = get_time_since_boot_ms();
     process_scheduler(e_ip, e_cs, e_sp, e_ss);
+    VERIFY_STACKGUARD();
 }
 
 void interrupt_pit_enable() {

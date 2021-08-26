@@ -1,9 +1,11 @@
 #pragma once
+#include <process.h>
 #include<stddef.h>
 
 #define MAX_PROCESS 10
-// GDT_TABLE_SIZE = MAX_PROCESS*2+3
-#define GDT_TABLE_SIZE 23
+#define GDT_TABLE_SIZE MAX_PROCESS*2+3
+
+typedef char ARGV[PROCESS_MAX_ARGC][PROCESS_MAX_ARG_LEN];
 
 enum process_state{
     STATE_COLD = 0,  // STATE_COLD must be 0
@@ -36,7 +38,7 @@ int get_idt_ds_entry(int process_id);
 int get_idt_reverse_pid_lookup(int cs);
 
 // process create or kill
-int process_create(char *argv[]);
+int process_create(int argc, char *argv[]);
 void process_kill(int user_ds, int status);
 
 // scheduler
@@ -44,7 +46,6 @@ void process_kill(int user_ds, int status);
 // on return process_scheduler, irq0 should execute from
 // cs:eip with ss:esp (updated or not).
 void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss);
-
 
 // user space <-> kernel space data transfer helper
 extern void syscall_strncpy_user_to_kernel(int user_ds, char *src_es_address, char *dest_ds_address, size_t size);
