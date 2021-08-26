@@ -102,7 +102,7 @@ binaries: $(bt_stage1) $(bt_stage2) $(kernel_core) $(rm_static)
 SECTOR_COUNT_BT_STAGE1 = 1
 SECTOR_COUNT_SHARED_LIBRARY = 1
 SECTOR_COUNT_BT_STAGE2 = 11
-SECTOR_COUNT_KERNEL = 47
+SECTOR_COUNT_KERNEL = 48
 
 SECTOR_START_BT_STAGE1 = 0
 SECTOR_START_SHARED_LIBRARY = $(shell expr $(SECTOR_START_BT_STAGE1) + $(SECTOR_COUNT_BT_STAGE1) )
@@ -141,6 +141,7 @@ include $(SRC_DRIVERS)/pic/Makefile.mk
 
 include $(SRC_DIR)/fs/Makefile.mk
 include $(SRC_DIR)/memmgr/tables/Makefile.mk
+include $(SRC_DIR)/memmgr/stackguard/Makefile.mk
 
 include $(SRC_LIB)/app/Makefile.mk
 include $(SRC_LIB_DS)/Makefile.mk

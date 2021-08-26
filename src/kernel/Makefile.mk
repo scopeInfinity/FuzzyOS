@@ -13,7 +13,9 @@ $(SELF_BUILD_DIR)/%_asm.o: $(SELF_SRC_DIR)/%.asm
 	mkdir -p $(dir $@)
 	$(NASM) -o $@ -i $(SRC_REALMODE)/ $<
 
-$(kernel_core).elf: $(SELF_BUILD_DIR)/core_asm.o $(SELF_BUILD_DIR)/panic_asm.o $(SELF_BUILD_ALL_C) \
+$(kernel_core).elf: $(SELF_BUILD_DIR)/core_asm.o \
+		$(SELF_BUILD_DIR)/panic_asm.o \
+		$(SELF_BUILD_ALL_C) \
 		$(BUILD_KERNEL)/interrupts/libinterrupts \
 		$(BUILD_KERNEL)/syscall/libsyscall \
 		$(BUILD_KERNEL)/process/libprocess \
@@ -26,7 +28,9 @@ $(kernel_core).elf: $(SELF_BUILD_DIR)/core_asm.o $(SELF_BUILD_DIR)/panic_asm.o $
 		$(BUILD_LIB_DS)/libds \
 		$(BUILD_DRIVERS)/disk/libdisk \
 		$(BUILD_DIR)/real_mode/librealmodeclient \
-		$(BUILD_USR_LIB)/libfuzzyc
+		$(BUILD_USR_LIB)/libfuzzyc \
+		$(BUILD_DIR)/memmgr/stackguard/libstackguard # stackguard must be the last one
+
 	mkdir -p $(dir $@)
 	$(KERNEL_LD) -o $@ $^
 
