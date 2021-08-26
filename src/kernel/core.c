@@ -3,6 +3,7 @@
 #include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/kernel/interrupts/timer.h>
 #include <fuzzy/kernel/process/process.h>
+#include <fuzzy/memmgr/stackguard/stackguard.h>
 
 #include <string.h>
 #include <process.h>
@@ -50,6 +51,7 @@ void kernel_core_entry() {
 
     clrscr();
 
+    VERIFY_STACKGUARD();
     int init_pid = spawnl(INIT_APPNAME, INIT_APPNAME, NULL);
     print_log("init process got created: %d", init_pid);
 
