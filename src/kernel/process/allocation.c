@@ -3,6 +3,8 @@
 #include <fuzzy/memmgr/layout.h>
 #include <fuzzy/kernel/panic.h>
 
+#include <process.h>
+
 /* Process ID
  *  pid 0 : kernel core
  *  pid 1 : user app 1
@@ -88,7 +90,38 @@ void process_scheduler_init() {
     load_gdt_table(&gdtr);
 }
 
-int process_create(char *argv[]) {
+// return new user_sp
+static int create_infant_process_argv_stack(int user_ds, int user_sp,
+        int argc, char *argv[]) {
+    // assumes pointer are 4 bytes and are same as int
+
+    user_sp = user_sp - sizeof(ARGV);
+    char *__us_argv_data = user_sp;
+    syscall_strncpy_kernel_to_user(user_ds, __us_argv_data, argv, sizeof(ARGV));
+
+    // assumes argc < PROCESS_MAX_ARGC
+    char *ks_to_us_argv[PROCESS_MAX_ARGC] = {NULL};
+    for (int i = 0; i < argc; i++) {
+        ks_to_us_argv[i] = __us_argv_data + i*PROCESS_MAX_ARG_LEN;
+    }
+
+
+    user_sp = user_sp - sizeof(ks_to_us_argv);
+    char *__us_argv_list = user_sp;
+    syscall_strncpy_kernel_to_user(user_ds, __us_argv_list, ks_to_us_argv, sizeof(ks_to_us_argv));
+
+    user_sp = user_sp - sizeof(argc);
+    char *__us_argv = user_sp;
+    syscall_strncpy_kernel_to_user(user_ds, __us_argv, &__us_argv_list, sizeof(__us_argv_list));
+
+    user_sp = user_sp - sizeof(argc);
+    char *__us_argc = user_sp;
+    syscall_strncpy_kernel_to_user(user_ds, __us_argc, &argc, sizeof(argc));
+
+    return user_sp;
+}
+
+int process_create(int argc, char *argv[]) {
     // returnd pid >= 0 if success
     int pid = -1;
     for (int i = 0; i < MAX_PROCESS; ++i) {
@@ -129,8 +162,8 @@ int process_create(char *argv[]) {
     process->ip = 0;
     // initially ds == ss
     process->ss = get_gdt_number_from_entry_id(idt_ds_entry);
-    process->sp = create_infant_process_irq0_stack(process->ss);
-    // TODO: Push argv in process stack
+    process->sp = create_infant_process_argv_stack(process->ss, STACKINIT_APP, argc, argv);
+    process->sp = create_infant_process_irq0_stack(process->ss, process->sp);
     return pid;
 }
 

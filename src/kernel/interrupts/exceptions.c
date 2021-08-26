@@ -33,8 +33,15 @@ extern void _interrupt_handler_0x1D_exception();
 extern void _interrupt_handler_0x1E_exception();
 extern void _interrupt_handler_0x1F_exception();
 
-void interrupt_handler_0x00_0x1F_exception(int id,int ip, int cs) {
+void interrupt_handler_0x00_0x1F_exception(int id, int ip, int cs) {
+    switch (id) {
+        case 0x0D:
+            PANIC(id, "[hw_exception] general_protection_fault");
+    }
     PANIC(id, "[hw_exception] triggered: no handler");
+}
+
+void interrupt_handler_0x0D_general_protection_fault(int id, int ip, int cs) {
 }
 
 void interrupt_register_0x00_0x1F_exceptions() {

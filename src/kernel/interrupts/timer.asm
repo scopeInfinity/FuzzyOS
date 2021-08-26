@@ -95,12 +95,12 @@ global create_infant_process_irq0_stack
         push edi
 
         push ds
-        mov ecx, [ebp+0x08]     ; arg0
+        mov ecx, [ebp+0x08]     ; arg0: ss
+        mov eax, [ebp+0x0C]     ; arg1; user stack esp
 
         mov ds, ecx
+        sub eax, 4
 
-        ; user initial stack
-        mov eax, STACKINIT_APP
         ; kernel offset
         xor ecx, ecx
         mov [eax-0], ecx    ; user: eflag

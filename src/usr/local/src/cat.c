@@ -22,8 +22,16 @@ void process(char filename[]) {
     fclose(handler);
 }
 
-int main(int argc,char *argv[]) {
-    char filename[] = "README.md";
+int print_usage() {
+    printf("Usage: cat <filename>");
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        return print_usage();
+    }
+    char *filename = argv[1];
     process(filename);
     return 0;
 }
