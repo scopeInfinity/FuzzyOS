@@ -1,6 +1,11 @@
 QEMU_CODES = {
-    " ": "spc",
-    "\n": "ret"
+    " " : "spc",
+    "\n": "ret",
+    "." : "dot",
+    "," : "comma",
+    "-" : "minus",
+    "=" : "equal",
+    "*" : "asterisk"
 }
 
 def char_to_key(char):
