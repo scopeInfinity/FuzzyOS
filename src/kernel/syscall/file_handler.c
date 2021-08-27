@@ -11,11 +11,13 @@ int fh_switch(int operation) {
 }
 
 int file_handler_find(char *filename, union FFSFileEntry *entry) {
+    // search for filename case insensitive as keyboard driver currently
+    // doesn't support shift or caps lock.
     int file_id = 0;
     while (file_id < FS_FFS_FILEENTRY_COUNT) {
         int err = fetch_file_entry(
             FFS_UNIQUE_PARITION_ID, file_id, entry);
-        if(!err && strcmp(filename, entry->content.filename)==0) {
+        if(!err && strcmpi(filename, entry->content.filename)==0) {
             // match
             return file_id;
         }

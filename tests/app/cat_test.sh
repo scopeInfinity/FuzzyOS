@@ -4,7 +4,7 @@
 
 QEMU_SCREENSHOT_NAME="cat_test.ppm"
 
-python3 -m tests.qemu.monitor -p ${MONITOR_PORT:?} -sc run cat
+python3 -m tests.qemu.monitor -p ${MONITOR_PORT:?} -sc run cat readme.md
 
 test_create_screen_dump
 test_screen_content $LINENO "Experimental OS"
