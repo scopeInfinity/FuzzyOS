@@ -83,10 +83,10 @@ void entry_stage() {
     set_color_fg(C_WHITE);
 
     print_log("");
+    enable_a20();
     load_static_library();
     load_kernel();
 
-    enable_a20();
     populate_gdt_table(&gdtr, gdt_table, GDT_TABLE_SIZE, 0);
 
     // Enter_protected_mode never returns.

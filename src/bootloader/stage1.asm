@@ -17,6 +17,7 @@
         CLI
         MOV ax, 0x0000
         MOV es, ax                  ; es := 0
+        mov sp, 0x7FF0
 
         set_blinking 0
         clear_screen C_WHITE, C_BLACK
