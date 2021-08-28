@@ -8,6 +8,7 @@ extern entry_stage
 extern gdtr
 global enter_protected_mode
 global label_exit
+global call_int_0x15
 
 [SECTION .text]
         mov eax, 0x0
@@ -42,6 +43,16 @@ global label_exit
     label_exit:
         HLT
         JMP label_exit
+
+    call_int_0x15:
+        push ebp
+        mov ebp, esp
+
+        mov ax, [ebp+0x08]
+        int 0x15
+
+        pop ebp
+        ret
 
 
 [SECTION .data]

@@ -16,6 +16,30 @@ char DIGIT_TO_HEX[] = "0123456789ABCDEF";
 
 extern void enter_protected_mode();
 extern void label_exit();
+extern unsigned short call_int_0x15(unsigned short ax);
+
+void enable_a20() {
+    int ax;
+    ax = call_int_0x15(0x2403);
+    if (!ax) {
+        print_log("BIOS A20-gate not supported");
+        label_exit();
+    }
+
+    ax = call_int_0x15(0x2402);
+    if (ax==1) {
+        print_log("BIOS A20-gate already enabled");
+        return;
+    }
+
+    ax = call_int_0x15(0x2401);
+    if (!ax) {
+        print_log("BIOS A20-gate enabling attempt failed");
+        label_exit();
+    }
+
+    print_log("BIOS A20-gate enabled");
+}
 
 char *get_memdump_8byte(void *address) {
     static char shared_memdump[17];
@@ -62,6 +86,7 @@ void entry_stage() {
     load_static_library();
     load_kernel();
 
+    enable_a20();
     populate_gdt_table(&gdtr, gdt_table, GDT_TABLE_SIZE, 0);
 
     // Enter_protected_mode never returns.
