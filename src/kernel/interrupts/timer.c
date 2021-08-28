@@ -34,7 +34,7 @@ int get_time_since_boot_ms() {
 void irq0_pit_handler(int *e_ip, int *e_cs, int *e_sp, int *e_ss) {
     // called every X milli seconds.
     // time period is defined by pic_pit_set_counter.
-    unsigned short ticks_jumped =  pic_pit_get_counter();
+    unsigned short ticks_jumped =  pit_get_counter();
 
     int oldtime_ms = get_time_since_boot_ms();
     timer_add_ticks(ticks_jumped);
@@ -44,7 +44,7 @@ void irq0_pit_handler(int *e_ip, int *e_cs, int *e_sp, int *e_ss) {
 }
 
 void interrupt_pit_enable() {
-    pic_pit_set_counter(PIC_PIT_FREQ/100);  // 10ms
+    pit_set_counter(PIC_PIT_FREQ/100);  // 10ms
     pic_irq_enable(PIC_IRQ_PIT);
 }
 
