@@ -1,6 +1,6 @@
-set $CS_BASE = 0x20000
-set $DS_BASE = 0x20000
-set $SS_BASE = 0x20000
+set $CS_BASE = 0x30000
+set $DS_BASE = 0x30000
+set $SS_BASE = 0x30000
 
 # config
 set architecture i386:x86-64
@@ -72,17 +72,17 @@ define view_realmode
 end
 
 define view_kernelmode
-    set $CS_BASE = 0xC000
-    set $DS_BASE = 0xC000
-    set $SS_BASE = 0xC000
+    set $CS_BASE = 0x10000
+    set $DS_BASE = 0x10000
+    set $SS_BASE = 0x10000
     symbol-file build/kernel/core.elf
     clayout
 end
 
 define view_usermode
-    set $CS_BASE = 0x20000
-    set $DS_BASE = 0x20000
-    set $SS_BASE = 0x20000
+    set $CS_BASE = 0x30000
+    set $DS_BASE = 0x30000
+    set $SS_BASE = 0x30000
     symbol-file
     clayout
 end

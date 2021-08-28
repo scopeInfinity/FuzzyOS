@@ -4,7 +4,7 @@
 
 global irq0_pit_handler_low
 extern irq0_pit_handler
-extern pic_pit_reset
+extern pit_reset
 
 global create_infant_process_irq0_stack
 
@@ -79,7 +79,7 @@ global create_infant_process_irq0_stack
     irq0_pit_handler_low:
         _int_irq0_start
         call irq0_pit_handler
-        call pic_pit_reset
+        call pit_reset
         _int_irq0_end
         iret
 
