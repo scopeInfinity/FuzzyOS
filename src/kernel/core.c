@@ -55,6 +55,6 @@ void kernel_core_entry() {
     int init_pid = spawnl(INIT_APPNAME, INIT_APPNAME, NULL);
     print_log("init process got created: %d", init_pid);
 
-    // interrupt_pit_enable();
+    interrupt_pit_enable();
     while (1);
 }
