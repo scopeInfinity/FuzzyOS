@@ -40,7 +40,6 @@ int spawnv(char *file_path, char *argv[]) {
 int _spawnv_syscall(char *file_path, char *argv[]) {
     // kernel expects argv size must be PROCESS_MAX_ARGC
     int pid = SYSCALL_A3(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_FNAME, file_path, argv);
-    if(pid>=0) yield();
     return pid;
 }
 

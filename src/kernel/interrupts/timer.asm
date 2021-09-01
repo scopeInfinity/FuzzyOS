@@ -103,7 +103,10 @@ global create_infant_process_irq0_stack
 
         ; kernel offset
         xor ecx, ecx
+
+        xor ecx, 1<<9       ; enable interrupt
         mov [eax-0], ecx    ; user: eflag
+
         ; do_not_care: next two cs, ip
         ; CS and IP doesn't matter, as they are controlled by _int_irq0_end
 
