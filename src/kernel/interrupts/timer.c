@@ -39,6 +39,8 @@ void irq0_pit_handler(int *e_ip, int *e_cs, int *e_sp, int *e_ss) {
     int oldtime_ms = get_time_since_boot_ms();
     timer_add_ticks(ticks_jumped);
     int newtime_ms = get_time_since_boot_ms();
+
+    // yield relies on int 0x20 only
     process_scheduler(e_ip, e_cs, e_sp, e_ss);
     VERIFY_STACKGUARD();
 }

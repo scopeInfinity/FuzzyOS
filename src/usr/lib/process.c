@@ -62,3 +62,38 @@ int waitpid(unsigned int blocked_on_pid) {
         yield();
     }
 }
+
+int getpid() {
+    return SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_GET, SYSCALL_PROCESS_SUB_GET_PID);
+}
+
+int fork() {
+    int mark_it = SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_FORK, SYSCALL_PROCESS_SUB_FORK_MARK_READY);
+    if(mark_it != 0) {
+        // failed to mark process as fork ready, maybe it's already marked.
+        return mark_it;
+    }
+    // fork requested.
+    // let's process scheduler fork the job.
+    printf("calling yield\n");
+    yield();
+    while(1);
+    printf("yield over\n");
+    // fork request should be complete by now.
+    int status = SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_FORK, SYSCALL_PROCESS_SUB_FORK_CHECK_READY);
+    printf("fork_check_ready: %d\n", status);
+    if(status < 0) {
+        // request either failed
+        // or still waiting: it's a bad state, but we are going to let that slide.
+        return status;
+    }
+    // fork successful.
+    int child_pid = status;
+    int my_pid = getpid();
+    if(my_pid==child_pid) {
+        // child process
+        return 0;
+    }
+    // parent process
+    return child_pid;
+}

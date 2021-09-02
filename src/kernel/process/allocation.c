@@ -123,8 +123,7 @@ static int create_infant_process_argv_stack(int user_ds, int user_sp,
     return user_sp;
 }
 
-int process_create(unsigned int ppid, int argc, char *argv[]) {
-    // returnd pid >= 0 if success
+static int get_cold_pid() {
     int pid = -1;
     for (int i = 0; i < MAX_PROCESS; ++i) {
         if(i==PID_KERNEL) continue;
@@ -133,8 +132,17 @@ int process_create(unsigned int ppid, int argc, char *argv[]) {
             break;
         }
     }
+    return pid;
+}
+
+int process_create(unsigned int ppid, int argc, char *argv[]) {
+    // returnd pid >= 0 if success
+    int pid = get_cold_pid();
     if(pid < 0) return pid;
     struct Process *process = &processes[pid];
+    // reset state
+    process->flagirq0_fork_ready = 0;
+    process->flagirq0_fork_newchild = -1;
 
     int memory_location = memmgr_app_abs_location(pid);
     int memory_size = memmgr_app_size(pid);
@@ -165,8 +173,12 @@ int process_create(unsigned int ppid, int argc, char *argv[]) {
     process->ip = 0;
     // initially ds == ss
     process->ss = get_gdt_number_from_entry_id(idt_ds_entry);
-    process->sp = create_infant_process_argv_stack(process->ss, STACKINIT_APP, argc, argv);
-    process->sp = create_infant_process_irq0_stack(process->ss, process->sp);
+    if (argc > 0) {
+        // process_create for those who don't care about stack initilization
+        // like fork(), they will copy whole segment memory.
+        process->sp = create_infant_process_argv_stack(process->ss, STACKINIT_APP, argc, argv);
+        process->sp = create_infant_process_irq0_stack(process->ss, process->sp);
+    }
     return pid;
 }
 
@@ -174,6 +186,57 @@ void process_kill(unsigned int pid, int status) {
     struct Process *process = &processes[pid];
     process->status_code = status;
     process->state = STATE_EXIT;
+}
+
+int process_fork_mark_ready(int pid) {
+    struct Process *process = get_process(pid);
+    if(process == NULL) return -2;
+    if(process->flagirq0_fork_ready>0) return -3;  // denied; fork already requested.
+    process->flagirq0_fork_ready = 1;   // success; fork requested
+    return 0;
+}
+
+int process_fork_check_ready(int pid) {
+    // should be called after process_fork_mark_ready
+    struct Process *process = get_process(pid);
+    if(process == NULL) return -2;
+    if(process->flagirq0_fork_ready==-1) return -3;  // fork request: failed
+    // bad state from user side
+    if(process->flagirq0_fork_ready==1) return -4;    // fork request: still waiting
+    return process->flagirq0_fork_newchild;  // fork request: success and return new pid
+}
+
+int process_fork(unsigned int ppid) {
+    // should be called from irq0 only.
+    int npid = process_create(ppid, 0, NULL);
+    if(npid < 0) return npid;
+    struct Process *process = get_process(ppid);
+    struct Process *nprocess = get_process(npid);
+
+    nprocess->state = STATE_READY;
+
+    nprocess->sp = process->sp;
+    nprocess->ip = process->ip;
+
+    process->state = STATE_EXIT;
+
+    size_t size = min(
+        memmgr_app_size(ppid),
+        memmgr_app_size(npid)
+    );
+    int dst_ds = get_gdt_number_from_entry_id(get_idt_ds_entry(npid));
+    int src_ds = get_gdt_number_from_entry_id(get_idt_ds_entry(ppid));
+
+    kernel_memncpy_absolute(
+        dst_ds,
+        0,
+        src_ds,
+        0,
+        size
+    );
+    print_log("copy success");
+    // PANIC(0, "A");
+    return npid;
 }
 
 int process_load_from_disk(int pid, int lba_index, int sector_count) {

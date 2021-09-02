@@ -86,6 +86,8 @@ int main(int argc, char *argv[]) {
     banner();
     cmd_help();
     int c = 0;
+    strcpy(command, "run ls");
+    handle_command(command);
     while (1) {
         printf("[%d] $ ", last_status_code);
         gets(command);

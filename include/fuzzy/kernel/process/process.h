@@ -37,6 +37,13 @@ struct Process {
             unsigned int blocking_pid;  // TODO: make list
         } process_wait;
     } block_data;    // valid if state == BLOCK
+
+    // schedule for IRQ0
+    // 0  - no fork requested or last fork successful; can try fork again
+    // 1  - fork requested; should NOT try fork for now.
+    // -1 - last fork failed; can try fork again
+    signed char flagirq0_fork_ready;
+    int flagirq0_fork_newchild;  // pid
 };
 
 void process_scheduler_init();
@@ -66,6 +73,10 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss);
 // user space <-> kernel space data transfer helper
 extern void syscall_strncpy_user_to_kernel(int user_ds, char *src_es_address, char *dest_ds_address, size_t size);
 extern void syscall_strncpy_kernel_to_user(int user_ds, char *dest_address, char *src_address, size_t size);
+extern void kernel_memncpy_absolute(int dst_ds, char *dst_address, int src_ds, char *src_address, size_t size);
 
-// state logic
+// operations
 int process_waitpid(unsigned int pid, unsigned int blocked_on_pid);
+
+int process_fork_mark_ready(int pid);
+int process_fork_check_ready(int pid);
