@@ -2,7 +2,13 @@
 #include <stdio.h>
 
 char getch() {
-    return SYSCALL_A0(SYSCALL_KEYBOARD);
+    // syscall is irq blocking,
+    // so try to keep them as short as possible.
+    while (1) {
+        char c = SYSCALL_A0(SYSCALL_KEYBOARD);
+        if (c) return c;
+        yield();
+    }
 }
 
 void clrscr() {
