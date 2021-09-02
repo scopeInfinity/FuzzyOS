@@ -2,6 +2,7 @@
 
 global syscall_strncpy_user_to_kernel
 global syscall_strncpy_kernel_to_user
+global kernel_memncpy_absolute
 
 [SECTION .text]
 
@@ -50,6 +51,34 @@ global syscall_strncpy_kernel_to_user
         rep movsb
 
         pop es
+        pop edi
+        pop esi
+        pop ebx
+
+        pop ebp
+        ret
+
+    kernel_memncpy_absolute:
+        push ebp
+        mov ebp, esp
+        ; callee save register
+        push ebx
+        push esi
+        push edi
+        push ds
+        push es
+
+        mov ecx, [ebp + 0x18]         ; count
+        mov esi, [ebp + 0x14]         ; src_loc
+        mov  ds, [ebp + 0x10]         ; src_ds
+        mov edi, [ebp + 0x0C]         ; dest_loc
+        mov  es, [ebp + 0x08]         ; dest_ds
+
+        ; strcpy
+        rep movsb
+
+        pop es
+        pop ds
         pop edi
         pop esi
         pop ebx

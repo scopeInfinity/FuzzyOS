@@ -44,9 +44,23 @@ void process_scheduler_stash_state() {
 }
 
 int process_scheduler_get_next_pid(int lastpid) {
-    process_scheduler_stash_state();
     // execute one of the scheduling algorithm
     return process_scheduler_largestpid(lastpid);
+}
+
+static void handle_fork(unsigned int ppid, struct Process *process) {
+    if(process->flagirq0_fork_ready>0) {
+        int npid = process_fork(ppid);
+        if(npid<0) {
+            process->flagirq0_fork_ready = -1; // request failed;
+        } else {
+            struct Process *nprocess = get_process(npid);
+            process->flagirq0_fork_ready = 0;  // request success;
+            process->flagirq0_fork_newchild = npid;
+            nprocess->flagirq0_fork_ready = 0; // request success;
+            nprocess->flagirq0_fork_newchild = npid;
+        }
+    }
 }
 
 void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
@@ -59,14 +73,11 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
         e_ss, e_sp);
 
     int pid = get_idt_reverse_pid_lookup_cs(e_cs);
-    int npid = process_scheduler_get_next_pid(pid);
 
-    if(npid<0) {
-        PANIC(0, "[process_scheduler] no STATE_READY process alive");
-    }
-
-    print_info("[process_scheduler] pid: %d -> %d", pid, npid);
     struct Process *process = get_process(pid);
+    process_scheduler_stash_state();
+    handle_fork(pid, process);
+
     if(process->state != STATE_COLD) {
         // if last process is still alive
         process->cs = e_cs;
@@ -77,6 +88,16 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
     // last process can be
     //  - RUNNING
     //  - BLOCK  # TODO: implement
+
+    int npid = process_scheduler_get_next_pid(pid);
+
+    if(npid<0) {
+        PANIC(0, "[process_scheduler] no STATE_READY process alive");
+    }
+
+    if(pid != npid) {
+        print_log("[process_scheduler] pid: %d -> %d", pid, npid);
+    }
 
     struct Process *nprocess = get_process(npid);
     nprocess->state = STATE_RUNNING;

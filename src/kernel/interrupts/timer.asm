@@ -67,6 +67,14 @@ global create_infant_process_irq0_stack
         pop fs
         pop es
         pop ds
+        ; add esp, 16
+        ; mov eax, cs
+        ; add eax, 8
+        ; mov gs, eax
+        ; mov fs, eax
+        ; mov es, eax
+        ; mov ds, eax
+
 
         mov [esp+36], ecx ; cs
         mov [esp+32], edi ; ip

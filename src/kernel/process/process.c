@@ -44,6 +44,24 @@ int syscall_1_process_wait(int pid, int blocked_on_pid) {
     return process_waitpid(pid, blocked_on_pid);
 }
 
+int syscall_1_process_fork(int user_pid, int op) {
+    switch (op) {
+        case SYSCALL_PROCESS_SUB_FORK_MARK_READY:
+            return process_fork_mark_ready(user_pid);
+        case SYSCALL_PROCESS_SUB_FORK_CHECK_READY:
+            return process_fork_check_ready(user_pid);
+    }
+    return -1;
+}
+
+int syscall_1_process_get(int pid, int op) {
+    switch (op) {
+        case SYSCALL_PROCESS_SUB_GET_PID:
+            return pid;
+    }
+    return -2;
+}
+
 int syscall_1_process_spawn_fname(unsigned int user_pid,
         int user_ds, char *_us_filename, char *_us_argv[]) {
     // User must send all PROCESS_MAX_ARGC arguments.
@@ -81,6 +99,10 @@ int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds
             return 0;
         case SYSCALL_PROCESS_SUB_WAIT:
             return syscall_1_process_wait(user_pid, a0);
+        case SYSCALL_PROCESS_SUB_FORK:
+            return syscall_1_process_fork(user_pid, a0);
+        case SYSCALL_PROCESS_SUB_GET:
+            return syscall_1_process_get(user_pid, a0);
         case SYSCALL_PROCESS_SUB_SPAWN_FNAME:
             return syscall_1_process_spawn_fname(user_pid, user_ds, (char*)a0, (char**)a1);
     }
