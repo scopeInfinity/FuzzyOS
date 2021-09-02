@@ -72,6 +72,7 @@ struct GDTEntry gdt_table[GDT_TABLE_SIZE];
 struct GDTReference gdtr;
 
 struct Process *get_process(int pid) {
+    if(pid<0 || pid>=MAX_PROCESS) return NULL;
     return &processes[pid];
 }
 
@@ -83,6 +84,7 @@ void process_scheduler_init() {
     // after the process scheduler starts
     // main thread kernel is ready to be killed.
     processes[PID_KERNEL].state=STATE_EXIT;
+    processes[PID_KERNEL].ppid=PID_KERNEL;
 
     populate_gdt_table(
         &gdtr, gdt_table, GDT_TABLE_SIZE,
@@ -121,7 +123,7 @@ static int create_infant_process_argv_stack(int user_ds, int user_sp,
     return user_sp;
 }
 
-int process_create(int argc, char *argv[]) {
+int process_create(unsigned int ppid, int argc, char *argv[]) {
     // returnd pid >= 0 if success
     int pid = -1;
     for (int i = 0; i < MAX_PROCESS; ++i) {
@@ -157,6 +159,7 @@ int process_create(int argc, char *argv[]) {
 
 
     // update process state
+    process->ppid = ppid;
     process->state = STATE_LOADING;
     process->cs = get_gdt_number_from_entry_id(idt_cs_entry);
     process->ip = 0;
@@ -167,8 +170,7 @@ int process_create(int argc, char *argv[]) {
     return pid;
 }
 
-void process_kill(int user_ds, int status) {
-    int pid = get_idt_reverse_pid_lookup_ds(user_ds);
+void process_kill(unsigned int pid, int status) {
     struct Process *process = &processes[pid];
     process->status_code = status;
     process->state = STATE_EXIT;

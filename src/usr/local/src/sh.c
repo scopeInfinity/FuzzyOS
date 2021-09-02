@@ -44,11 +44,17 @@ int cmd_run() {
     argv[argc] = NULL;
     if (argc == 0) {
         printf("invalid syntax\n");
-        printf("usage: run <filename> [arg1 [arg2 ...]]\n");
+        printf("usage: run <filename> [arg1...]\n");
         return -2;
     }
     char *filename = argv[0];
-    return spawnv(filename, argv);
+    int pid = spawnv(filename, argv);
+    if (pid < 0) {
+        // failed
+        return pid;
+    }
+    waitpid(pid);
+    return 0;
 }
 
 int cmd_exit() {

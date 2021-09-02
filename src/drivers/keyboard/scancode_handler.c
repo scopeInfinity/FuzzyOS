@@ -209,8 +209,10 @@ int keyboard_scanner_ascii_is_available() {
 }
 
 char keyboard_scanner_ascii_get() {
+    char c = last_ascii;
     last_ascii_available = 0;
-    return last_ascii;
+    last_ascii = 0;
+    return c;
 }
 
 void keyboard_scanner_handler_init() {

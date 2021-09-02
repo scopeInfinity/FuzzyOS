@@ -14,7 +14,7 @@
 int SYSCALL_TABLE[SYSCALL_SIZE];
 
 int syscall_0_keyboard_getch(int a0,int a1,int a2,int a3, int user_ds) {
-    return keyboard_get_key_pressed_blocking();
+    return keyboard_get_key_pressed_poll();
 }
 
 extern int interrupt_handler_0x32_syscall_handler();

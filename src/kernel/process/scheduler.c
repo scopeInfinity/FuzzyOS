@@ -74,6 +74,9 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
         process->ss = e_ss;
         process->sp = e_sp;
     }
+    // last process can be
+    //  - RUNNING
+    //  - BLOCK  # TODO: implement
 
     struct Process *nprocess = get_process(npid);
     nprocess->state = STATE_RUNNING;
@@ -86,4 +89,19 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
     *_e_cs = e_cs;
     *_e_sp = e_sp;
     *_e_ss = e_ss;
+}
+
+int process_waitpid(unsigned int pid, unsigned int blocked_on_pid) {
+    // TODO: this implementation has flaws.
+    // We need to do better something.
+    // It currently allows blocking on any pid, and rely on syscall client
+    // for yield.
+    struct Process *other_process = get_process(blocked_on_pid);
+    if(other_process==NULL) {
+        return -1;  // err
+    }
+    if(other_process->state == STATE_COLD) {
+        return 0;  // no error, wait over
+    }
+    return 1; // no error, keep waiting
 }

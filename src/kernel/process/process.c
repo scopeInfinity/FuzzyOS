@@ -8,9 +8,10 @@
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
 
-int process_spawn(int lba_index, int sector_count, int argc, char *argv[]) {
+int process_spawn(int lba_index, int sector_count,
+        unsigned int ppid, int argc, char *argv[]) {
     print_info("[process_spawn] create");
-    int pid = process_create(argc, argv);
+    int pid = process_create(ppid, argc, argv);
     if(pid<0) {
         print_log("Failed to reserved a new pid");
         return -1;
@@ -26,7 +27,7 @@ int process_spawn(int lba_index, int sector_count, int argc, char *argv[]) {
     struct Process *process = get_process(pid);
     process->state = STATE_READY;
     VERIFY_STACKGUARD();
-    return 0;
+    return pid;
 }
 
 int process_exec(int lba_index, int sector_count) {
@@ -34,22 +35,17 @@ int process_exec(int lba_index, int sector_count) {
     return -1;
 }
 
-int syscall_1_process_exit(int user_ds, int status) {
-    process_kill(user_ds, status);
+int syscall_1_process_exit(int pid, int status) {
+    process_kill(pid, status);
     return 0;
 }
 
-int syscall_1_process_spawn_lba_sc(int lba_start, int sector_count) {
-    int fake_argc = 1;
-    ARGV fake_argv={"fake_spawn", NULL};
-    return process_spawn(lba_start, sector_count, fake_argc, fake_argv);
+int syscall_1_process_wait(int pid, int blocked_on_pid) {
+    return process_waitpid(pid, blocked_on_pid);
 }
 
-int syscall_1_process_exec_lba_sc(int lba_start, int sector_count) {
-    return process_exec(lba_start, sector_count);
-}
-
-int syscall_1_process_spawn_fname(int user_ds, char *_us_filename, char *_us_argv[]) {
+int syscall_1_process_spawn_fname(unsigned int user_pid,
+        int user_ds, char *_us_filename, char *_us_argv[]) {
     // User must send all PROCESS_MAX_ARGC arguments.
     char *argv_with_uspointer[PROCESS_MAX_ARGC];
     char filename[FS_FFS_FILENAME_LIMIT];
@@ -74,20 +70,19 @@ int syscall_1_process_spawn_fname(int user_ds, char *_us_filename, char *_us_arg
     int lba_start = resolve_abs_lba(FFS_UNIQUE_PARITION_ID, entry.content.start_block_id);
     int sector_count = (entry.content.filesize + FS_BLOCK_SIZE -1)/FS_BLOCK_SIZE;
 
-    return process_spawn(lba_start, sector_count, argc, argv);
+    return process_spawn(lba_start, sector_count, user_pid, argc, argv);
 }
 
 int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds) {
+    int user_pid = get_idt_reverse_pid_lookup_ds(user_ds);
     switch (operation) {
         case SYSCALL_PROCESS_SUB_EXIT:
-            syscall_1_process_exit(user_ds, a0);
+            syscall_1_process_exit(user_pid, a0);
             return 0;
-        case SYSCALL_PROCESS_SUB_SPAWN_LBA_SC:
-            return syscall_1_process_spawn_lba_sc(a0, a1);
-        case SYSCALL_PROCESS_SUB_EXEC_LBA_SC:
-            return syscall_1_process_exec_lba_sc(a0, a1);
+        case SYSCALL_PROCESS_SUB_WAIT:
+            return syscall_1_process_wait(user_pid, a0);
         case SYSCALL_PROCESS_SUB_SPAWN_FNAME:
-            return syscall_1_process_spawn_fname(user_ds, (char*)a0, (char**)a1);
+            return syscall_1_process_spawn_fname(user_pid, user_ds, (char*)a0, (char**)a1);
     }
     return -1;
 }

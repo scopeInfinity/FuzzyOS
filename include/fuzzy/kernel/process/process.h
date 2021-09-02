@@ -13,6 +13,11 @@ enum process_state{
     STATE_READY,
     STATE_RUNNING,
     STATE_EXIT,    // should be unallocated in next scheduling cycle
+    STATE_BLOCK,    // process is waiting on IO, process_wait, etc.
+};
+
+enum process_state_block {
+    STATE_BLOCK_PROCESS_WAIT,   // waiting for another process termination.
 };
 
 struct Process {
@@ -22,6 +27,16 @@ struct Process {
     unsigned int *e;
 
     int status_code;
+
+    unsigned int ppid;  // parent pid, 0 to root under kernel_core
+
+    enum process_state_block block_type;  // valid, if state == BLOCK
+    union {
+        struct {
+            unsigned int blocked_on_pid;
+            unsigned int blocking_pid;  // TODO: make list
+        } process_wait;
+    } block_data;    // valid if state == BLOCK
 };
 
 void process_scheduler_init();
@@ -35,11 +50,12 @@ int get_gdt_number_from_entry_id(int id);
 // allocation
 int get_idt_cs_entry(int process_id);
 int get_idt_ds_entry(int process_id);
-int get_idt_reverse_pid_lookup(int cs);
+int get_idt_reverse_pid_lookup_cs(int cs);
+int get_idt_reverse_pid_lookup_ds(int ds);
 
 // process create or kill
-int process_create(int argc, char *argv[]);
-void process_kill(int user_ds, int status);
+int process_create(unsigned int ppid, int argc, char *argv[]);
+void process_kill(unsigned int pid, int status);
 
 // scheduler
 
@@ -50,3 +66,6 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss);
 // user space <-> kernel space data transfer helper
 extern void syscall_strncpy_user_to_kernel(int user_ds, char *src_es_address, char *dest_ds_address, size_t size);
 extern void syscall_strncpy_kernel_to_user(int user_ds, char *dest_address, char *src_address, size_t size);
+
+// state logic
+int process_waitpid(unsigned int pid, unsigned int blocked_on_pid);
