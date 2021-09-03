@@ -25,10 +25,6 @@ function verify_subimage_and_push() {
         echo "The ${subimage} size isn't divisible by 512" >&2
         exit 2
     fi
-    if [ "$(( $fsize / 512 ))" -lt ${min_sectors:?} ]; then
-        echo "The ${subimage} uses less sectors than ${min_sectors:?}" >&2
-        exit 2
-    fi
     if [ "$(( $fsize / 512 ))" -gt ${max_sectors:?} ]; then
         echo "The ${subimage} uses more sectors than ${max_sectors:?}" >&2
         exit 2

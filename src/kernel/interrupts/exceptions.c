@@ -39,9 +39,8 @@ extern void _interrupt_handler_0x1F_exception();
 
 void interrupt_handler_0x00_0x1F_exception(int id, int err_code, int ds, int ss, int ip, int cs, int eflag) {
     panic_screen_init();
-    unsigned int abs_address =
     print_log("Hardware exception %d (0x%x) triggered", id, id);
-    print_log("  Error Code: %x or %x", err_code);
+    print_log("  Error Code: %x", err_code);
     print_log("  CS    : %x (GDT entry)", cs);
     print_log("  DS    : %x (GDT entry)", ds);
     print_log("  SS    : %x (GDT entry)", ss);

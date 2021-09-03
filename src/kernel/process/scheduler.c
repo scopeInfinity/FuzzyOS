@@ -36,6 +36,7 @@ void process_scheduler_stash_state() {
         if(process->state == STATE_EXIT) {
             // process unallocate ready to be killed
             process->state = STATE_COLD;
+            // print_log("process_killed: %d", id);
         } else if(process->state == STATE_RUNNING) {
             // process move running process to ready
             process->state = STATE_READY;
@@ -49,7 +50,11 @@ int process_scheduler_get_next_pid(int lastpid) {
 }
 
 static void handle_fork(unsigned int ppid, struct Process *process) {
+    // if(process->flagirq0_fork_ready>0 && ppid!=2) {
+    //    print_log("[ignore] handle fork for %d", ppid);
+    // }
     if(process->flagirq0_fork_ready>0) {
+        // print_log("handle fork for %d", ppid);
         int npid = process_fork(ppid);
         if(npid<0) {
             process->flagirq0_fork_ready = -1; // request failed;
@@ -76,7 +81,6 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
 
     struct Process *process = get_process(pid);
     process_scheduler_stash_state();
-    handle_fork(pid, process);
 
     if(process->state != STATE_COLD) {
         // if last process is still alive
@@ -84,7 +88,9 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
         process->ip = e_ip;
         process->ss = e_ss;
         process->sp = e_sp;
+        handle_fork(pid, process);
     }
+
     // last process can be
     //  - RUNNING
     //  - BLOCK  # TODO: implement
@@ -96,7 +102,8 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
     }
 
     if(pid != npid) {
-        print_log("[process_scheduler] pid: %d -> %d", pid, npid);
+        // print_log("[process_scheduler] pid: %d -> %d", pid, npid);
+        // print_log("[process_scheduler] pid: %d -> %d, at eip: %x", pid, npid, e_ip);
     }
 
     struct Process *nprocess = get_process(npid);

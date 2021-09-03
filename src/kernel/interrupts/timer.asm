@@ -63,17 +63,16 @@ global create_infant_process_irq0_stack
         mov ss, edx
         mov esp, esi
 
-        pop gs
-        pop fs
-        pop es
-        pop ds
-        ; add esp, 16
-        ; mov eax, cs
-        ; add eax, 8
-        ; mov gs, eax
-        ; mov fs, eax
-        ; mov es, eax
-        ; mov ds, eax
+        ; pop gs
+        ; pop fs
+        ; pop es
+        ; pop ds
+        add esp, 16
+        mov eax, ss ; ss and ds should be same for MOST purpose. This will break something :(
+        mov gs, eax
+        mov fs, eax
+        mov es, eax
+        mov ds, eax
 
 
         mov [esp+36], ecx ; cs
