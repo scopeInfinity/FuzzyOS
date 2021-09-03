@@ -218,7 +218,8 @@ int process_fork(unsigned int ppid) {
     nprocess->sp = process->sp;
     nprocess->ip = process->ip;
 
-    process->state = STATE_EXIT;
+    // HERE
+    // process->state = STATE_EXIT;
 
     size_t size = min(
         memmgr_app_size(ppid),
@@ -234,7 +235,7 @@ int process_fork(unsigned int ppid) {
         0,
         size
     );
-    print_log("copy success");
+    // print_log("copy success");
     // PANIC(0, "A");
     return npid;
 }

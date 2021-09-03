@@ -61,8 +61,8 @@ SOURCE_SNAPSHOT="\"$$(git rev-parse --short HEAD)$$(git diff --quiet || echo '_u
 ## Integer is 4 bytes
 
 # Debugging controller
-DEBUG?=
-ifdef DEBUG
+NODEBUG?=
+ifndef NODEBUG
 CC_DEBUG=-g
 NASM_DEBUG=-g
 LD_DEBUG=
@@ -102,7 +102,7 @@ binaries: $(bt_stage1) $(bt_stage2) $(kernel_core) $(rm_static)
 SECTOR_COUNT_BT_STAGE1 = 1
 SECTOR_COUNT_SHARED_LIBRARY = 1
 SECTOR_COUNT_BT_STAGE2 = 12
-SECTOR_COUNT_KERNEL = 54
+SECTOR_COUNT_KERNEL = 55
 
 SECTOR_START_BT_STAGE1 = 0
 SECTOR_START_SHARED_LIBRARY = $(shell expr $(SECTOR_START_BT_STAGE1) + $(SECTOR_COUNT_BT_STAGE1) )

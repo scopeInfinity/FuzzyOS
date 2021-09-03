@@ -47,6 +47,7 @@ int syscall_1_process_wait(int pid, int blocked_on_pid) {
 int syscall_1_process_fork(int user_pid, int op) {
     switch (op) {
         case SYSCALL_PROCESS_SUB_FORK_MARK_READY:
+            // print_log("FORK REQUESTED:: %d", user_pid);
             return process_fork_mark_ready(user_pid);
         case SYSCALL_PROCESS_SUB_FORK_CHECK_READY:
             return process_fork_check_ready(user_pid);

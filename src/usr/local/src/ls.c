@@ -14,7 +14,6 @@ void process() {
 }
 
 int main(int argc,char *argv[]) {
-    __asm__("CLI");
 
     int p = fork();
     printf("fork() = %d\n", p);
