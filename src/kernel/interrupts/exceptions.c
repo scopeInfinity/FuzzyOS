@@ -1,4 +1,8 @@
 #include <fuzzy/kernel/panic.h>
+#include <fuzzy/memmgr/tables/gdt.h>
+#include <fuzzy/kernel/process/process.h>
+
+extern struct GDTEntry gdt_table[];
 
 extern void _interrupt_handler_0x00_exception();
 extern void _interrupt_handler_0x01_exception();
@@ -33,7 +37,37 @@ extern void _interrupt_handler_0x1D_exception();
 extern void _interrupt_handler_0x1E_exception();
 extern void _interrupt_handler_0x1F_exception();
 
-void interrupt_handler_0x00_0x1F_exception(int id, int ip, int cs) {
+void interrupt_handler_0x00_0x1F_exception(int id, int err_code, int ds, int ss, int ip, int cs, int eflag) {
+    panic_screen_init();
+    unsigned int abs_address =
+    print_log("Hardware exception %d (0x%x) triggered", id, id);
+    print_log("  Error Code: %x or %x", err_code);
+    print_log("  CS    : %x (GDT entry)", cs);
+    print_log("  DS    : %x (GDT entry)", ds);
+    print_log("  SS    : %x (GDT entry)", ss);
+    print_log("  IP    : %x", ip);
+    print_log("  FLAG  : %x", eflag);
+    if(cs%sizeof(struct GDTEntry)==0) {
+        print_log("  PID   : %d", get_idt_reverse_pid_lookup_cs(cs));
+        unsigned int abs_cs = get_gdt_baseaddress(gdt_table, GDT_TABLE_SIZE, cs/sizeof(struct GDTEntry));
+        print_log("  abs IP: %x", abs_cs+ip);
+        print_log("  abs CS: %x", abs_cs);
+    } else {
+        print_log("  PID   : invalid");
+        print_log("  abs IP: invalid");
+        print_log("  abs CS: invalid");
+    }
+    if(ds%sizeof(struct GDTEntry)==0) {
+        print_log("  abs DS: %x", get_gdt_baseaddress(gdt_table, GDT_TABLE_SIZE, ds/sizeof(struct GDTEntry)));
+    } else {
+        print_log("  abs DS: invalid");
+    }
+    if(ss%sizeof(struct GDTEntry)==0) {
+        print_log("  abs SS: %x", get_gdt_baseaddress(gdt_table, GDT_TABLE_SIZE, ss/sizeof(struct GDTEntry)));
+    } else {
+        print_log("  abs SS: invalid");
+    }
+
     switch (id) {
         case 0x0D:
             PANIC(id, "[hw_exception] general_protection_fault");

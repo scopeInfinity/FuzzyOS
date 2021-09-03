@@ -23,3 +23,12 @@ int panic(int err, const char *message, const char *src_file,
     print_line(message);
     panic_just_halt();
 }
+
+int panic_screen_init() {
+    set_color_bg(C_RED);
+    set_color_fg(C_WHITE);
+    // first two lines are used by panic(...)
+    move_xy(0,2);
+    // kernel can not use print_log(...) to write.
+    return 0;
+}
