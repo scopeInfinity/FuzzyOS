@@ -18,6 +18,7 @@ struct GDTEntry {
 };
 #pragma pack(pop)
 
+int get_gdt_baseaddress(struct GDTEntry gdt_table[], unsigned int table_size, int entry_id);
 
 void populate_gdt_entry(struct GDTEntry *entry,
     unsigned int base,

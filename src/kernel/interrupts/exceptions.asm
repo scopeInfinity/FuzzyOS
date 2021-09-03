@@ -41,11 +41,16 @@ global _interrupt_handler_0x1F_exception
     _interrupt_handler_%1_exception:
         ; As we are HLT at end of exception there
         ; is no need to save context for now.
+        xor eax, eax
+        mov eax, ds    ; execution ds
+        push eax
+        xor eax, eax
+        mov eax, ss    ; execution ss (current also)
+        push eax
+        mov eax, 0x10  ; kernel ds
+        mov ds, eax
         mov eax, %1
         push eax
-        ; arg0: exception number
-        ; arg1: return IP
-        ; arg2: return CS
         call interrupt_handler_0x00_0x1F_exception
         HLT
 %endmacro

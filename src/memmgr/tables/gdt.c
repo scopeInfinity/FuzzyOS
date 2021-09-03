@@ -3,6 +3,18 @@
 
 #include <lib/utils/logging.h>
 
+int get_gdt_baseaddress(struct GDTEntry gdt_table[], unsigned int table_size, int entry_id) {
+    if(entry_id>=0 && entry_id<table_size) {
+        unsigned int base0 = gdt_table[entry_id].base0;
+        unsigned int base1 = gdt_table[entry_id].base1;
+        base1 <<= 16;
+        unsigned int base2 = gdt_table[entry_id].base2;
+        base2 <<= 24;
+        return base2|base1|base0;
+    }
+    return -1;
+}
+
 void populate_gdt_entry(struct GDTEntry *entry,
     unsigned int base,
     unsigned int limit,  // 20 bits
