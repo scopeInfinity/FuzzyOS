@@ -44,7 +44,6 @@ void kernel_core_entry() {
 
     print_log("Kernel enabling interrupts");
 
-    kernel_enable_interrupts();
     keyboard_init();
 
     process_scheduler_init();
@@ -53,8 +52,9 @@ void kernel_core_entry() {
 
     VERIFY_STACKGUARD();
     int init_pid = spawnl(INIT_APPNAME, INIT_APPNAME, NULL);
-    print_log("init process got created: %d", init_pid);
+    print_info("init process got created: %d", init_pid);
 
+    kernel_enable_interrupts();
     interrupt_pit_enable();
     while (1);
 }
