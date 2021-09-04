@@ -24,4 +24,4 @@ int getpid();
 
 int fork();
 void yield();
-int waitpid(unsigned int blocked_on_pid);
+int waitpid(unsigned int blocked_on_pid, int *exit_code);

@@ -35,13 +35,21 @@ int process_exec(int lba_index, int sector_count) {
     return -1;
 }
 
-int syscall_1_process_exit(int pid, int status) {
-    process_kill(pid, status);
+int syscall_1_process_exit(int pid, int exit_code) {
+    process_kill(pid, exit_code);
     return 0;
 }
 
-int syscall_1_process_wait(int pid, int blocked_on_pid) {
-    return process_waitpid(pid, blocked_on_pid);
+int syscall_1_process_wait(int user_ds, int pid, int blocked_on_pid, int *_us_exit_code) {
+    int exit_code;
+    int return_value = process_waitpid(pid, blocked_on_pid, &exit_code);
+    if(_us_exit_code != NULL) {
+        // forward exit_code only if user wants it
+        syscall_strncpy_kernel_to_user(
+            user_ds, _us_exit_code,
+            &exit_code, sizeof(exit_code));
+    }
+    return return_value;
 }
 
 int syscall_1_process_fork(int user_pid, int op) {
@@ -101,7 +109,7 @@ int syscall_1_process(int operation, int a0, int a1, int a2, int a3, int user_ds
             syscall_1_process_exit(user_pid, a0);
             return 0;
         case SYSCALL_PROCESS_SUB_WAIT:
-            return syscall_1_process_wait(user_pid, a0);
+            return syscall_1_process_wait(user_ds, user_pid, a0, a1);
         case SYSCALL_PROCESS_SUB_FORK:
             return syscall_1_process_fork(user_pid, a0);
         case SYSCALL_PROCESS_SUB_GET:
