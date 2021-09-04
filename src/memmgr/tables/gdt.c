@@ -73,11 +73,11 @@ void populate_gdt_table(
         0x92);
     // NOT USING &gdt_table[5] for now.
     // Absolute Data Segment Selector
-    // populate_gdt_entry(
-    //     &gdt_table[GDT_STD_SELECTOR_ABS32_DS],
-    //     0, 0xffffffff,
-    //     0b0100,  // 32-bit protected mode
-    //     0x92);
+    populate_gdt_entry(
+        &gdt_table[GDT_STD_SELECTOR_ABS32_DS],
+        0, 0xffffffff,
+        0b0100,  // 32-bit protected mode
+        0x92);
     // Ensure GDT_STD_SIZE = last sector entry+1
 
     gdtr->base_address = ds_fix+(int)gdt_table;
