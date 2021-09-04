@@ -75,15 +75,10 @@ int fork() {
     }
     // fork requested.
     // let's process scheduler fork the job.
-    // printf("calling yield\n");
     yield();
-    // while(1);
-    // exit(0);
-    // while(1);
-    // printf("yield over\n");
+
     // fork request should be complete by now.
     int status = SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_FORK, SYSCALL_PROCESS_SUB_FORK_CHECK_READY);
-    // printf("fork_check_ready: %d\n", status);
     if(status < 0) {
         // request either failed
         // or still waiting: it's a bad state, but we are going to let that slide.
