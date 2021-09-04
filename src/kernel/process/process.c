@@ -83,7 +83,10 @@ int syscall_1_process_spawn_fname(unsigned int user_pid,
     union FFSFileEntry entry;
     int file_id = file_handler_find(filename, &entry);
     if (file_id < 0) return file_id;
-
+    if (!(entry.content.flags & FFS_FILE_FLAG_EXECUTABLE)) {
+        // allow only executable files to spawn
+        return -1;
+    }
 
     int lba_start = resolve_abs_lba(FFS_UNIQUE_PARITION_ID, entry.content.start_block_id);
     int sector_count = (entry.content.filesize + FS_BLOCK_SIZE -1)/FS_BLOCK_SIZE;
