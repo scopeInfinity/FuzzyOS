@@ -2,7 +2,7 @@
 #include <process.h>
 #include<stddef.h>
 
-#define MAX_PROCESS 10
+#define MAX_PROCESS 127
 // each process will have CS and DS, and kernel
 // CS and DS is already included in GDT standard table.
 #define GDT_TABLE_SIZE ((MAX_PROCESS-1)*2+GDT_STD_SIZE)
