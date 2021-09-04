@@ -127,7 +127,6 @@ static int create_infant_process_argv_stack(int user_ds, int user_sp,
 
 static int get_cold_pid_to_allocate() {
     static int pid = 0;
-    pid = 0;  // BUG: What PID wrap around doesn't work?
     for (int i = 0; i < MAX_PROCESS; ++i) {
         pid = (pid+1)%MAX_PROCESS;
         if (pid!=PID_KERNEL && processes[pid].state == STATE_COLD) {
