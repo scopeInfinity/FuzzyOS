@@ -20,7 +20,7 @@ int main(int argc,char *argv[]) {
         printf("will for child process to exit\n");
         waitpid(pid, NULL);
     }
-    printf("process exiting. Is correct process the child: %s\n", (am_i_child)?"Yes":"No");
+    printf("process exiting. Is current process the child: %s\n", (am_i_child)?"Yes":"No");
 
     return 0;
 }

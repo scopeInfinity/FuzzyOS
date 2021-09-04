@@ -8,3 +8,4 @@ test_screen_content $LINENO "Simple Shell"
 source tests/app/ls_test.sh
 source tests/app/tictactoe_test.sh
 source tests/app/cat_test.sh
+source tests/app/multiprocessing_test.sh
