@@ -20,7 +20,7 @@ $(bt_stage1): $(SRC_BOOTLOADER)/stage1.asm $(SRC_BOOTLOADER)/constants.asm $(SRC
 
 $(bt_stage2).elf: $(SRC_BOOTLOADER)/stage2.asm $(SRC_BOOTLOADER)/stage2.c $(INCLUDE_DIR)/memmgr/tables/gdt.h $(SRC_MEMMGR)/tables/gdt.c $(SRC_BOOTLOADER)/io.asm $(SRC_BOOTLOADER)/constants.asm $(BUILD_LIB_UTILS)/libutils_16 $(BUILD_DRIVERS)/display/libtm_bios $(BUILD_DRIVERS)/disk/libdisk_16
 	mkdir -p $$(dirname $(bt_stage2))
-	nasm -o $(BUILD_BOOTLOADER)/stage2_asm.o -f elf32 -i $(SRC_BOOTLOADER)/ $(SRC_BOOTLOADER)/stage2.asm
+	$(NASM) -o $(BUILD_BOOTLOADER)/stage2_asm.o -i $(SRC_BOOTLOADER)/ $(SRC_BOOTLOADER)/stage2.asm
 	$(CC) -m16 -fno-pie -c -Isrc \
 	    -Iinclude \
 		-D SECTOR_START_SHARED_LIBRARY=$(SECTOR_START_SHARED_LIBRARY) \

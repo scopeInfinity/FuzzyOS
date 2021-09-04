@@ -18,16 +18,18 @@
 
 int get_idt_cs_entry(int process_id) {
     if(process_id == PID_KERNEL) {
-        return 1;
+        return GDT_STD_SELECTOR_KERNEL_CS;
     }
-    return (process_id<<1)+3;
+    // Assumes kernel PID is 0
+    return ((process_id-1)<<1)+GDT_STD_SIZE;
 }
 
 int get_idt_ds_entry(int process_id) {
      if(process_id == PID_KERNEL) {
-        return 2;
+        return GDT_STD_SELECTOR_KERNEL_DS;
     }
-   return (process_id<<1)+4;
+    // Assumes kernel PID is 0
+    return ((process_id-1)<<1)+GDT_STD_SIZE+1;
 }
 
 int get_gdt_number_from_entry_id(int id) {
@@ -35,35 +37,35 @@ int get_gdt_number_from_entry_id(int id) {
 }
 
 int get_idt_reverse_pid_lookup_cs(int cs) {
-    if(cs%sizeof(struct GDTEntry)!=0) {
-        PANIC(cs, "get_idt_reverse_pid_lookup(cs) called with cs%8!=0.");
+    const int entry_size = sizeof(struct GDTEntry);
+    if(cs%entry_size!=0) {
+        PANIC(cs, "get_idt_reverse_pid_lookup_cs(cs) called with cs%8!=0.");
     }
-    int segment_id = cs/sizeof(struct GDTEntry);
-    if(segment_id<=0) {
-        PANIC(cs, "get_idt_reverse_pid_lookup(cs) called with segment_id<=0.");
-    }
-    int cs_index = (segment_id-1)/2;
-    if(cs_index==0) {
+    int selector = cs/entry_size;
+    if(selector == GDT_STD_SELECTOR_KERNEL_CS) {
         return PID_KERNEL;
     }
-    // cs_index == 1 is absolute segment gdt entry
-    return cs_index-1;
+    if(selector >= GDT_STD_SIZE && (selector-GDT_STD_SIZE)%2==0) {
+        int pid = (selector-GDT_STD_SIZE)/2 + 1;
+        return pid;
+    }
+    PANIC(cs, "get_idt_reverse_pid_lookup_cs(cs) is not valid app CS");
 }
 
 int get_idt_reverse_pid_lookup_ds(int ds) {
-    if(ds%sizeof(struct GDTEntry)!=0) {
-        PANIC(ds, "get_idt_reverse_pid_lookup(ds) called with ds%8!=0.");
+    const int entry_size = sizeof(struct GDTEntry);
+    if(ds%entry_size!=0) {
+        PANIC(ds, "get_idt_reverse_pid_lookup_ds(ds) called with ds%8!=0.");
     }
-    int segment_id = ds/sizeof(struct GDTEntry);
-    if(segment_id<0) {
-        PANIC(ds, "get_idt_reverse_pid_lookup(ds) called with segment_id<2.");
-    }
-    int ds_index = segment_id/2-1;
-    if(ds_index==0) {
+    int selector = ds/entry_size;
+    if(selector == GDT_STD_SELECTOR_KERNEL_DS) {
         return PID_KERNEL;
     }
-    // ds_index == 1 is absolute segment gdt entry
-    return ds_index-1;
+    if(selector >= GDT_STD_SIZE && (selector-GDT_STD_SIZE)%2==1) {
+        int pid = (selector-GDT_STD_SIZE)/2 + 1;
+        return pid;
+    }
+    PANIC(ds, "get_idt_reverse_pid_lookup_ds(ds) is not valid app DS");
 }
 
 // operations

@@ -1,3 +1,4 @@
+#include <fuzzy/memmgr/tables/gdt.h>
 #include <fuzzy/memmgr/layout.h>
 
 #include <lib/utils/color.h>
@@ -8,8 +9,7 @@
 
 #include "memmgr/tables/gdt.c"
 
-#define GDT_TABLE_SIZE 5
-struct GDTEntry gdt_table[GDT_TABLE_SIZE];
+struct GDTEntry gdt_table[GDT_STD_SIZE];
 struct GDTReference gdtr;
 
 char DIGIT_TO_HEX[] = "0123456789ABCDEF";
@@ -87,7 +87,7 @@ void entry_stage() {
     load_static_library();
     load_kernel();
 
-    populate_gdt_table(&gdtr, gdt_table, GDT_TABLE_SIZE, 0);
+    populate_gdt_table(&gdtr, gdt_table, GDT_STD_SIZE, 0);
 
     // Enter_protected_mode never returns.
     print_log("Loading GDT Table and entering protected mode");

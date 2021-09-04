@@ -3,7 +3,9 @@
 #include<stddef.h>
 
 #define MAX_PROCESS 10
-#define GDT_TABLE_SIZE MAX_PROCESS*2+3
+// each process will have CS and DS, and kernel
+// CS and DS is already included in GDT standard table.
+#define GDT_TABLE_SIZE ((MAX_PROCESS-1)*2+GDT_STD_SIZE)
 
 typedef char ARGV[PROCESS_MAX_ARGC][PROCESS_MAX_ARG_LEN];
 

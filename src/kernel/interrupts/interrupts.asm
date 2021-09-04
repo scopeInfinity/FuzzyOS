@@ -1,4 +1,5 @@
 %include "fuzzy/memmgr/layout.asm"
+%include "fuzzy/memmgr/tables/gdt.asm"
 
 [BITS 32]
 
@@ -49,7 +50,7 @@ KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
         ; HANDLE_SS_START
         ; if ss is not already in kernel mode than create kernel stack
         ; and save ongoing stack.
-        mov ax, 0x10
+        mov ax, GDT_KERNEL_DS
         push ebx
         mov bx, ss
         cmp bx, ax
@@ -79,7 +80,7 @@ KERNEL_STACK_MARKER_NOTNEW EQU 0x10000000
 
         ; Let's move to kernel mode and move interrupt arguments as function argument
         ; es: will updated in next section, and will be es==ds
-        mov ax, 0x10
+        mov ax, GDT_KERNEL_DS
         mov ds, ax
         mov fs, ax
         mov gs, ax

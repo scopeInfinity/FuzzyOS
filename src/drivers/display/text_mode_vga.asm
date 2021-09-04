@@ -1,3 +1,5 @@
+%include "fuzzy/memmgr/tables/gdt.asm"
+
 [BITS 32]
 
 global _low_put_char
@@ -14,12 +16,12 @@ global _low_flush
         ; push edi
 
         push ds
-        mov eax, 0x20
+        mov eax, GDT_ABS16_DS
         mov ds, eax                 ; Absolute memory address
 
         mov ebx,[ebp + 0x10]        ; (ROW_WIDTH*y+x)
         shl ebx, 1
-        add ebx,0xb8000
+        add ebx, 0xb8000
         mov al, [ebp + 0x8]         ; (char)
         mov ah, [ebp + 0xc]         ; (color)
         mov [ebx], ax
@@ -39,7 +41,7 @@ global _low_flush
         ; push esi
         ; push edi
         push ds
-        mov eax, 0x20
+        mov eax, GDT_ABS16_DS
         mov ds, eax                 ; Absolute memory address
 
         ; Copy char+colors in Row Order Format
@@ -71,7 +73,7 @@ global _low_flush
         push esi
         push edi
         push es
-        mov eax, 0x20
+        mov eax, GDT_ABS16_DS
         mov es, eax                 ; Absolute memory address
 
         mov esi, [ebp + 0x8]    ; (buffer)

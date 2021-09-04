@@ -1,3 +1,5 @@
+%include "fuzzy/memmgr/tables/gdt.asm"
+
 [BITS 32]
 
 extern interrupt_handler_0x00_0x1F_exception
@@ -47,7 +49,7 @@ global _interrupt_handler_0x1F_exception
         xor eax, eax
         mov eax, ss    ; execution ss (current also)
         push eax
-        mov eax, 0x10  ; kernel ds
+        mov eax, GDT_KERNEL_DS  ; kernel ds
         mov ds, eax
         mov eax, %1
         push eax

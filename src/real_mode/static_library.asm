@@ -1,3 +1,5 @@
+%include "fuzzy/memmgr/tables/gdt.asm"
+
 ; Code must be within 512 bytes.
 [ORG 0x7E00]
 [BITS 16]
@@ -22,7 +24,7 @@
         mov eax, cr0
         and eax, 0xFFFFFFFE
         mov cr0, eax
-        jmp 0x0:execute_0x13_from_real_mode
+        jmp GDT_NULL_CS:execute_0x13_from_real_mode
 
     execute_0x13_from_real_mode:
         ; fix stack
@@ -52,7 +54,7 @@
 
         pop ss; restore absolute stack
 
-        jmp 0x18:execute_0x13_leave_real_mode  ; Absolute Code Segment Selector
+        jmp GDT_ABS16_CS:execute_0x13_leave_real_mode  ; Absolute Code Segment Selector
 
     execute_0x13_leave_real_mode:
         retf

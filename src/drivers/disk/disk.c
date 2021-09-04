@@ -1,4 +1,6 @@
 // written for protected mode
+#include <fuzzy/kernel/process/process.h>
+
 #include <lib/utils/logging.h>
 #include <fuzzy/real_mode/client.h>
 
@@ -29,5 +31,10 @@ int load_sectors(unsigned int full_address,
     unsigned int status = eax >> 8;
     print_info("[load_sectors] [dev %x]:%x -> mem:%x, cnt: %d; err: %x",
         drive, lba, full_address, count, status);
+    if(status == 0) {
+        // no error copy from temporary address to dst address.
+        // TODO: redefine GDT table order.
+        // kernel_memncpy_absolute(int dst_ds, char *dst_address, int src_ds, char *src_address, size_t size);
+    }
     return status;
 }

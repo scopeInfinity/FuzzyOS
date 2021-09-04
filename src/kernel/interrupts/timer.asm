@@ -1,4 +1,5 @@
 %include "fuzzy/memmgr/layout.asm"
+%include "fuzzy/memmgr/tables/gdt.asm"
 
 [BITS 32]
 
@@ -28,7 +29,7 @@ global create_infant_process_irq0_stack
 
         ; new stack and segment area
         mov esp, STACKINIT_KERNEL_EVENT
-        mov eax, 0x10
+        mov eax, GDT_KERNEL_DS
         mov ss, eax
         mov ds, eax
         mov es, eax
