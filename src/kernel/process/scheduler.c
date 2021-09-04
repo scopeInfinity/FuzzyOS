@@ -46,7 +46,7 @@ void process_scheduler_stash_state() {
 
 int process_scheduler_get_next_pid(int lastpid) {
     // execute one of the scheduling algorithm
-    return process_scheduler_largestpid(lastpid);
+    return process_scheduler_rr(lastpid);
 }
 
 static void handle_fork(unsigned int ppid, struct Process *process) {
@@ -120,8 +120,6 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss) {
 }
 
 int process_waitpid(unsigned int pid, unsigned int blocked_on_pid) {
-    // TODO: this implementation has flaws.
-    // We need to do better something.
     // It currently allows blocking on any pid, and rely on syscall client
     // for yield.
     struct Process *other_process = get_process(blocked_on_pid);

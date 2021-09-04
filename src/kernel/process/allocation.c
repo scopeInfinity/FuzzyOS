@@ -123,21 +123,23 @@ static int create_infant_process_argv_stack(int user_ds, int user_sp,
     return user_sp;
 }
 
-static int get_cold_pid() {
-    int pid = -1;
+static int get_cold_pid_to_allocate() {
+    static int pid = 0;
+    pid = 0;  // BUG: What PID wrap around doesn't work?
     for (int i = 0; i < MAX_PROCESS; ++i) {
-        if(i==PID_KERNEL) continue;
-        if(processes[i].state == STATE_COLD) {
-            pid = i;
-            break;
+        pid = (pid+1)%MAX_PROCESS;
+        if (pid!=PID_KERNEL && processes[pid].state == STATE_COLD) {
+            // return a PID to allocate
+            return pid;
         }
     }
-    return pid;
+    // no free PID found.
+    return -1;
 }
 
 int process_create(unsigned int ppid, int argc, char *argv[]) {
     // returnd pid >= 0 if success
-    int pid = get_cold_pid();
+    int pid = get_cold_pid_to_allocate();
     if(pid < 0) return pid;
     struct Process *process = &processes[pid];
     // reset state
