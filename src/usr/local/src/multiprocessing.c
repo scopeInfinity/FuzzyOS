@@ -12,6 +12,7 @@ int main(int argc,char *argv[]) {
         // child process
         am_i_child=1;
         printf("child process: says Hi\n");
+        yield(); // force process scheduler
     } else {
         am_i_child=0;
         // parent process
@@ -19,7 +20,7 @@ int main(int argc,char *argv[]) {
         printf("will for child process to exit\n");
         waitpid(pid);
     }
-    printf("process exiting. Am I child process=%s\n", (am_i_child)?"Yes":"No");
+    printf("process exiting. Is correct process the child: %s\n", (am_i_child)?"Yes":"No");
 
     return 0;
 }

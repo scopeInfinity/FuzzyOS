@@ -12,23 +12,23 @@ int putchar(int c) {
 
 int puts(const char *s) {
     if(!s) return 0;
-    int c = 0;
-    while ((*s)!='\0') {
-        putchar(*(s++));
-        c++;
-    }
-    return c;
+    int len = strlen(s);
+    return SYSCALL_A3(SYSCALL_CONSOLE, SYSCALL_CONSOLE_SUB_PUTS_BUFFER, s, len);
 }
 
-int printf(const char *fmt, ...) {
-    int len = 0;
-    int rv = 0;
-    va_list args;
-    va_start(args, fmt);
-    for(;rv >= 0 && (*fmt)!='\0' ; fmt++) {
+static int vsnprintf(char *s, size_t n, const char *fmt, va_list args) {
+    if(n==0) return 0;
+    if(n==1) {
+        s[0]='\0';
+        return 0;
+    }
+    n--; // count non-null char
+
+    size_t len = 0;
+    int err = 0;
+    for(;err >= 0 && len<n && (*fmt)!='\0' ; fmt++) {
         if((*fmt)!='%') {
-            putchar((*fmt));
-            len++;
+            s[len++] = (*fmt);
             continue;
         }
         fmt++;
@@ -36,37 +36,60 @@ int printf(const char *fmt, ...) {
 
         // formatting options
         switch(*fmt) {
+            char *innerstr;
             char sbuffer[68];
             case '%':
-                putchar('%');
-                len++;
+                s[len++]='%';
                 break;
             case 'c':
-                putchar(va_arg(args, char));
-                len++;
+                s[len++]=va_arg(args, char);
                 break;
             case 's':
-                rv = puts(va_arg(args, const char*));
-                if(rv>0) len+=rv;
+                innerstr = va_arg(args, const char*);
+                while (len<n && (*innerstr)!='\0') {
+                    s[len++]=*(innerstr++);
+                }
                 break;
             case 'd':
                 itoa(va_arg(args, int), sbuffer, 10);
-                rv = puts(sbuffer);
-                if(rv>0) len+=rv;
+                innerstr = sbuffer;
+                while (len<n && (*innerstr)!='\0') {
+                    s[len++]=*(innerstr++);
+                }
                 break;
             case 'X':
             case 'x':  // not an priority for now :)
                 itoa(va_arg(args, int), sbuffer, 16);
-                rv = puts(sbuffer);
-                if(rv>0) len+=rv;
+                innerstr = sbuffer;
+                while (len<n && (*innerstr)!='\0') {
+                    s[len++]=*(innerstr++);
+                }
                 break;
             default:
-                return -1;  // invalid format char
+                err = -1;  // invalid format char, terminate
         }
     }
-    va_end(args);
-    if(rv < 0) return rv;
+    s[len]='\0';
+    if(err != 0) return err;
     return len;
+}
+
+int snprintf(char *s, size_t n, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    int ret = vsnprintf(s, n, fmt, args);
+    va_end(args);
+    return ret;
+}
+
+int printf(const char *fmt, ...) {
+    // limitation: it won't print more than 256 bytes in one go.
+    char buffer[256];
+    va_list args;
+    va_start(args, fmt);
+    int ret = vsnprintf(buffer, sizeof(buffer), fmt, args);
+    va_end(args);
+    return puts(buffer);
 }
 
 char* gets(char *s) {
