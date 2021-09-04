@@ -4,7 +4,7 @@
 
 QEMU_SCREENSHOT_NAME="ls_test.ppm"
 
-python3 -m tests.qemu.monitor -p ${MONITOR_PORT:?} -sc run ls
+python3 -m tests.qemu.monitor -p ${MONITOR_PORT:?} -sc ls
 
 test_create_screen_dump
 test_screen_content $LINENO "cat"

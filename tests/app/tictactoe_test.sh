@@ -4,7 +4,7 @@
 
 QEMU_SCREENSHOT_NAME="tictactoe_test.ppm"
 
-python3 -m tests.qemu.monitor -p ${MONITOR_PORT:?} -sc run tictactoe
+python3 -m tests.qemu.monitor -p ${MONITOR_PORT:?} -sc tictactoe
 
 test_create_screen_dump
 test_screen_content $LINENO "TicTacToe"
