@@ -4,9 +4,12 @@
 
 #define SYSCALL_CONSOLE_SUB_CLRSCR       0
 #define SYSCALL_CONSOLE_SUB_PUTCHAR      1
+#define SYSCALL_CONSOLE_SUB_PUTS_BUFFER  2
 
 int putchar(int c);
 int puts(const char *s);
+
+int snprintf(char *s, size_t n, const char *fmt, ...);
 int printf(const char *strfmt, ...);
 
 char* gets (char *s);
