@@ -30,7 +30,12 @@ struct GDTEntry {
 };
 #pragma pack(pop)
 
-#define GDT_KERNEL_CS (GDT_STD_SELECTOR_KERNEL_CS*sizeof(struct GDTEntry))
+#define GDT_NULL_CS      (GDT_STD_SELECTOR_NULL*sizeof(struct GDTEntry))
+#define GDT_KERNEL_CS    (GDT_STD_SELECTOR_KERNEL_CS*sizeof(struct GDTEntry))
+#define GDT_KERNEL_DS    (GDT_STD_SELECTOR_KERNEL_DS*sizeof(struct GDTEntry))
+#define GDT_ABS16_CS     (GDT_STD_SELECTOR_ABS16_CS*sizeof(struct GDTEntry))
+#define GDT_ABS16_DS     (GDT_STD_SELECTOR_ABS16_DS*sizeof(struct GDTEntry))
+#define GDT_ABS32_DS     (GDT_STD_SELECTOR_ABS32_DS*sizeof(struct GDTEntry))
 
 int get_gdt_baseaddress(struct GDTEntry gdt_table[], unsigned int table_size, int entry_id);
 

@@ -9,7 +9,9 @@ extern unsigned short _low_int_0x13(unsigned short ax,
 int load_sectors(unsigned int full_address,
                  unsigned char drive,
                  unsigned int lba, // 0-based
-                 unsigned char count) {
+                 unsigned int count) {
+    // we don't expect disk_16 (used by bootloader) to load more than 255 sectors.
+
     int es = (full_address&0xF0000)>>4;
     int es_address = full_address&0xFFFF;
     int cylinder_head = (lba/63);

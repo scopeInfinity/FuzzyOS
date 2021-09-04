@@ -60,6 +60,10 @@ void print_char(char c) {
             move_to_next_line();
             break;
         default:
+            if(get_display_text_x()==TEXT_WINDOW_WIDTH) {
+                // wrap around
+                move_to_next_line();
+            }
             io_low_put_char(c, get_color_fgbg());
             move_xy_diff(1, 0);
     }
