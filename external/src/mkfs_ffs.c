@@ -18,7 +18,9 @@ void write_first_block(FILE *out) {
     fwrite(block.bytes, 1, sizeof(block.bytes), out);
 }
 
-void write_file(int file_id, FILE *outfile, int *outfile_nextdata_block, const char *filename, FILE *srcfile) {
+void write_file(int file_id, FILE *outfile, int *outfile_nextdata_block,
+        const char *filename, FILE *srcfile,
+        int is_executable) {
     fseek(srcfile, 0L, SEEK_END);
     int file_size = ftell(srcfile);
     rewind(srcfile);
@@ -27,6 +29,10 @@ void write_file(int file_id, FILE *outfile, int *outfile_nextdata_block, const c
     strncpy(entry.content.filename, filename, sizeof(entry.content.filename));
     entry.content.filesize = file_size;
     entry.content.start_block_id = (*outfile_nextdata_block);
+    entry.content.flags = 0;
+    if (is_executable) {
+        entry.content.flags |= FFS_FILE_FLAG_EXECUTABLE;
+    }
 
     // Write file entry
     fseek(outfile, FILEENTRY_LOCATION(file_id), SEEK_SET);
@@ -88,9 +94,10 @@ int create_partition(char *src_dir, char *out_filepath) {
             fprintf("skipping non-regular file '%s': %d", buffer_filename, file_stat.st_mode);
             continue;
         }
+        int is_executable = file_stat.st_mode & S_IXUSR;
 
         FILE *file_src = fopen(buffer_filename, "rb");
-        write_file(file_id++, out, &outfile_nextdata_block, de->d_name, file_src);
+        write_file(file_id++, out, &outfile_nextdata_block, de->d_name, file_src, is_executable);
         fclose(file_src);
     }
     while (file_id < FS_FFS_FILEENTRY_COUNT) {

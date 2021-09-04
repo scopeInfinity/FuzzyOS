@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
+#include <dirent.h>
 
 #include <lib/utils/logging.h>
 
@@ -64,7 +65,8 @@ int _file_handler_read(int user_ds, int file_id, char _us_buffer[FILEIO_BUFFER_S
     return len;
 }
 
-int _file_handler_read_dir(int user_ds, int last_file_id, char *_us_filename) {
+int _file_handler_read_dir(int user_ds, int last_file_id, struct dirent *_us_dirent) {
+    // char *_us_filename
     union FFSFileEntry entry;
     int file_id;
     if (last_file_id < 0) {
@@ -80,9 +82,16 @@ int _file_handler_read_dir(int user_ds, int last_file_id, char *_us_filename) {
             continue;
         }
         // next file
+        struct dirent centry = {0};
+        memcpy(centry.d_name, entry.content.filename, sizeof(centry.d_name));
+        centry.size = entry.content.filesize;
+        if(entry.content.flags&FFS_FILE_FLAG_EXECUTABLE) {
+            centry.flag |= DIRENT_EXECUTABLE;
+        }
+
         syscall_strncpy_kernel_to_user(
-            user_ds, _us_filename,
-            entry.content.filename, sizeof(entry.content.filename));
+            user_ds, _us_dirent,
+            &centry, sizeof(struct dirent));
         return file_id;
     }
     return -1; // there is no next file
@@ -95,7 +104,7 @@ int syscall_2_file_handler(int operation, int a1, int a2, int a3, int user_ds) {
         case SYSCALL_FILE_SUB_READBUFFER:
             return _file_handler_read(user_ds, a1, (char*)a2, a3);
         case SYSCALL_FILE_SUB_READ_DIR:
-            return _file_handler_read_dir(user_ds, a1, (char*)a2);
+            return _file_handler_read_dir(user_ds, a1, (struct dirent*)a2);
     }
     return -1;
 }

@@ -11,7 +11,7 @@ struct dirent *readdir(struct DIR *dirp) {
         SYSCALL_FILE_OP,
         SYSCALL_FILE_SUB_READ_DIR,
         dirp->kernel_file_id,
-        dirp->entry.d_name);
+        &dirp->entry);
     if (dirp->kernel_file_id == -1) {
         return NULL;
     }
