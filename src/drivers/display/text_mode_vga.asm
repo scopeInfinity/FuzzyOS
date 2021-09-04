@@ -16,7 +16,7 @@ global _low_flush
         ; push edi
 
         push ds
-        mov eax, GDT_ABS16_DS
+        mov eax, GDT_ABS32_DS
         mov ds, eax                 ; Absolute memory address
 
         mov ebx,[ebp + 0x10]        ; (ROW_WIDTH*y+x)
@@ -41,7 +41,7 @@ global _low_flush
         ; push esi
         ; push edi
         push ds
-        mov eax, GDT_ABS16_DS
+        mov eax, GDT_ABS32_DS
         mov ds, eax                 ; Absolute memory address
 
         ; Copy char+colors in Row Order Format
@@ -73,7 +73,7 @@ global _low_flush
         push esi
         push edi
         push es
-        mov eax, GDT_ABS16_DS
+        mov eax, GDT_ABS32_DS
         mov es, eax                 ; Absolute memory address
 
         mov esi, [ebp + 0x8]    ; (buffer)

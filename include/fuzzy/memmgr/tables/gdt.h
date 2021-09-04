@@ -10,7 +10,7 @@
 #define GDT_STD_SELECTOR_ABS16_CS  3
 #define GDT_STD_SELECTOR_ABS16_DS  4
 #define GDT_STD_SELECTOR_ABS32_DS  6
-#define GDT_STD_SIZE 5 // FIX
+#define GDT_STD_SIZE 7
 // Entries on and after GDT_STD_SIZE are reserved for applications
 // and are in CS, DS order for each app.
 // END_ENSURE_SAME_gdt_asm
