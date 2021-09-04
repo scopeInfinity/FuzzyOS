@@ -12,7 +12,8 @@
 | 0x80000   | 0x9FFFF   | 128KB     | Extended BIOS Data area                       |
 | 0xA0000   | 0xBFFFF   | 128KB     | Video memory                                  |
 | 0xC0000   | 0xFFFFF   | 256KB     | BIOS stuff                                    |
-| 0x100000  | 0x1FFFFF  | 1MB       | Kernel future location (not used)             |
+| 0x100000  | 0x1FFFFF  | 1MB       | pid 0; Kernel future location (not used)      |
 | 0x200000  | 0x2FFFFF  | 1MB       | App pid 1                                     |
 | 0x300000  | 0x3FFFFF  | 1MB       | App pid 2                                     |
-| ...       | ....      | 1MB       | App ...                                       |
+| ...       | ....      | ...       | ...                                           |
+| ...       | ....      | 1MB       | App pid 126                                   |
