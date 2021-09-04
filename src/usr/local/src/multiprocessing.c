@@ -18,7 +18,7 @@ int main(int argc,char *argv[]) {
         // parent process
         printf("parent process: says Hi\n");
         printf("will for child process to exit\n");
-        waitpid(pid);
+        waitpid(pid, NULL);
     }
     printf("process exiting. Is correct process the child: %s\n", (am_i_child)?"Yes":"No");
 

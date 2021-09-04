@@ -28,7 +28,7 @@ struct Process {
     unsigned int ss, cs, sp, ip;
     unsigned int *e;
 
-    int status_code;
+    int exit_code;
 
     unsigned int ppid;  // parent pid, 0 to root under kernel_core
 
@@ -78,7 +78,7 @@ extern void syscall_strncpy_kernel_to_user(int user_ds, char *dest_address, char
 extern void kernel_memncpy_absolute(int dst_ds, char *dst_address, int src_ds, char *src_address, size_t size);
 
 // operations
-int process_waitpid(unsigned int pid, unsigned int blocked_on_pid);
+int process_waitpid(unsigned int pid, unsigned int blocked_on_pid, int *exit_code);
 
 int process_fork_mark_ready(int pid);
 int process_fork_check_ready(int pid);

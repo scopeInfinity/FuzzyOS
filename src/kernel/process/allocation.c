@@ -185,9 +185,9 @@ int process_create(unsigned int ppid, int argc, char *argv[]) {
     return pid;
 }
 
-void process_kill(unsigned int pid, int status) {
+void process_kill(unsigned int pid, int exit_code) {
     struct Process *process = &processes[pid];
-    process->status_code = status;
+    process->exit_code = exit_code;
     process->state = STATE_EXIT;
 }
 

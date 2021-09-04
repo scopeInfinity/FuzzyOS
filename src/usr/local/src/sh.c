@@ -18,6 +18,7 @@ int cmd_help() {
     printf(" > exit                       kill the current shell\n");
     printf(" > <filename> [arg1]...       execute executable program\n");
     printf(" > ls -h                      example to show ls usage\n");
+    last_status_code = 0;
     return 0;
 }
 
@@ -32,6 +33,11 @@ static char *copy_arg(char *dst, char *src) {
 }
 
 int cmd_run(char *cmd) {
+    if(cmd == NULL) {
+        // no command entered
+        last_status_code = 0;
+        return 0;
+    }
     char *argv[PROCESS_MAX_ARGC];
     char argv_data[PROCESS_MAX_ARGC][PROCESS_MAX_ARG_LEN] = {0};
 
@@ -51,7 +57,7 @@ int cmd_run(char *cmd) {
         // failed
         return pid;
     }
-    waitpid(pid);
+    waitpid(pid, &last_status_code);
     return 0;
 }
 
@@ -68,12 +74,11 @@ void handle_command(char *full_cmd) {
     char *cmd = strtok(full_cmd, COMMAND_DELIM);
 
     if (strcmp(cmd, "help")==0) {
-        last_status_code = cmd_help();
+        cmd_help();
     } else if (strcmp(cmd, "exit")==0) {
-        last_status_code = cmd_exit();
+        cmd_exit();
     } else {
-        last_status_code = cmd_run(cmd);
-        if (last_status_code < 0) {
+        if (cmd_run(cmd) < 0) {
             printf("failed to run '%s' command\n", cmd);
         }
     }

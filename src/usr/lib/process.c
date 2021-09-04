@@ -47,9 +47,9 @@ void yield() {
     __asm__("int $0x20");
 }
 
-int waitpid(unsigned int blocked_on_pid) {
+int waitpid(unsigned int blocked_on_pid, int *exit_code) {
     while(1) {
-        int status = SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_WAIT, blocked_on_pid);
+        int status = SYSCALL_A3(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_WAIT, blocked_on_pid, exit_code);
         if(status < 0) {
             // err
             return status;
