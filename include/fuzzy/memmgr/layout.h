@@ -24,10 +24,11 @@
  * Resolution:
  *  - I'm not sure.
  */
-#define MEMORY_APPBASE_LOCATION 0x10000
+#define MEMORY_APPBASE_LOCATION 0x100000
 
-#define memmgr_app_abs_location(pid) ((pid==0)?0x0F000:(MEMORY_APPBASE_LOCATION + (pid)*MEMORY_APP_SIZE))
-#define memmgr_app_size(pid) (MEMORY_APP_SIZE)
+// Keep in sync with memory_layout.md
+#define memmgr_app_abs_location(pid) ((pid==PID_KERNEL)?0x0C000:(MEMORY_APPBASE_LOCATION + (pid)*MEMORY_APP_SIZE))
+#define memmgr_app_size(pid) ((pid==PID_KERNEL)?0x64000:MEMORY_APP_SIZE)
 
 #define MEMORY_KERNEL_LOCATION (memmgr_app_abs_location(PID_KERNEL))
 #define MEMORY_KERNEL_SIZE (memmgr_app_size(PID_KERNEL))
