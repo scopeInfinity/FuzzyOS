@@ -185,6 +185,9 @@ static const unsigned char KEYBOARD_ASCII_MAPH_OTHERS[] = {
     KEYBOARD_SC_RPF0_brace_sq_c, ']',
     KEYBOARD_SC_RPF0_blackslash, '\\',
 
+    KEYBOARD_SC_RPF0_hypen, '-',
+    KEYBOARD_SC_RPF0_equals, '=',
+
     KEYBOARD_SC_RPF0_enter,  '\n',
     KEYBOARD_SC_RPF0_keypad_dot, '.',
     KEYBOARD_SC_RPF0_keypad_minus, '-',
