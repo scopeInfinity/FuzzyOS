@@ -2,6 +2,7 @@
 #include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/kernel/interrupts/timer.h>
 #include <fuzzy/memmgr/layout.h>
+#include <fuzzy/memmgr/tables/gdt.h>
 
 #include <lib/utils/logging.h>
 
@@ -49,7 +50,7 @@ void populate_idt_entry_32bit(int id,
     ) {
     populate_idt_entry(
         id,
-        0x08,  // kernel code segment selector
+        GDT_KERNEL_CS,
         address,
         1,
         dpl,

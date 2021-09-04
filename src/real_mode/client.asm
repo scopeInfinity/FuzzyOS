@@ -1,3 +1,5 @@
+%include "fuzzy/memmgr/tables/gdt.asm"
+
 [BITS 32]
 
 extern reload_idt_table
@@ -27,7 +29,7 @@ global real_mode_client
       mov ds, eax  ; use old stack using ds
       ; create stack for real mode here.
       mov ebx, ss
-      mov eax, 0x20 ; Absolute Data Segment Selector
+      mov eax, GDT_ABS16_DS ; Absolute Data Segment Selector
       mov ss, eax
       mov eax, esp
       mov esp, 0x7DFC
@@ -57,7 +59,7 @@ global real_mode_client
 
       ; Note: Make sure these line have IP representable
       ; in 2 bytes.
-      call 0x18:0x7E00  ; execute_0x13_enter_real_mode
+      call GDT_ABS16_CS:0x7E00  ; execute_0x13_enter_real_mode
       add esp, 32
 
       ; revert back to original stack

@@ -45,32 +45,40 @@ void populate_gdt_table(
 
     // NULL selector
     populate_gdt_entry(
-        &gdt_table[0],
+        &gdt_table[GDT_STD_SELECTOR_NULL],
         0,0,0,0);
     // Kernel Code Segment Selector
     populate_gdt_entry(
-        &gdt_table[1],
+        &gdt_table[GDT_STD_SELECTOR_KERNEL_CS],
         MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_LOCATION+MEMORY_KERNEL_SIZE-1,
         0b0100,  // 32-bit protected mode
         0x9a);
     // Kernel Data Segment Selector
     populate_gdt_entry(
-        &gdt_table[2],
+        &gdt_table[GDT_STD_SELECTOR_KERNEL_DS],
         MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_LOCATION+MEMORY_KERNEL_SIZE-1,
         0b0100,  // 32-bit protected mode
         0x92);
     // Absolute Code Segment Selector
     populate_gdt_entry(
-        &gdt_table[3],
+        &gdt_table[GDT_STD_SELECTOR_ABS16_CS],
         0, 0xfffff,
         0b0000,  // 16-bit protected mode
         0x9a);
     // Absolute Data Segment Selector
     populate_gdt_entry(
-        &gdt_table[4],
+        &gdt_table[GDT_STD_SELECTOR_ABS16_DS],
         0, 0xfffff,
         0b0000,  // 16-bit protected mode
         0x92);
+    // NOT USING &gdt_table[5] for now.
+    // Absolute Data Segment Selector
+    // populate_gdt_entry(
+    //     &gdt_table[GDT_STD_SELECTOR_ABS32_DS],
+    //     0, 0xffffffff,
+    //     0b0100,  // 32-bit protected mode
+    //     0x92);
+    // Ensure GDT_STD_SIZE = last sector entry+1
 
     gdtr->base_address = ds_fix+(int)gdt_table;
     gdtr->size = (entries_count*sizeof(struct GDTEntry));

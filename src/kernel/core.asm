@@ -1,4 +1,5 @@
 %include "fuzzy/memmgr/layout.asm"
+%include "fuzzy/memmgr/tables/gdt.asm"
 
 [BITS 32]
 
@@ -9,7 +10,7 @@ global kernel_core_entry_asm
 [SECTION .text]
         ; protected mode real entry point.
         CLI
-        mov ax, 0x10
+        mov ax, GDT_KERNEL_DS
         mov es, ax
         mov ss, ax
         mov ds, ax

@@ -1,6 +1,7 @@
 ; Fuzzy Bootloader Stage 2
 %include "constants.asm"
 %include "io.asm"
+%include "fuzzy/memmgr/tables/gdt.asm"
 
 [BITS 16]
 
@@ -38,7 +39,7 @@ global call_int_0x15
 
         ; __TEST_INJECT_BT2__: mov eax, 0x198A65C3
         ; __TEST_INJECT_BT2__: HLT
-        jmp 0x08:0x0000     ; address of smart kernel init
+        jmp GDT_KERNEL_CS:0x0000     ; address of smart kernel init
 
     label_exit:
         HLT
