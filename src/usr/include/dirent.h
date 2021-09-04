@@ -1,10 +1,18 @@
 #pragma once
 
-#define FILENAME_LIMIT 120  // same as fuzzy/fs/ffs.h
+#include <stddef.h>
+
+#define FILENAME_LIMIT 100  // same as fuzzy/fs/ffs.h
+
+enum dirent_flag {
+    DIRENT_EXECUTABLE = 1 << 0
+};
 
 struct dirent {
     // In FFS the only file types are only normal file.
     char d_name[FILENAME_LIMIT];
+    uint32_t size;
+    uint32_t flag;
 };
 
 struct DIR {

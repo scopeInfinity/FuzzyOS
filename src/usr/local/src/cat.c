@@ -20,7 +20,7 @@ void process(char filename[]) {
 }
 
 int print_usage() {
-    printf("Usage: cat <filename>");
+    printf("Usage: cat <filename>\n");
     return 0;
 }
 

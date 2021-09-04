@@ -16,9 +16,14 @@ Number of file which can be stored: 64
 */
 
 #include <stdint.h>
+#include <stddef.h>
 
-#define FS_FFS_FILENAME_LIMIT 120  // including NULL
+#define FS_FFS_FILENAME_LIMIT 100  // including NULL, same as dirent.h
 #define FFS_UNIQUE_PARITION_ID  0  // only paritition 0 is supported for now
+
+enum FFSFileFlagMask {
+    FFS_FILE_FLAG_EXECUTABLE = 1 << 0
+};
 
 union FFSMetaData {
     struct {
@@ -32,6 +37,7 @@ union FFSFileEntry {
         int32_t start_block_id;  // 0 implies no file.
         int32_t filesize;
         char filename[FS_FFS_FILENAME_LIMIT];
+        uint32_t flags;
     } content;
     char bytes[128];
 }; // size: 128 bytes
