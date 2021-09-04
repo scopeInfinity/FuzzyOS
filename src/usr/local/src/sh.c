@@ -16,8 +16,8 @@ int cmd_help() {
     printf("commands\n");
     printf(" > help                       print the available commands\n");
     printf(" > exit                       kill the current shell\n");
-    printf(" > run ls                     print list of files\n");
-    printf(" > run <filename> [arg1]...   execute available program\n");
+    printf(" > <filename> [arg1]...       execute executable program\n");
+    printf(" > ls -h                      example to show ls usage\n");
     return 0;
 }
 
@@ -31,22 +31,20 @@ static char *copy_arg(char *dst, char *src) {
     return dst;
 }
 
-int cmd_run() {
+int cmd_run(char *cmd) {
     char *argv[PROCESS_MAX_ARGC];
     char argv_data[PROCESS_MAX_ARGC][PROCESS_MAX_ARG_LEN] = {0};
 
     char *token;
     int argc = 0;
+    argv[argc] = copy_arg(argv_data[argc], cmd);  // executable filename
+    argc++;
     while ((token = strtok(NULL, COMMAND_DELIM)) != NULL && argc < PROCESS_MAX_ARGC-1) {
         argv[argc] = copy_arg(argv_data[argc], token);
         argc++;
     }
     argv[argc] = NULL;
-    if (argc == 0) {
-        printf("invalid syntax\n");
-        printf("usage: run <filename> [arg1...]\n");
-        return -2;
-    }
+
     char *filename = argv[0];
     int pid = spawnv(filename, argv);
     if (pid < 0) {
@@ -73,11 +71,11 @@ void handle_command(char *full_cmd) {
         last_status_code = cmd_help();
     } else if (strcmp(cmd, "exit")==0) {
         last_status_code = cmd_exit();
-    } else if (strcmp(cmd, "run")==0) {
-        last_status_code = cmd_run(cmd);
     } else {
-        printf("'%s' command not found\n", cmd);
-        last_status_code = 404;
+        last_status_code = cmd_run(cmd);
+        if (last_status_code < 0) {
+            printf("failed to run '%s' command\n", cmd);
+        }
     }
 }
 

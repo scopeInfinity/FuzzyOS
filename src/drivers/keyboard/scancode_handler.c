@@ -193,8 +193,7 @@ static const unsigned char KEYBOARD_ASCII_MAPH_OTHERS[] = {
     KEYBOARD_SC_RPF0_keypad_minus, '-',
     KEYBOARD_SC_RPF0_keypad_mul, '*',
     KEYBOARD_SC_RPF0_keypad_plus, '+',
-    KEYBOARD_SC_PE0_RPF0_keypad_enter  , '\n'
-
+    KEYBOARD_SC_PE0_RPF0_keypad_enter, '\n'
 };
 
 static unsigned char KEYBOARD_ASCII_MAPPING[256];
