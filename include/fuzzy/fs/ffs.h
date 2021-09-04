@@ -50,8 +50,7 @@ int resolve_abs_lba(int parition_id, int partition_relative_lba);
 
 int partition_read_block(int block_index, void *wr_buffer);
 
-int fetch_first_block(
-    union FFSMetaData *block);
+int verify_partition(int partition_id);
 
 int fetch_file_entry(
     int partition_id,

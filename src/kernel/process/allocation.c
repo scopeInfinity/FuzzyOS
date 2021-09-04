@@ -239,14 +239,13 @@ int process_fork(unsigned int ppid) {
         0,
         size
     );
-    // print_log("copy success");
-    // PANIC(0, "A");
     return npid;
 }
 
 int process_load_from_disk(int pid, int lba_index, int sector_count) {
     int memory_location = memmgr_app_abs_location(pid);
     int err = load_sectors(memory_location, 0x80, lba_index, sector_count);
+    print_info("process_load_from_disk(pid:%d) err:%d", pid, err);
     if(err) {
         return err;
     }

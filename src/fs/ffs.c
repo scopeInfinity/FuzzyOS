@@ -14,9 +14,34 @@ int partition_read_block(int lba, void *wr_buffer) {
     return err;
 }
 
-int fetch_first_block(
-    union FFSMetaData *block) {
-    return partition_read_block(0, block->bytes);
+int verify_partition(int partition_id) {
+    // cache
+    // -1: not yet verified
+    //  0: verified with no error
+    //  1: verified but failed
+    static char verified_cache[4] = {-1, -1, -1, -1};
+    if(partition_id<0 || partition_id>=4) return 1;
+    if(verified_cache[partition_id]!=-1) return verified_cache[partition_id];
+
+    // fetch parition info
+    struct PartitionEntry partition;
+    read_partition_entry(partition_id, &partition);
+
+    union FFSMetaData block;
+    int err = partition_read_block(
+        partition.lba, // FS metadata
+        block.bytes);
+    if (!err) {
+        // verify signature
+        err = strcmp(block.content.signature, FS_FFS_SIGNATURE);
+    }
+    if (err) {
+        verified_cache[partition_id] = 1; // err
+        print_log("[ffs] partition %d verification failed, err: %d", partition_id, err);
+        return err;
+    }
+    verified_cache[partition_id] = 0; // no error
+    return 0;
 }
 
 int resolve_abs_lba(int partition_id, int partition_relative_lba) {
@@ -30,6 +55,11 @@ int fetch_file_entry(
     int partition_id,
     int entry_id,
     union FFSFileEntry *entry) {
+    int err = verify_partition(partition_id);
+    if (err) {
+        return err;
+    }
+
     char buffer[FS_BLOCK_SIZE];
     // fetch parition info
     struct PartitionEntry partition;
@@ -37,7 +67,7 @@ int fetch_file_entry(
 
     // fetch file entry
     const int FILE_ENTRY_PER_BLOCK = (FS_BLOCK_SIZE/FS_FFS_FILEENTRY_SIZE);
-    int err = partition_read_block(
+    err = partition_read_block(
         partition.lba +
             1 + // FS metadata
             entry_id/FILE_ENTRY_PER_BLOCK,

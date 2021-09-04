@@ -1,8 +1,7 @@
 ; constants only
 
 ; START_ENSURE_SAME_layout_h
-MEMORY_APP_SIZE EQU 0x20000
-
+MEMORY_APP_SIZE          EQU  0x20000
 ; END_ENSURE_SAME_layout_h
 
 ; Kernel core is app with pid 0
