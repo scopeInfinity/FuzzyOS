@@ -119,6 +119,7 @@ unsigned char write_to_ps2_second_port(unsigned char byte, int want_reply) {
     }
     wait_for_status_flag_timeout(STATUS_OUTPUT_BUFFER, 1, WAIT_FOR_STATUS_TIMEOUT);
     out = port_read(DRIVERS_KEYBOARD_PORT_DATA);
+    return out;
 }
 
 unsigned char read_data_reply() {
@@ -240,6 +241,11 @@ void keyboard_init() {
         ps2_controller_send_command(0xA8, 0);
     }
 
+    out = write_to_ps2_first_port(0xF5, 1);
+    if (out != 0xFA) {
+        PANIC(out, "disable scanning failed.");
+    }
+
     // enable interrupts
     out = ps2_controller_send_command(0X20, 1);
     out |= 0b11;
@@ -260,15 +266,15 @@ void keyboard_init() {
         // reset second port
         out = write_to_ps2_second_port(0xFF, 1);
         if (out != 0xFA) {
-            // PANIC(out, "reset ps/2 second failed");
+            PANIC(out, "reset ps/2 second failed");
+        }
+        out = read_data_reply();
+        if (out != 0xAA) {
+            PANIC(out, "reset ps/2 second port, mouse self test failed");
         }
     }
 
     // detect device type
-    out = write_to_ps2_first_port(0xF5, 1);
-    if (out != 0xFA) {
-        PANIC(out, "disable scanning failed.");
-    }
     out = write_to_ps2_first_port(0xF2, 1);
     if (out != 0xFA) {
         PANIC(out, "device identity failed.");
