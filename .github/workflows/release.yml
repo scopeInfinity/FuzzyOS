@@ -28,7 +28,6 @@ jobs:
         utcOffset: "+00:00"
 
     - name: Create Release
-      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -39,13 +38,32 @@ jobs:
         prerelease: false
         commitish: ${{ github.sha }}
 
-    - name: Upload Release Image
+    - name: Upload Raw Image
       uses: actions/upload-release-asset@v1
-      id: upload-release-image
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/image.vmdk
-        asset_name: image.vmdk
+        asset_path: build/FuzzyOS.raw
+        asset_name: FuzzyOS.raw
+        asset_content_type: application/octet-stream
+
+    - name: Upload Virtual Box Image
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: build/FuzzyOS.vdi
+        asset_name: FuzzyOS.vdi
+        asset_content_type: application/x-virtualbox-vdi
+
+    - name: Upload VMWare Image
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: build/FuzzyOS.vmdk
+        asset_name: FuzzyOS.vmdk
         asset_content_type: application/x-vmdk
