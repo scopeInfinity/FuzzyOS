@@ -42,9 +42,14 @@ BUILD_REALMODE = $(BUILD_DIR)/real_mode
 # Files
 bt_stage1 = $(BUILD_BOOTLOADER)/stage1
 bt_stage2 = $(BUILD_BOOTLOADER)/stage2
-image_vmdk = $(BUILD_DIR)/image.vmdk
 app_entry = $(BUILD_LIB)/app/entry.out
 rm_static = $(BUILD_REALMODE)/static_library
+
+# OS images
+image_raw = $(BUILD_DIR)/FuzzyOS.raw
+image_vmdk = $(BUILD_DIR)/FuzzyOS.vmdk
+image_vdi = $(BUILD_DIR)/FuzzyOS.vdi
+ALL_IMAGES = $(image_raw) $(image_vmdk) $(image_vdi)
 
 # Kernel
 kernel_core = $(BUILD_DIR)/kernel/core
@@ -90,10 +95,10 @@ FLAT_FROM_ELF=objcopy -O binary
 # Targets
 all_artifacts: images binaries external
 
-test: $(image_vmdk) $(wildcard tests/**/*)
+test: images $(wildcard tests/**/*)
 	bash tests/run.sh
 
-images: $(image_vmdk)
+images: $(ALL_IMAGES)
 
 binaries: $(bt_stage1) $(bt_stage2) $(kernel_core) $(rm_static)
 
@@ -109,14 +114,21 @@ SECTOR_START_SHARED_LIBRARY = $(shell expr $(SECTOR_START_BT_STAGE1) + $(SECTOR_
 SECTOR_START_BT_STAGE2 = $(shell expr $(SECTOR_START_SHARED_LIBRARY) + $(SECTOR_COUNT_SHARED_LIBRARY) )
 SECTOR_START_KERNEL = $(shell expr $(SECTOR_START_BT_STAGE2) + $(SECTOR_COUNT_BT_STAGE2) )
 
-$(image_vmdk): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(BUILD_DIR)/external/bin/mbr_builder $(MINIMAL_DISK)
+$(image_raw): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(BUILD_DIR)/external/bin/mbr_builder $(MINIMAL_DISK)
 	bash scripts/build_image.sh $(BUILD_DIR)/temp_vmdk \
 		$(bt_stage1) $(SECTOR_COUNT_BT_STAGE1) \
 		$(rm_static) $(SECTOR_COUNT_SHARED_LIBRARY) \
 		$(bt_stage2) $(SECTOR_COUNT_BT_STAGE2) \
 		$(kernel_core) $(SECTOR_COUNT_KERNEL)
 	./$(BUILD_DIR)/external/bin/mbr_builder $@  $(BUILD_DIR)/temp_vmdk $(MINIMAL_DISK)
+	truncate --size=128M $@  #  sparse file
 	@echo "Image Size : $$(stat -c %s $@) byte(s)"
+
+$(image_vmdk): $(image_raw)
+	qemu-img convert -O vmdk $< $@
+
+$(image_vdi): $(image_raw)
+	qemu-img convert -O vdi $< $@
 
 clean:
 	rm -r $(BUILD_DIR)/ || echo "Build directory is clean."

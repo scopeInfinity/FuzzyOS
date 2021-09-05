@@ -17,8 +17,18 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: OS Image
-        path: build/image.vmdk
+        name: Raw Image
+        path: build/FuzzyOS.raw
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Virtual Box Image
+        path: build/FuzzyOS.vdi
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: VMWare Image
+        path: build/FuzzyOS.vmdk
 
     - name: make test
       run: make test

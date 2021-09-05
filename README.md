@@ -26,7 +26,7 @@ fork()          | TicTacToe game
 ----------------|---------------
 ![image](https://user-images.githubusercontent.com/9819066/132112808-72ba7691-5f18-4631-b95d-fa52a63d2f38.png) | ![image](https://user-images.githubusercontent.com/9819066/129463802-d9a0bc77-74eb-4438-b553-e1439ada95a1.png)
 
-| pingpong game | 
+| pingpong game |
 | ------------- |
 | ![image](https://user-images.githubusercontent.com/9819066/132931019-eee2deca-ed31-4f7a-88ac-1d7754e7683e.png) |
 
@@ -37,20 +37,15 @@ fork()          | TicTacToe game
   - Download image from one of the [Release](#Release).
   - Or directly build image using `make images` after cloning the repository.
 
+#### Boot on VirtualBox
+  - Create VM with `FuzzyOS.vdi` as storage.
+
 #### Boot on VMware
-  - Create *Virtual Machine Disk* with fixed size of *4MB*.
-  - Burn `image.vmdk` to `new-disk-flat.vmdk`
-    - `bash scripts/burn.sh /path/to/image.vmdk /path/to/build/new-disk-flat.vmdk`
-  - Or simply replace `new-disk-flat.vmdk` with a sym-link to `build/image.vmdk` (for rapid development :grin:)
+  - Create VM with `FuzzyOS.vmdk` as storage.
 
 ##### Boot on a real machine
   - Use `dd` or `scripts/burn.sh` to burn image into the disk (potentially destructive).
-  - `bash scripts/burn.sh build/image.vmdk /path/to/devicefile`
-
-###### If boot from Flash Drive doesn't work
-  - Try formatting device MBR with a FAT partition.
-  - And then burn the image again.
-
+  - `bash scripts/burn.sh build/FuzzyOS.raw /path/to/devicefile`
 
 ### Development
 
