@@ -1,13 +1,11 @@
 # FuzzyOS [![CI](https://github.com/scopeInfinity/FuzzyOS/actions/workflows/ci.yaml/badge.svg)](https://github.com/scopeInfinity/FuzzyOS/actions/workflows/ci.yaml) [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FscopeInfinity%2FFuzzyOS&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
-Experimental OS
-
-- The project is still under development:exclamation:
+32-bit x86 OS capable of running console user application.
 
 ### Release
 
 Please find all releases at https://github.com/scopeInfinity/FuzzyOS/releases
 
-The VMDK image can be found under `Assets` for the corresponding release.
+The boot image can be found under `Assets` for the corresponding release.
 
 
 ### Screenshots
@@ -22,7 +20,12 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
 
  Simple Shell | TicTacToe Game
 --------------| ------------------
-![image](https://user-images.githubusercontent.com/9819066/129463788-94686a08-236e-49a9-b81b-6325e4b2ab58.png) | ![image](https://user-images.githubusercontent.com/9819066/129463802-d9a0bc77-74eb-4438-b553-e1439ada95a1.png)
+![image](https://user-images.githubusercontent.com/9819066/132112726-75f4fa66-9708-4011-9ce2-a4731fc08e11.png) | ![image](https://user-images.githubusercontent.com/9819066/129463802-d9a0bc77-74eb-4438-b553-e1439ada95a1.png)
+
+fork()          | cat 
+----------------|------
+![image](https://user-images.githubusercontent.com/9819066/132112808-72ba7691-5f18-4631-b95d-fa52a63d2f38.png) | ![image](https://user-images.githubusercontent.com/9819066/132112873-f47c8588-1e23-4c4e-9237-a9783c70defb.png)
+
 
 ### Boot OS
 
