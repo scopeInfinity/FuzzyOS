@@ -14,8 +14,8 @@ static int load_sector_via_reallibrary_data(
     unsigned int lba,
     unsigned char count) {
     // assumes count <= 128
-    int es = (MEMORY_REALLIBRARY_DATA_ADDRESS&0xF0000)>>4;
-    int es_address = MEMORY_REALLIBRARY_DATA_ADDRESS&0xFFFF;
+    int es = (MEMORY_REALLIBRARY_DATA_ADDRESS&0xFFFF0)>>4;
+    int es_address = MEMORY_REALLIBRARY_DATA_ADDRESS&0x000F;
     int cylinder_head = (lba/63);
     int sector_index = lba%63 + 1;
     // https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=02h:_Read_Sectors_From_Drive

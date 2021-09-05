@@ -12,8 +12,8 @@ int load_sectors(unsigned int full_address,
                  unsigned int count) {
     // we don't expect disk_16 (used by bootloader) to load more than 255 sectors.
 
-    int es = (full_address&0xF0000)>>4;
-    int es_address = full_address&0xFFFF;
+    int es = (full_address&0xFFFF0)>>4;
+    int es_address = full_address&0x000F;
     int cylinder_head = (lba/63);
     int sector_index = lba%63 + 1;
     // https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=02h:_Read_Sectors_From_Drive
