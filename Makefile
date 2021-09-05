@@ -135,9 +135,10 @@ include $(SRC_KERNEL)/process/Makefile.mk
 include $(SRC_KERNEL)/syscall/Makefile.mk
 
 include $(SRC_DRIVERS)/disk/Makefile.mk
-include $(SRC_DRIVERS)/display/Makefile.mk
 include $(SRC_DRIVERS)/keyboard/Makefile.mk
 include $(SRC_DRIVERS)/pic/Makefile.mk
+include $(SRC_DRIVERS)/display/Makefile.mk
+include $(SRC_DRIVERS)/display/vga/Makefile.mk
 
 include $(SRC_DIR)/fs/Makefile.mk
 include $(SRC_DIR)/memmgr/tables/Makefile.mk

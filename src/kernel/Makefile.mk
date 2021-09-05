@@ -25,6 +25,7 @@ $(kernel_core).elf: $(SELF_BUILD_DIR)/core_asm.o \
 		$(BUILD_DRIVERS)/pic/libpic \
 		$(BUILD_LIB_UTILS)/libutils \
 		$(BUILD_DRIVERS)/display/libtm_vga \
+		$(BUILD_DRIVERS)/display/vga/libvga_graphics \
 		$(BUILD_LIB_DS)/libds \
 		$(BUILD_DRIVERS)/disk/libdisk \
 		$(BUILD_DIR)/real_mode/librealmodeclient \
