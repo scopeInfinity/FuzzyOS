@@ -2,6 +2,7 @@
 #include <fuzzy/kernel/process/process.h>
 #include <fuzzy/kernel/syscall/file_handler.h>
 #include <fuzzy/kernel/syscall/console.h>
+#include <fuzzy/kernel/syscall/graphics.h>
 #include <fuzzy/kernel/syscall/syscall.h>
 
 #include <sys/syscall.h>
@@ -26,6 +27,7 @@ void interrupt_register_0x32_syscall() {
     SYSCALL_TABLE[SYSCALL_PROCESS]=syscall_1_process;
     SYSCALL_TABLE[SYSCALL_FILE_OP]=syscall_2_file_handler;
     SYSCALL_TABLE[SYSCALL_CONSOLE]=syscall_3_console;
+    SYSCALL_TABLE[SYSCALL_GRAPHICS]=syscall_4_graphics;
 }
 
 int syscall_selector(int id, int arg0, int arg1, int arg2, int arg3, int user_ds) {

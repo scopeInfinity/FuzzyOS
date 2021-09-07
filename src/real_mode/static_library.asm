@@ -11,9 +11,9 @@
         pop ebx
         push bx
         push ax
-        jmp execute_0x13_enter_real_mode
+        jmp execute_int_enter_real_mode
 
-    execute_0x13_enter_real_mode:
+    execute_int_enter_real_mode:
         ; interrupts should already be disabled
         ; meant to be executed serially.
         ; mov ss, 0 ; Hack: Prerequisite
@@ -24,9 +24,9 @@
         mov eax, cr0
         and eax, 0xFFFFFFFE
         mov cr0, eax
-        jmp GDT_NULL_CS:execute_0x13_from_real_mode
+        jmp GDT_NULL_CS:execute_int_from_real_mode
 
-    execute_0x13_from_real_mode:
+    execute_int_from_real_mode:
         ; fix stack
         mov eax, 0
         mov ss, ax
@@ -34,18 +34,36 @@
         lidt [idt_table_real_mode]
 
         ; minimal setup for real mode as required.
-        mov ds, [ebp+32]
-        mov es, [ebp+28]
-        mov fs, [ebp+24]
-        mov gs, [ebp+20]
+        mov ds, [ebp+36]
+        mov es, [ebp+32]
+        mov fs, [ebp+28]
+        mov gs, [ebp+24]
 
-        mov eax, [ebp+16]
-        mov ebx, [ebp+12]
-        mov ecx, [ebp+8]
-        mov edx, [ebp+4]   ; 4 byte for far call
+        mov eax, [ebp+20]
+        mov ebx, [ebp+16]
+        mov ecx, [ebp+12]
+        mov edx, [ebp+8]
 
+        ; interrupt number
+        mov esi, [ebp+4]   ; 4 byte for far call
+
+        ; check for some interrupt numbers only
+        cmp esi, 0x10
+        je _int_0x10
+        cmp esi, 0x13
+        je _int_0x13
+
+        jmp _int_end  ; found no match
+
+    _int_0x10:
+        int 0x10
+        jmp _int_end
+
+    _int_0x13:
         int 0x13
+        jmp _int_end
 
+    _int_end:
         push eax
         mov eax, cr0
         or eax, 0x00000001
@@ -54,9 +72,9 @@
 
         pop ss; restore absolute stack
 
-        jmp GDT_ABS16_CS:execute_0x13_leave_real_mode  ; Absolute Code Segment Selector
+        jmp GDT_ABS16_CS:execute_int_leave_real_mode  ; Absolute Code Segment Selector
 
-    execute_0x13_leave_real_mode:
+    execute_int_leave_real_mode:
         retf
 
 [SECTION .data]

@@ -20,6 +20,7 @@ static int load_sector_via_reallibrary_data(
     int sector_index = lba%63 + 1;
     // https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=02h:_Read_Sectors_From_Drive
     real_mode_client(
+        0x13, // interrupt number
         (0x02<<8) | count,
         es_address,
         ((cylinder_head>>2)&0xFFC0) | (sector_index),
@@ -28,6 +29,7 @@ static int load_sector_via_reallibrary_data(
     );
     // https://en.wikipedia.org/wiki/INT_13H#INT_13h_AH=01h:_Get_Status_of_Last_Drive_Operation
     int eax = real_mode_client(
+        0x13, // interrupt number
         (0x01<<8),
         0,
         0,
