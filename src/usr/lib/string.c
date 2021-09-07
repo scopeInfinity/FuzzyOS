@@ -47,30 +47,38 @@ int strlen(char *str) {
     return n;
 }
 
-char *strcpy(char *dest, const char *src) {
-    void *og_dest = dest;
+char *strcpy(char *dst, const char *src) {
+    void *og_dst = dst;
     while ((*src) != NULL) {
-        *(dest++) = *(src++);
+        *(dst++) = *(src++);
     }
-    *(dest++) = NULL;
-    return og_dest;
+    *(dst++) = NULL;
+    return og_dst;
 }
 
-char *strncpy(char *dest, const char *src, size_t n) {
-    void *og_dest = dest;
+char *strncpy(char *dst, const char *src, size_t n) {
+    void *og_dst = dst;
     while ((*src) != NULL && n>0) {
-        *(dest++) = *(src++);
+        *(dst++) = *(src++);
         n--;
     }
-    return og_dest;
+    return og_dst;
 }
 
-void *memcpy(void *dest, const void *src, unsigned int n) {
-    void *og_dest = dest;
+void *memcpy(void *dst, const void *src, unsigned int n) {
+    void *og_dst = dst;
     while (n--) {
-        *(char*)(dest++) = *(char*)(src++);
+        *(char*)(dst++) = *(char*)(src++);
     }
-    return og_dest;
+    return og_dst;
+}
+
+void *memset(void *dst, const unsigned char c, size_t n) {
+    void *og_dst = dst;
+    while (n--) {
+        *(char*)(dst++) = c;
+    }
+    return og_dst;
 }
 
 char *strchr(const char *str, char ch) {

@@ -1,13 +1,6 @@
 #pragma once
 
-#define GRAPHICS_HEIGHT  640
-#define GRAPHICS_WIDTH   480
+#include <stddef.h>
 
-// following functions doesn't verify arguments
-inline void draw_pixel(int x, int y, int color);
-inline void draw_char(int x, int y, int fnt_size, int color);
-// x1<=x2, y1<=y2
-inline void draw_rectangle(int x1, int y1, int x2, int y2, int color);
-inline void draw_ellipse(int x1, int y1, int x2, int y2, int color);
-
-void graphics_flush();
+int graphics_switchto_320x200x256();
+int graphics_write_320x200x256(int user_ds, uint8_t *__us_buffer);
