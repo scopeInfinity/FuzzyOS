@@ -64,7 +64,7 @@ int getcolor() {
 }
 
 void setbkcolor(int color) {
-    // TODO
+    gstate.bkcolor = color;
 }
 
 int getbkcolor() {

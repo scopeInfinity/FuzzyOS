@@ -72,9 +72,9 @@ define view_realmode
 end
 
 define view_kernelmode
-    set $CS_BASE = 0x10000
-    set $DS_BASE = 0x10000
-    set $SS_BASE = 0x10000
+    set $CS_BASE = 0x0C000
+    set $DS_BASE = 0x0C000
+    set $SS_BASE = 0x0C000
     symbol-file build/kernel/core.elf
     clayout
 end

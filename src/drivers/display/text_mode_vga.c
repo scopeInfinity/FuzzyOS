@@ -88,8 +88,6 @@ void io_low_scroll_screen(char count, unsigned char color,
 void io_low_put_char(char c, unsigned char color) {
     _low_put_char(c,color, location_xy);
     buffer[location_xy]=(((unsigned short)color)<<8)|c;
-    // slows down char printing but good enough for now.
-    io_low_flush();
 }
 
 void io_low_flush() {

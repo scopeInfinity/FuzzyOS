@@ -6,7 +6,7 @@
 #define DETECT                  0
 #define GRAPHIC_DRIVER_VGA      1
 
-#define GRAPHIC_MODE_320x200x16 1
+#define GRAPHIC_MODE_320x200x16 0x13
 
 #define  BLACK               0x0
 #define  BLUE                0x1
