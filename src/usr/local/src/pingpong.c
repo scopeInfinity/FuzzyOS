@@ -21,22 +21,41 @@ const int bat_maxy = (WINDOW_HEIGHT-1)-BAT_HALF_HEIGHT;
 const int p1_x = 10;
 const int p2_x = (WINDOW_WIDTH-1)-p1_x;
 
+const int BALL_SPEED = 2;
+const int BALL_RADIUS = 3;
+
 struct playerState {
     int y;
 };
 
 struct {
+    int x,y;
+    int xspeed, yspeed;
+} ball;
+
+struct {
     struct playerState p1, p2;
 } gstate;
+
+void frame_wait() {
+    // busy wait
+    volatile int counter = 1e7;
+    while (counter--);
+}
 
 void game_init() {
     gstate.p1.y = (bat_miny+bat_maxy)/2;
     gstate.p2 = gstate.p1;
+
+    ball.x = WINDOW_WIDTH/2;
+    ball.y = WINDOW_HEIGHT/2;
+    ball.xspeed = BALL_SPEED*0.8;
+    ball.yspeed = BALL_SPEED*0.6;
 }
 
 void draw_board() {
     // clear screen
-    setbkcolor(LIGHT_GREEN);
+    setbkcolor(GREEN);
     cleardevice();
 
     setcolor(BLUE);
@@ -46,6 +65,9 @@ void draw_board() {
     setcolor(RED);
     bar(p2_x-BAT_HALF_WIDTH, gstate.p2.y-BAT_HALF_HEIGHT,
         p2_x+BAT_HALF_WIDTH, gstate.p2.y+BAT_HALF_HEIGHT);
+
+    setcolor(WHITE);
+    fillellipse(ball.x, ball.y, BALL_RADIUS, BALL_RADIUS);
 }
 
 void move_bat(int player_id, int dir) {
@@ -68,11 +90,22 @@ void move_bat(int player_id, int dir) {
     p->y = max(bat_miny, min(bat_maxy, p->y));
 }
 
+void move_ball() {
+    ball.x += ball.xspeed;
+    ball.y += ball.yspeed;
+}
+
 void game() {
     game_init();
     while (1)  {
         draw_board();
 
+        move_ball();
+
+        if(!kbhit()) {
+            frame_wait();
+            continue;
+        }
         char c = getch();
         if(c=='e') {
             return;

@@ -3,6 +3,7 @@
 #include <fuzzy/kernel/syscall/file_handler.h>
 #include <fuzzy/kernel/syscall/console.h>
 #include <fuzzy/kernel/syscall/graphics.h>
+#include <fuzzy/kernel/syscall/keyboard.h>
 #include <fuzzy/kernel/syscall/syscall.h>
 
 #include <sys/syscall.h>
@@ -14,16 +15,12 @@
 
 int SYSCALL_TABLE[SYSCALL_SIZE];
 
-int syscall_0_keyboard_getch(int a0,int a1,int a2,int a3, int user_ds) {
-    return keyboard_get_key_pressed_poll();
-}
-
 extern int interrupt_handler_0x32_syscall_handler();
 
 void interrupt_register_0x32_syscall() {
     print_log("Registering syscalls.");
     populate_idt_entry_32bit(IDT_SYSCALL, (unsigned int)interrupt_handler_0x32_syscall_handler, 0, 1);
-    SYSCALL_TABLE[SYSCALL_KEYBOARD]=syscall_0_keyboard_getch;
+    SYSCALL_TABLE[SYSCALL_KEYBOARD]=syscall_0_keyboard;
     SYSCALL_TABLE[SYSCALL_PROCESS]=syscall_1_process;
     SYSCALL_TABLE[SYSCALL_FILE_OP]=syscall_2_file_handler;
     SYSCALL_TABLE[SYSCALL_CONSOLE]=syscall_3_console;
