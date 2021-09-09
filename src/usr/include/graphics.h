@@ -43,3 +43,8 @@ int getbkcolor();
 
 void putpixel_noflush(int x, int y, int color);
 void putpixel(int x, int y, int color);
+
+void line(int x1, int y1, int x2, int y2);
+void rectangle(int left, int top, int right, int bottom);
+void bar(int left, int top, int right, int bottom);
+void fillellipse(int xcenter, int ycenter, int x_radius, int y_radius);

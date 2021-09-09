@@ -174,6 +174,13 @@ char keyboard_get_key_pressed_poll() {
     return c;
 }
 
+int keyboard_get_kbhit() {
+    for (int i = 0; !keyboard_scanner_ascii_is_available() && i < 100; i++) {
+        keyboard_scanner_step();
+    }
+    return keyboard_scanner_ascii_is_available()>0;
+}
+
 void keyboard_init() {
     unsigned char original_colors =  get_color_fgbg();
     sleep_mini(3000000);

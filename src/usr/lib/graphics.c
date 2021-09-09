@@ -151,8 +151,29 @@ void ellipse(int x, int y, int x_radius, int y_radius) {
     // TODO
 }
 
-void fillellipse(int x, int y, int x_radius, int y_radius) {
-    // TODO
+void fillellipse(int xcenter, int ycenter, int x_radius, int y_radius) {
+    // x**2/a**2 + y**2/b**2 <= 1
+    // (x*b)**2 + (y*a)**2 <= (a*b)**2
+    const int color = getcolor();
+
+    int t3 = x_radius*y_radius;
+    t3 *= t3;
+    for (int y = -y_radius; y <= y_radius; y++) {
+        for (int x = -x_radius; x <= x_radius; x++) {
+            int t1 = (x*y_radius);
+            t1 *= t1;
+            int t2 = (y*x_radius);
+            t2 *= t2;
+            if (t1+t2 <= t3) {
+                int fx = xcenter + x;
+                int fy = ycenter + y;
+                if(fx>=0 && fy>=0 && fx<GRAPHICS_MAX_WIDTH && fy<GRAPHICS_MAX_HEIGHT) {
+                    BUFFER[fy][fx]=color;
+                }
+            }
+        }
+    }
+    graphflush();
 }
 
 void floodfill(int x,int y, int color) {
