@@ -7,5 +7,7 @@ int atoi (const char *s);
 // And only base 10 is considered as signed int.
 void itoa(int num, char *s, int base);
 int min(int, int);
+int max(int, int);
+int abs(int a);
 
 void exit(int status);

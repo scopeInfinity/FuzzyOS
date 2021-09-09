@@ -12,7 +12,7 @@ static int _graphics_init() {
         return -1;
     }
     _graphics_prev_mode = graphics_get_mode();
-    int err = graphics_set_mode(GRAPHIC_MODE_320x200x16);
+    int err = graphics_set_mode(GRAPHIC_MODE_320x200x256);
     return err;
 }
 
