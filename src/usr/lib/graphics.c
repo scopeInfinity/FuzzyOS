@@ -6,6 +6,7 @@ static struct GraphicsState {
     int bkcolor;
     int color;
     int last_err;
+    int auto_flush_disabled;
 } gstate = {0};
 
 static uint8_t BUFFER[GRAPHICS_MAX_HEIGHT][GRAPHICS_MAX_WIDTH]={0};
@@ -32,6 +33,20 @@ void closegraph() {
     gstate.last_err = SYSCALL_A1(SYSCALL_GRAPHICS, SYSCALL_GRAPHICS_CLOSEGRAPH);
 }
 
+void graphautoflush_enable() {
+    gstate.auto_flush_disabled = 1;
+}
+
+void graphautoflush_disable() {
+    gstate.auto_flush_disabled = 0;
+}
+
+static void _autoflushnow() {
+    if(!gstate.auto_flush_disabled) {
+        graphflush();
+    }
+}
+
 int graphflush() {
     gstate.last_err = SYSCALL_A2(SYSCALL_GRAPHICS, SYSCALL_GRAPHICS_COPYBUFFER, BUFFER);
     return gstate.last_err;
@@ -40,7 +55,7 @@ int graphflush() {
 void cleardevice() {
     memset(BUFFER, gstate.bkcolor, sizeof(BUFFER));
     moveto(0, 0);
-    graphflush();
+    _autoflushnow();
 }
 
 void setviewport(int left, int top, int right, int bottom, int clip) {
@@ -73,11 +88,7 @@ int getbkcolor() {
 
 void putpixel(int x, int y, int color) {
     BUFFER[y][x]=color;
-    graphflush();
-}
-
-void putpixel_noflush(int x, int y, int color) {
-    BUFFER[y][x]=color;
+    _autoflushnow();
 }
 
 void line(int x1, int y1, int x2, int y2) {
@@ -111,7 +122,7 @@ void line(int x1, int y1, int x2, int y2) {
             BUFFER[y][x]=color;
         }
     }
-    graphflush();
+    _autoflushnow();
 }
 
 void drawpoly(int num, int polypoints[]) {
@@ -133,7 +144,7 @@ void rectangle(int left, int top, int right, int bottom) {
         BUFFER[y][left]=color;
         BUFFER[y][right]=color;
     }
-    graphflush();
+    _autoflushnow();
 }
 
 void bar(int left, int top, int right, int bottom) {
@@ -144,7 +155,7 @@ void bar(int left, int top, int right, int bottom) {
             BUFFER[y][x]=color;
         }
     }
-    graphflush();
+    _autoflushnow();
 }
 
 void ellipse(int x, int y, int x_radius, int y_radius) {
@@ -173,7 +184,7 @@ void fillellipse(int xcenter, int ycenter, int x_radius, int y_radius) {
             }
         }
     }
-    graphflush();
+    _autoflushnow();
 }
 
 void floodfill(int x,int y, int color) {

@@ -8,55 +8,139 @@
 #define PLAYER_1  1
 #define PLAYER_2  2
 
+const int BUSY_WAIT_FRAMECOUNTER = 2e7;
+
 const int WINDOW_HEIGHT = GRAPHICS_MAX_HEIGHT;
 const int WINDOW_WIDTH  = GRAPHICS_MAX_WIDTH;
+
+const int BORDER = 5;
 
 const int BAT_HALF_HEIGHT = 15;
 const int BAT_HALF_WIDTH  = 2;
 const int BAT_SPEED = 5;
 
-const int bat_miny = BAT_HALF_HEIGHT;
-const int bat_maxy = (WINDOW_HEIGHT-1)-BAT_HALF_HEIGHT;
-
 const int p1_x = 10;
 const int p2_x = (WINDOW_WIDTH-1)-p1_x;
 
-const int BALL_SPEED = 2;
+const float BALL_SPEED_MAX = 10;
+const float BALL_SPEED_INIT = 5;
+const float BALL_SPEED_INC = 1.1;
 const int BALL_RADIUS = 3;
 
 struct playerState {
-    int y;
+    float y;
+    float yspeed;
 };
 
 struct {
-    int x,y;
-    int xspeed, yspeed;
+    int top, bottom;
+    int left, right;
+} field;
+
+
+struct {
+    float x, y, xprev, yprev;
+    float xspeed, yspeed;
 } ball;
 
 struct {
     struct playerState p1, p2;
+    int turn;
+    int p1Score;
+    int p2Score;
 } gstate;
 
 void frame_wait() {
     // busy wait
-    volatile int counter = 1e7;
+    volatile int counter = BUSY_WAIT_FRAMECOUNTER;
     while (counter--);
 }
 
+void reset_ball() {
+    ball.xprev = ball.x = WINDOW_WIDTH/2;
+    ball.yprev = ball.y = WINDOW_HEIGHT/2;
+    if(gstate.turn == PLAYER_1) {
+        ball.xspeed = BALL_SPEED_INIT*0.8;
+        ball.yspeed = BALL_SPEED_INIT*0.6;
+    } else {
+        ball.xspeed = -BALL_SPEED_INIT*0.8;
+        ball.yspeed =  BALL_SPEED_INIT*0.6;
+    }
+}
+
 void game_init() {
-    gstate.p1.y = (bat_miny+bat_maxy)/2;
+    graphautoflush_disable();
+
+    field.top = BORDER-1;
+    field.bottom = WINDOW_HEIGHT-BORDER;
+    field.left = BORDER-1;
+    field.right = WINDOW_WIDTH-BORDER;
+
+    gstate.p1.y = (field.top+field.bottom)/2;
     gstate.p2 = gstate.p1;
 
-    ball.x = WINDOW_WIDTH/2;
-    ball.y = WINDOW_HEIGHT/2;
-    ball.xspeed = BALL_SPEED*0.8;
-    ball.yspeed = BALL_SPEED*0.6;
+    gstate.p1Score = gstate.p2Score = 0;
+    gstate.turn = PLAYER_1;
+    reset_ball();
+}
+
+static void collision(float zm_border, float zm_prevx, float *zm_newx, float *zm_xspeed, float rigid_x) {
+    // assumes: zm is a square object
+    // collison is written along x-coordinates but can be generalized.
+    if(zm_prevx<=rigid_x-zm_border<=*zm_newx) {
+        // move object as per collision for object moving from left to right.
+        *zm_newx = 2*(rigid_x-zm_border) - (*zm_newx);
+        *zm_xspeed = -1;
+    } else if(zm_prevx>=rigid_x+zm_border>=*zm_newx) {
+        // move object as per collision for object moving from right to left.
+        *zm_newx = 2*(rigid_x+zm_border) - (*zm_newx);
+        *zm_xspeed = -1;
+    }
+}
+
+void check_collision() {
+    // wall
+
+    if(ball.y>field.bottom-BALL_RADIUS) {
+        ball.yspeed *= -1;
+        ball.y = 2*(field.bottom-BALL_RADIUS)-ball.y;
+    } else if(ball.y<field.top+BALL_RADIUS) {
+        ball.yspeed *= -1;
+        ball.y = 2*(field.top+BALL_RADIUS)-ball.y;
+    }
+
+    if(ball.x>p2_x-BAT_HALF_WIDTH-BALL_RADIUS && ball.y>=gstate.p2.y-BAT_HALF_HEIGHT && ball.y<=gstate.p2.y+BAT_HALF_HEIGHT) {
+        // right bat
+        ball.xspeed *= -1 * BALL_SPEED_INC;
+        ball.x = 2*(p2_x-BAT_HALF_WIDTH-BALL_RADIUS)-ball.x;
+    } else if(ball.x<p1_x+BAT_HALF_WIDTH+BALL_RADIUS && ball.y>=gstate.p1.y-BAT_HALF_HEIGHT && ball.y<=gstate.p1.y+BAT_HALF_HEIGHT) {
+        // left bat
+        ball.xspeed *= -1 * BALL_SPEED_INC;
+        ball.x = 2*(p1_x+BAT_HALF_WIDTH+BALL_RADIUS)-ball.x;
+    }
+
+
+    if(ball.x>WINDOW_WIDTH-1) {
+        // player 2 missed ball
+        gstate.p1Score += 1;
+        gstate.turn = (gstate.turn==PLAYER_1)?PLAYER_2:PLAYER_1;
+        reset_ball();
+    } else if(ball.x<0) {
+        // player 1 missed ball
+        gstate.p2Score += 1;
+        gstate.turn = (gstate.turn==PLAYER_1)?PLAYER_2:PLAYER_1;
+        reset_ball();
+    }
 }
 
 void draw_board() {
     // clear screen
     setbkcolor(GREEN);
     cleardevice();
+
+    setcolor(BROWN);
+    bar(0, 0, WINDOW_WIDTH, field.top);
+    bar(0, field.bottom, WINDOW_WIDTH-1, WINDOW_HEIGHT-1);
 
     setcolor(BLUE);
     bar(p1_x-BAT_HALF_WIDTH, gstate.p1.y-BAT_HALF_HEIGHT,
@@ -68,6 +152,8 @@ void draw_board() {
 
     setcolor(WHITE);
     fillellipse(ball.x, ball.y, BALL_RADIUS, BALL_RADIUS);
+
+    graphflush();
 }
 
 void move_bat(int player_id, int dir) {
@@ -87,10 +173,19 @@ void move_bat(int player_id, int dir) {
     }
 
     // keep bat in bounds
-    p->y = max(bat_miny, min(bat_maxy, p->y));
+    const int bat_miny = field.top+1+BAT_HALF_HEIGHT;
+    const int bat_maxy = field.bottom-1-BAT_HALF_HEIGHT;
+
+    if(p->y > bat_maxy) {
+        p->y = bat_maxy;
+    } else if(p->y < bat_miny) {
+        p->y = bat_miny;
+    }
 }
 
 void move_ball() {
+    ball.xprev = ball.x;
+    ball.yprev = ball.y;
     ball.x += ball.xspeed;
     ball.y += ball.yspeed;
 }
@@ -98,12 +193,13 @@ void move_ball() {
 void game() {
     game_init();
     while (1)  {
+        check_collision();
         draw_board();
 
         move_ball();
 
+        frame_wait();
         if(!kbhit()) {
-            frame_wait();
             continue;
         }
         char c = getch();

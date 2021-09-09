@@ -75,6 +75,7 @@ void process_scheduler(int *_e_ip, int *_e_cs, int *_e_sp, int *_e_ss);
 // user space <-> kernel space data transfer helper
 extern void syscall_strncpy_user_to_kernel(int user_ds, char *src_es_address, char *dest_ds_address, size_t size);
 extern void syscall_strncpy_kernel_to_user(int user_ds, char *dest_address, char *src_address, size_t size);
+// assumes size is multiple of 4
 extern void kernel_memncpy_absolute(int dst_ds, char *dst_address, int src_ds, char *src_address, size_t size);
 
 // operations
