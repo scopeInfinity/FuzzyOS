@@ -1,12 +1,12 @@
 #pragma once
 
-#define GRAPHICS_MAX_HEIGHT  320
-#define GRAPHICS_MAX_WIDTH   200
+#define GRAPHICS_MAX_WIDTH   320
+#define GRAPHICS_MAX_HEIGHT  200
 
 #define DETECT                  0
 #define GRAPHIC_DRIVER_VGA      1
 
-#define GRAPHIC_MODE_320x200x16 0x13
+#define GRAPHIC_MODE_320x200x256 0x13
 
 #define  BLACK               0x0
 #define  BLUE                0x1
@@ -34,8 +34,12 @@ int graphresult();
 void closegraph();
 void cleardevice();
 
+int graphflush();
 
 void setcolor(int color);
 int getcolor();
 void setbkcolor(int color);
 int getbkcolor();
+
+void putpixel_noflush(int x, int y, int color);
+void putpixel(int x, int y, int color);
