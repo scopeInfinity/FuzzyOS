@@ -59,6 +59,7 @@ global kernel_memncpy_absolute
         ret
 
     kernel_memncpy_absolute:
+        ; assumes count is multiple of 4
         push ebp
         mov ebp, esp
         ; callee save register
@@ -69,13 +70,14 @@ global kernel_memncpy_absolute
         push es
 
         mov ecx, [ebp + 0x18]         ; count
+        shr ecx, 2                    ; count/4
         mov esi, [ebp + 0x14]         ; src_loc
         mov  ds, [ebp + 0x10]         ; src_ds
         mov edi, [ebp + 0x0C]         ; dest_loc
         mov  es, [ebp + 0x08]         ; dest_ds
 
         ; strcpy
-        rep movsb
+        rep movsd                     ; move double word
 
         pop es
         pop ds

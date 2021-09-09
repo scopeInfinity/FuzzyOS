@@ -34,6 +34,8 @@ int graphresult();
 void closegraph();
 void cleardevice();
 
+void graphautoflush_enable();
+void graphautoflush_disable();
 int graphflush();
 
 void setcolor(int color);
@@ -41,7 +43,6 @@ int getcolor();
 void setbkcolor(int color);
 int getbkcolor();
 
-void putpixel_noflush(int x, int y, int color);
 void putpixel(int x, int y, int color);
 
 void line(int x1, int y1, int x2, int y2);
