@@ -86,20 +86,6 @@ void game_init() {
     reset_ball();
 }
 
-static void collision(float zm_border, float zm_prevx, float *zm_newx, float *zm_xspeed, float rigid_x) {
-    // assumes: zm is a square object
-    // collison is written along x-coordinates but can be generalized.
-    if(zm_prevx<=rigid_x-zm_border<=*zm_newx) {
-        // move object as per collision for object moving from left to right.
-        *zm_newx = 2*(rigid_x-zm_border) - (*zm_newx);
-        *zm_xspeed = -1;
-    } else if(zm_prevx>=rigid_x+zm_border>=*zm_newx) {
-        // move object as per collision for object moving from right to left.
-        *zm_newx = 2*(rigid_x+zm_border) - (*zm_newx);
-        *zm_xspeed = -1;
-    }
-}
-
 void check_collision() {
     // wall
 
