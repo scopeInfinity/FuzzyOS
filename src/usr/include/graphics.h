@@ -49,3 +49,11 @@ void line(int x1, int y1, int x2, int y2);
 void rectangle(int left, int top, int right, int bottom);
 void bar(int left, int top, int right, int bottom);
 void fillellipse(int xcenter, int ycenter, int x_radius, int y_radius);
+
+int textheight(char *str);
+int textwidth(char *str);
+void outtext(char *str);
+int outtextxy(int x, int y, char *str);
+void moveto(int x, int y);
+int getx();
+int gety();
