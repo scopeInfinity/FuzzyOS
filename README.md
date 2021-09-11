@@ -18,13 +18,17 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
  ![image](https://user-images.githubusercontent.com/9819066/119272271-12b67700-bbfd-11eb-8036-1466d39ebe8e.png) | ![image](https://user-images.githubusercontent.com/9819066/129453488-1950ca70-25cc-4801-842f-b25ea88ab25f.png)
 
 
- Simple Shell | TicTacToe Game
---------------| ------------------
-![image](https://user-images.githubusercontent.com/9819066/132112726-75f4fa66-9708-4011-9ce2-a4731fc08e11.png) | ![image](https://user-images.githubusercontent.com/9819066/129463802-d9a0bc77-74eb-4438-b553-e1439ada95a1.png)
+ Simple Shell | cat
+--------------| ------
+![image](https://user-images.githubusercontent.com/9819066/132931063-21868d2e-4e55-4a25-843d-9a6a9d1830f6.png) |  ![image](https://user-images.githubusercontent.com/9819066/132112873-f47c8588-1e23-4c4e-9237-a9783c70defb.png)
 
-fork()          | cat 
-----------------|------
-![image](https://user-images.githubusercontent.com/9819066/132112808-72ba7691-5f18-4631-b95d-fa52a63d2f38.png) | ![image](https://user-images.githubusercontent.com/9819066/132112873-f47c8588-1e23-4c4e-9237-a9783c70defb.png)
+fork()          | TicTacToe game
+----------------|---------------
+![image](https://user-images.githubusercontent.com/9819066/132112808-72ba7691-5f18-4631-b95d-fa52a63d2f38.png) | ![image](https://user-images.githubusercontent.com/9819066/129463802-d9a0bc77-74eb-4438-b553-e1439ada95a1.png)
+
+| pingpong game | 
+| ------------- |
+| ![image](https://user-images.githubusercontent.com/9819066/132931019-eee2deca-ed31-4f7a-88ac-1d7754e7683e.png) |
 
 
 ### Boot OS
