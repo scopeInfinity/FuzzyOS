@@ -27,6 +27,8 @@ const float BALL_SPEED_INIT = 5;
 const float BALL_SPEED_INC = 1.1;
 const int BALL_RADIUS = 3;
 
+char message_buffer[320];
+
 struct playerState {
     float y;
     float yspeed;
@@ -142,6 +144,17 @@ void draw_board() {
     bar(0, 0, WINDOW_WIDTH, field.top);
     bar(0, field.bottom, WINDOW_WIDTH-1, WINDOW_HEIGHT-1);
 
+    {
+        setcolor(BLACK);
+        snprintf(message_buffer, sizeof(message_buffer), "%d | score | %d", gstate.p1Score, gstate.p2Score);
+        int width = textwidth(message_buffer);
+        outtextxy((WINDOW_WIDTH-width)/2, field.top+10, message_buffer);
+
+        snprintf(message_buffer, sizeof(message_buffer), "Control: w/s | p/l ; Exit: q");
+        width = textwidth(message_buffer);
+        outtextxy((WINDOW_WIDTH-width)/2, field.bottom-15, message_buffer);
+    }
+
     setcolor(BLUE);
     bar(p1_x-BAT_HALF_WIDTH, gstate.p1.y-BAT_HALF_HEIGHT,
         p1_x+BAT_HALF_WIDTH, gstate.p1.y+BAT_HALF_HEIGHT);
@@ -203,7 +216,7 @@ void game() {
             continue;
         }
         char c = getch();
-        if(c=='e') {
+        if(c=='q') {
             return;
         } else if(c=='w') {
             move_bat(PLAYER_1, DIR_UP);
