@@ -31,7 +31,6 @@ fork()          | TicTacToe game
 | ![gif](https://user-images.githubusercontent.com/9819066/132988756-de1b7770-430d-40df-a7c9-593cd752b20a.gif) |
 
 
-
 ### Boot OS
 
 #### How to get boot image?

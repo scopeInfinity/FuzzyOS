@@ -10,7 +10,9 @@
 #define IDT_IRQ_OFFSET  0x20
 
 // Used by /usr/lib/process.c
-#define IDT_IRQ0_PIC    (IDT_IRQ_OFFSET+0)
+#define IDT_IRQ0_PIC        (IDT_IRQ_OFFSET+0)
+#define IDT_IRQ1_KEYBOARD   (IDT_IRQ_OFFSET+1)
+#define IDT_IRQ12_MOUSE     (IDT_IRQ_OFFSET+12)
 // Used by /usr/lib/sys/syscall.asm
 #define IDT_SYSCALL     0x32
 

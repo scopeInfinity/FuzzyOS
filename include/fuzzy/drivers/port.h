@@ -12,6 +12,11 @@
 #define PORT_PIT_DATA2    0x42
 #define PORT_PIT_CMD      0x43
 
+#define PORT_PS2_DATA     0x60
+#define PORT_PS2_CMD      0x64
+#define PORT_PS2_STATUS   0x64
+
+
 static inline void outb(uint16_t port, uint8_t data) {
     __asm__ volatile(
         "outb %0, %1 \n"

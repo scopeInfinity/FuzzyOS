@@ -1,4 +1,5 @@
 #include <fuzzy/kernel/syscall/syscall.h>
+#include <fuzzy/drivers/ps2/ps2.h>
 #include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/kernel/interrupts/timer.h>
 #include <fuzzy/memmgr/layout.h>
@@ -70,6 +71,7 @@ void populate_and_load_idt_table() {
 
     interrupt_register_0x00_0x1F_exceptions();
     interrupt_register_0x20_irq0_pit();
+    interrupt_register_0x21_0x2C_irq1_ir12_keyboard_mouse();
     interrupt_register_0x32_syscall();
 
     idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
