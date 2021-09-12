@@ -28,7 +28,8 @@ fork()          | TicTacToe game
 
 | pingpong game | 
 | ------------- |
-| ![image](https://user-images.githubusercontent.com/9819066/132931019-eee2deca-ed31-4f7a-88ac-1d7754e7683e.png) |
+| ![gif](https://user-images.githubusercontent.com/9819066/132988756-de1b7770-430d-40df-a7c9-593cd752b20a.gif) |
+
 
 
 ### Boot OS
