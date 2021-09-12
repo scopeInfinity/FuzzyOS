@@ -149,6 +149,7 @@ include $(SRC_KERNEL)/syscall/Makefile.mk
 include $(SRC_DRIVERS)/disk/Makefile.mk
 include $(SRC_DRIVERS)/keyboard/Makefile.mk
 include $(SRC_DRIVERS)/pic/Makefile.mk
+include $(SRC_DRIVERS)/ps2/Makefile.mk
 include $(SRC_DRIVERS)/display/Makefile.mk
 include $(SRC_DRIVERS)/display/vga/Makefile.mk
 

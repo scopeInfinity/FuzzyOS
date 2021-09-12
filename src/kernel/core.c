@@ -13,7 +13,9 @@
 
 #include <drivers/disk/disk.h>
 #include <drivers/display/text_mode.h>
-#include <drivers/keyboard/keyboard.h>
+#include <fuzzy/drivers/ps2/ps2.h>
+#include <fuzzy/drivers/ps2/keyboard.h>
+
 
 #include <lib/utils/input.h>
 #include <lib/utils/logging.h>
@@ -44,7 +46,8 @@ void kernel_core_entry() {
 
     print_log("Kernel enabling interrupts");
 
-    keyboard_init();
+    ps2_init();
+    ps2_keyboard_init();
 
     process_scheduler_init();
 

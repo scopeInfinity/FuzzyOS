@@ -21,6 +21,7 @@ $(kernel_core).elf: $(SELF_BUILD_DIR)/core_asm.o \
 		$(BUILD_KERNEL)/process/libprocess \
 		$(BUILD_DIR)/memmgr/tables/libgdt \
 		$(BUILD_DIR)/fs/libffs \
+		$(BUILD_DRIVERS)/ps2/libps2 \
 		$(BUILD_DRIVERS)/keyboard/libkeyboard \
 		$(BUILD_DRIVERS)/pic/libpic \
 		$(BUILD_LIB_UTILS)/libutils \

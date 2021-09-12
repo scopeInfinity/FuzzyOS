@@ -183,128 +183,11 @@ int keyboard_get_kbhit() {
 }
 
 void keyboard_init() {
-    unsigned char original_colors =  get_color_fgbg();
-    sleep_mini(3000000);
-
     unsigned char out;
-    // disable PS/2 first port
-    ps2_controller_send_command(0XAD, 0);
-    // disable PS/2 second port
-    ps2_controller_send_command(0XA7, 0);
-    // flush output buffer
-    wait_for_status_flag(STATUS_OUTPUT_BUFFER, 0);
-
-    out = ps2_controller_send_command(0X20, 1);
-    out = out&(~0b1000011);
-    int dual_ps2_controller = 0;
-    if (out & (0b10000)) {
-        dual_ps2_controller = 1;
-    }
-    print_log("Init: Maybe dual PS2 Controller", dual_ps2_controller);
-    ps2_controller_send_command_with_data(0x60, out, 0);
-
-
-    out = ps2_controller_send_command(0XAA, 1);
-    if (out != 0x55) {
-        PANIC(out, "PS2 controller self test failed.");
-    }
-
-    if(dual_ps2_controller) {
-        ps2_controller_send_command(0XA8, 0);
-        out = ps2_controller_send_command(0X20, 1);
-        if (!(out & (0b10000))) {
-            dual_ps2_controller = 0;
-            print_log("Init: Enabling PS2 port failed, thus disabling dual_ps2_controller");
-        } else {
-            // disabling second port again.
-            ps2_controller_send_command(0xA7, 0);
-        }
-    }
-
-    out = ps2_controller_send_command(0XAB, 1);
-    if (out != 0x00) {
-        PANIC(out, "PS2 first port test failed.");
-    }
-    if(dual_ps2_controller) {
-        out = ps2_controller_send_command(0XA9, 1);
-        if (out != 0x00) {
-            PANIC(out, "PS2 second port test failed.");
-        }
-    }
-
-    print_log("Init: Dual PS2 Controller: %d", dual_ps2_controller);
-
-    // enable first port
-    ps2_controller_send_command(0xAE, 0);
-    if(dual_ps2_controller) {
-        // enable second port
-        ps2_controller_send_command(0xA8, 0);
-    }
-
+    // disable scanning
     out = write_to_ps2_first_port(0xF5, 1);
     if (out != 0xFA) {
-        PANIC(out, "disable scanning failed.");
-    }
-
-    // enable interrupts
-    out = ps2_controller_send_command(0X20, 1);
-    out |= 0b11;
-    ps2_controller_send_command_with_data(0x60, out, 0);
-
-
-    // reset device
-    out = write_to_ps2_first_port(0xFF, 1);
-    if (out != 0xFA) {
-        PANIC(out, "reset ps/2 first failed");
-    }
-    out = read_data_reply();
-    if (out != 0xAA) {
-        PANIC(out, "reset ps/2 first port, keyboard self test failed");
-    }
-
-    if(dual_ps2_controller) {
-        // reset second port
-        out = write_to_ps2_second_port(0xFF, 1);
-        if (out != 0xFA) {
-            PANIC(out, "reset ps/2 second failed");
-        }
-        out = read_data_reply();
-        if (out != 0xAA) {
-            PANIC(out, "reset ps/2 second port, mouse self test failed");
-        }
-    }
-
-    // detect device type
-    out = write_to_ps2_first_port(0xF2, 1);
-    if (out != 0xFA) {
-        PANIC(out, "device identity failed.");
-    }
-    unsigned char dev_d0 = read_data_reply();
-    unsigned char dev_d1 = read_data_reply();
-
-    // Testing for device 0xAB 0x83: MF2 keyboard
-    if(dev_d0 != 0xAB) {
-        PANIC(dev_d0, "testing for device id 0xAB 0x83, found xx 0x83.");
-    }
-    if(dev_d1 != 0x83) {
-        PANIC(dev_d1, "testing for device id 0xAB 0x83, found 0xAB xx.");
-    }
-
-    // Caps
-    write_to_ps2_first_port(0xED, 0);
-    out = write_to_ps2_first_port(7, 1);
-    if (out != 0xFA) {
-        PANIC(out, "caps failed");
-    }
-    // get scan code
-    write_to_ps2_first_port(0xF0, 0);
-    out = write_to_ps2_first_port(0, 1);
-    if (out != 0xFA) {
-        PANIC(out, "failed to get scan code");
-    } else {
-        // Not yet working
-        // out = read_data_reply();
-        // PANIC(out, "got get scan code");
+        PANIC(out, "disable scan failed");
     }
 
     // set scan code
@@ -320,6 +203,5 @@ void keyboard_init() {
         PANIC(out, "scan failed");
     }
     keyboard_scanner_init();
-    set_color_fgbg(original_colors);
     print_log("[keyboard init] done.");
 }
