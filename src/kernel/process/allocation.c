@@ -158,16 +158,17 @@ int process_create(unsigned int ppid, int argc, char *argv[]) {
     // Application Code Segment Selector
     populate_gdt_entry(
         &gdt_table[idt_cs_entry],
-        memory_location, memory_location+memory_size-1,
-        0b0100,  // 32-bit protected mode
-        0x9a);
+        memory_location, memory_size-1,
+        0x9a,
+        GDT_ENTRY_FLAG_32_BIT_SELECTOR  // 32-bit protected mode
+        );
     // Application Data Segment Selector
     populate_gdt_entry(
         &gdt_table[idt_ds_entry],
-        memory_location, memory_location+memory_size-1,
-        0b0100,  // 32-bit protected mode
-        0x92);
-
+        memory_location, memory_size-1,
+        0x92,
+        GDT_ENTRY_FLAG_32_BIT_SELECTOR // 32-bit protected mode
+        );
 
     // update process state
     process->ppid = ppid;

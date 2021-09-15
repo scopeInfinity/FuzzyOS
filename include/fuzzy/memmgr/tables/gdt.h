@@ -30,6 +30,8 @@ struct GDTEntry {
 };
 #pragma pack(pop)
 
+#define GDT_ENTRY_FLAG_32_BIT_SELECTOR       1
+
 #define GDT_NULL_CS      (GDT_STD_SELECTOR_NULL*sizeof(struct GDTEntry))
 #define GDT_KERNEL_CS    (GDT_STD_SELECTOR_KERNEL_CS*sizeof(struct GDTEntry))
 #define GDT_KERNEL_DS    (GDT_STD_SELECTOR_KERNEL_DS*sizeof(struct GDTEntry))
@@ -41,7 +43,7 @@ int get_gdt_baseaddress(struct GDTEntry gdt_table[], unsigned int table_size, in
 
 void populate_gdt_entry(struct GDTEntry *entry,
     unsigned int base,
-    unsigned int limit,  // 20 bits
-    unsigned char flags, //  4 bits
-    unsigned char access_byte
+    unsigned int limit,  // 32 bit with 4k granularity
+    unsigned char access_byte,
+    int is_32_bit_selector
     );
