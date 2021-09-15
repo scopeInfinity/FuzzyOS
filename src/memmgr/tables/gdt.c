@@ -17,10 +17,20 @@ int get_gdt_baseaddress(struct GDTEntry gdt_table[], unsigned int table_size, in
 
 void populate_gdt_entry(struct GDTEntry *entry,
     unsigned int base,
-    unsigned int limit,  // 20 bits
-    unsigned char flags, //  4 bits
-    unsigned char access_byte
+    unsigned int limit,  // 32 bit with 4k granularity
+    unsigned char access_byte,
+    int is_32_bit_selector
     ) {
+    const int is_4k_granularity = 1;
+
+    char flags = 0b0000;  // 4 bits
+    if(is_4k_granularity) flags |= 0b1000;
+    if(is_32_bit_selector) flags |= 0b0100;
+
+    if(is_4k_granularity) {
+        limit>>=12;
+    }
+
     entry->base0 = (base&0x0000FFFF);
     entry->base1 = (base&0x00FF0000)>>16;
     entry->base2 = (base&0xFF000000)>>24;
@@ -46,38 +56,44 @@ void populate_gdt_table(
     // NULL selector
     populate_gdt_entry(
         &gdt_table[GDT_STD_SELECTOR_NULL],
-        0,0,0,0);
+        0,0,0,
+        !GDT_ENTRY_FLAG_32_BIT_SELECTOR);
     // Kernel Code Segment Selector
     populate_gdt_entry(
         &gdt_table[GDT_STD_SELECTOR_KERNEL_CS],
-        MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_LOCATION+MEMORY_KERNEL_SIZE-1,
-        0b0100,  // 32-bit protected mode
-        0x9a);
+        MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_SIZE-1,
+        0x9a,
+        GDT_ENTRY_FLAG_32_BIT_SELECTOR   // 32-bit protected mode
+        );
     // Kernel Data Segment Selector
     populate_gdt_entry(
         &gdt_table[GDT_STD_SELECTOR_KERNEL_DS],
-        MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_LOCATION+MEMORY_KERNEL_SIZE-1,
-        0b0100,  // 32-bit protected mode
-        0x92);
+        MEMORY_KERNEL_LOCATION, MEMORY_KERNEL_SIZE-1,
+        0x92,
+        GDT_ENTRY_FLAG_32_BIT_SELECTOR   // 32-bit protected mode
+        );
     // Absolute Code Segment Selector
     populate_gdt_entry(
         &gdt_table[GDT_STD_SELECTOR_ABS16_CS],
         0, 0xfffff,
-        0b0000,  // 16-bit protected mode
-        0x9a);
+        0x9a,
+        !GDT_ENTRY_FLAG_32_BIT_SELECTOR  // 16-bit protected mode
+        );
     // Absolute Data Segment Selector
     populate_gdt_entry(
         &gdt_table[GDT_STD_SELECTOR_ABS16_DS],
         0, 0xfffff,
-        0b0000,  // 16-bit protected mode
-        0x92);
+        0x92,
+        !GDT_ENTRY_FLAG_32_BIT_SELECTOR  // 16-bit protected mode
+        );
     // NOT USING &gdt_table[5] for now.
     // Absolute Data Segment Selector
     populate_gdt_entry(
         &gdt_table[GDT_STD_SELECTOR_ABS32_DS],
         0, 0xffffffff,
-        0b0100,  // 32-bit protected mode
-        0x92);
+        0x92,
+        GDT_ENTRY_FLAG_32_BIT_SELECTOR  // 32-bit protected mode
+        );
     // Ensure GDT_STD_SIZE = last sector entry+1
 
     gdtr->base_address = ds_fix+(int)gdt_table;
