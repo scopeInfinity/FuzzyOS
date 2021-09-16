@@ -47,6 +47,20 @@ void ps2_controller_wait_for_full_output() {
     // output buffer should not be empty now.
 }
 
+int ps2_controller_wait_for_full_output_optional() {
+    int try = 5;
+    while(try--) {
+        if(((inputb(PORT_PS2_STATUS)>>STATUS_OUTPUT_BUFFER_INDEX) & 1 ) == EMPTY) {
+            // waiting
+        } else {
+            // wait over
+            return 1;
+        }
+    }
+    // timeout
+    return 0;
+}
+
 static void ps2_cmd(uint8_t cmd) {
     ps2_controller_wait_for_empty_input();
     outb(PORT_PS2_CMD, cmd);
@@ -68,6 +82,14 @@ void ps2_write_port1(uint8_t byte) {
 uint8_t ps2_read_data() {
     ps2_controller_wait_for_full_output();
     return inputb(PORT_PS2_DATA);
+}
+
+uint8_t ps2_read_data_optional() {
+    int found = ps2_controller_wait_for_full_output_optional();
+    if(found) {
+        return inputb(PORT_PS2_DATA);
+    }
+    return 0;
 }
 
 void ps2_init() {
@@ -184,12 +206,16 @@ void ps2_init() {
     if (out!=0xFA) {
         PANIC(out, LOG_PREFIX "[port1] identify device failed");
     }
-    out = ps2_read_data();  // device type first byte
+    // device type
+    int dev_type0 = ps2_read_data();
+    int dev_type1 = ps2_read_data_optional();
+    int dev_type2 = ps2_read_data_optional();
     // ignoring second byte data, it should get cleared soon.
-    if(out != 0xAB) {
+    if(dev_type0 != 0xAB) {
         PANIC(out, "[port1] expected device keyboard not found.");
     }
-    print_log(LOG_PREFIX "[port1] keyboard found");
+
+    print_log(LOG_PREFIX "[port1] keyboard found %x, %x, %x", dev_type0, dev_type1, dev_type2);
     return;
 }
 
