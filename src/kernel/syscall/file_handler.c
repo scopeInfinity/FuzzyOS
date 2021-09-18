@@ -60,7 +60,7 @@ int _file_handler_read(int user_ds, int file_id, char _us_buffer[FILEIO_BUFFER_S
         return 0;
     }
     len = min(len, FILEIO_BUFFER_SIZE); // guard for _us_buffer
-
+    len = min(len, FS_BLOCK_SIZE-byte_index_block); // skip already read content of the block
     syscall_strncpy_kernel_to_user(user_ds, _us_buffer, block+byte_index_block, len);
     return len;
 }

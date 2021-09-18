@@ -131,6 +131,7 @@ FILE *fopen(char *filename, char *mode) {
     handler->file_handler_id = fh_id;
     handler->file_id = file_id;
     handler->cursor = 0;
+    handler->err = 0;
     return handler;
 }
 
@@ -152,10 +153,15 @@ char *fgets(char *buf, size_t n, FILE *file) {
         int count = SYSCALL_A4(SYSCALL_FILE_OP, SYSCALL_FILE_SUB_READBUFFER, file->file_id, _buffer, file->cursor);
         if (count < 0) {
             // error
+            file->err = count;
             return NULL;
         }
         if (count == 0) {
             // EOF
+            if(og_buf==buf) {
+                // no new characters read
+                return NULL;
+            }
             break;
         }
 
@@ -164,11 +170,11 @@ char *fgets(char *buf, size_t n, FILE *file) {
         int found_newline = 0;
         for (size_t i = 0; i < max_iterations; i++) {
             char_read_count++;
+            *(buf++)=_buffer[i];
             if(_buffer[i]=='\n') {
                 found_newline = 1;
                 break;
             }
-            *(buf++)=_buffer[i];
         }
         file->cursor += char_read_count;
         n-=char_read_count;
@@ -180,4 +186,12 @@ char *fgets(char *buf, size_t n, FILE *file) {
 
 int fgetc(FILE *file) {
 
+}
+
+int ferror(FILE *file) {
+    return file->err;
+}
+
+void clearerror(FILE *file) {
+    file->err=0;
 }

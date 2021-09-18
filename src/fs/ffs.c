@@ -94,9 +94,10 @@ int fetch_file_content(
 
     // fetch file entry
     int file_size = entry->content.filesize;
-    int block_count = file_size/FS_BLOCK_SIZE;
+    int block_count = (file_size+FS_BLOCK_SIZE-1)/FS_BLOCK_SIZE;
     if(file_block_id >= block_count) {
-        return -1;
+        // zero block read
+        return 0;
     }
 
     int err = partition_read_block(
