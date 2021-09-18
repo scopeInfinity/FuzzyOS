@@ -9,7 +9,7 @@ void process(char filename[]) {
         return;
     }
     char buffer[80];
-    for (size_t i = 0; i < 20; i++) {
+    while(1) {
         if (!fgets(buffer, sizeof(buffer), handler)) {
             break;
         }
