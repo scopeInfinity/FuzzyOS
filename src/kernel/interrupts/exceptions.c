@@ -50,6 +50,8 @@ struct exceptionContext {
     int ip, cs, eflag;
 };
 
+int at_stack(int esp);
+
 void interrupt_handler_0x00_0x1F_exception(struct exceptionContext context) {
     // written for handler with error code otherwise ip, cs and eflag will skew.
     const int gdte_size = sizeof(struct GDTEntry);
@@ -74,13 +76,14 @@ void interrupt_handler_0x00_0x1F_exception(struct exceptionContext context) {
     // stack trace
     {
         const int stack_trace_max_depth = 5;
-        int last_ebp = context.ebp;
+        int ebp = context.ebp;
         // stack[ebp] => previous_ebp, if previous_ebp == 0 then break;
-        for(int i=0; i<stack_trace_max_depth; i++) {
-            // to be implemented
-            break;
+        print_log("stack trace: \n - %x", context.ip);
+        for(int i=0; ebp>0 && i<stack_trace_max_depth; i++) {
+            int return_address = at_stack(ebp+4);
+            print_log(" - %x (ni)", return_address);
+            ebp = at_stack(ebp);
         }
-
     }
 
 
