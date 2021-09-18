@@ -22,6 +22,9 @@ typedef struct FILE {
 
     // 0 => start of file
     int cursor;
+
+    // store last error code
+    int err;
 } FILE;
 
 // TODO: Add API for reading list of files.
@@ -42,3 +45,6 @@ FILE *fopen(char *filename, char *mode);
 int fgetc(FILE *file);
 char *fgets(char *buf, size_t n, FILE *file);
 int fclose(FILE *file);
+
+int ferror(FILE *file);
+void clearerror(FILE *file);

@@ -7,4 +7,4 @@ QEMU_SCREENSHOT_NAME="cat_test.ppm"
 python3 -m tests.qemu.monitor -p ${MONITOR_PORT:?} -sc cat readme.md
 
 test_create_screen_dump
-test_screen_content $LINENO "Use make to build binaries and image files"
+test_screen_content $LINENO "Execute QEMU in debug mode and setup GDB server"

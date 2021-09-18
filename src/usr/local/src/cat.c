@@ -11,10 +11,14 @@ void process(char filename[]) {
     char buffer[80];
     while(1) {
         if (!fgets(buffer, sizeof(buffer), handler)) {
+            int err = ferror(handler);
+            if(err) {
+                printf("Error: failed to read next chunk, code %d\n", err);
+                exit(err);
+            }
             break;
         }
         puts(buffer);
-        putchar('\n');
     }
     fclose(handler);
 }
