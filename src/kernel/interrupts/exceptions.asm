@@ -4,6 +4,7 @@
 
 extern interrupt_handler_0x00_0x1F_exception
 
+global at_stack
 global _interrupt_handler_0x00_exception
 global _interrupt_handler_0x01_exception
 global _interrupt_handler_0x02_exception
@@ -68,6 +69,22 @@ global _interrupt_handler_0x1F_exception
     _interrupt_handler_%1_exception:
         iret
 %endmacro
+
+  at_stack:
+    push ebp
+    mov ebp, esp
+
+    push ds
+    mov eax, ss
+    mov ds, eax
+
+    mov esi, [ebp+8]  ; stack pointer
+    mov eax, [esi]
+
+    pop ds
+
+    pop ebp
+    ret
 
     create_low__interrupt_handler_xy_exception_nohup 0x00  ; divide-by-zero
     create_low__interrupt_handler_xy_exception 0x01
