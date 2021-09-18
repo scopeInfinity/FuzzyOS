@@ -23,7 +23,7 @@ void enable_a20() {
     ax = call_int_0x15(0x2403);
     if (!ax) {
         print_log("BIOS A20-gate not supported");
-        label_exit();
+        return;
     }
 
     ax = call_int_0x15(0x2402);
