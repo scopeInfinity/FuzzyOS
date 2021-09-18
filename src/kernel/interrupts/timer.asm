@@ -118,11 +118,19 @@ global create_infant_process_irq0_stack
         ; do_not_care: next two cs, ip
         ; CS and IP doesn't matter, as they are controlled by _int_irq0_end
 
-        ; do_not_care: next four are eax, ebx, ecx, edx
+        ; user: pushad
         mov ecx, eax
         sub ecx, 8
-        mov [eax-12-24], ecx ; pushad esp
-        ; do_not_care: next three are ebp, esi, edi
+        mov [eax-28], ecx
+        mov ecx, 0
+        mov [eax-12], ecx  ; user: eax
+        mov [eax-16], ecx  ; user: ecx
+        mov [eax-20], ecx  ; user: edx
+        mov [eax-24], ecx  ; user: ebx
+        ; missing esp, pushed on top.
+        mov [eax-32], ecx  ; user: ebp==0, origin of stack trace.
+        mov [eax-36], ecx  ; user: esi
+        mov [eax-40], ecx  ; user: edi
 
         mov ecx, [ebp+0x08]     ; arg0
         mov [eax-44], ecx       ; user: ds

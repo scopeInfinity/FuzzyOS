@@ -43,16 +43,23 @@ global _interrupt_handler_0x1F_exception
     _interrupt_handler_%1_exception:
         ; As we are HLT at end of exception there
         ; is no need to save context for now.
+        pushad         ; execution all general purpose registers
+
         xor eax, eax
+        mov eax, gs    ; execution gs
+        push eax
+        mov eax, fs    ; execution fs
+        push eax
+        mov eax, es    ; execution es
+        push eax
         mov eax, ds    ; execution ds
         push eax
-        xor eax, eax
-        mov eax, ss    ; execution ss (current also)
+        mov eax, ss    ; execution ss
+        push eax
+        mov eax, %1    ; exception id
         push eax
         mov eax, GDT_KERNEL_DS  ; kernel ds
         mov ds, eax
-        mov eax, %1
-        push eax
         call interrupt_handler_0x00_0x1F_exception
         HLT
 %endmacro

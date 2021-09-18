@@ -17,6 +17,7 @@ global kernel_core_entry_asm
         mov fs, ax
         mov gs, ax
 
+        xor ebp, ebp    ; origin of stack trace
         mov esp, STACKINIT_KERNEL_CORE  ; init stack pointer
         jmp kernel_core_entry
 
