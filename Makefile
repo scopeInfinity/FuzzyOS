@@ -47,9 +47,10 @@ rm_static = $(BUILD_REALMODE)/static_library
 
 # OS images
 image_raw = $(BUILD_DIR)/FuzzyOS.raw
+image_raw_zip = $(BUILD_DIR)/FuzzyOS_raw.zip
 image_vmdk = $(BUILD_DIR)/FuzzyOS.vmdk
 image_vdi = $(BUILD_DIR)/FuzzyOS.vdi
-ALL_IMAGES = $(image_raw) $(image_vmdk) $(image_vdi)
+ALL_IMAGES = $(image_raw) $(image_raw_zip) $(image_vmdk) $(image_vdi)
 
 # Kernel
 kernel_core = $(BUILD_DIR)/kernel/core
@@ -123,6 +124,9 @@ $(image_raw): $(bt_stage1) $(rm_static) $(bt_stage2) $(kernel_core) $(BUILD_DIR)
 	./$(BUILD_DIR)/external/bin/mbr_builder $@  $(BUILD_DIR)/temp_vmdk $(MINIMAL_DISK)
 	truncate --size=128M $@  #  sparse file
 	@echo "Image Size : $$(stat -c %s $@) byte(s)"
+
+$(image_raw_zip): $(image_raw)
+	zip $@ $<
 
 $(image_vmdk): $(image_raw)
 	qemu-img convert -O vmdk $< $@

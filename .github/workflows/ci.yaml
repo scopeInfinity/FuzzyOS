@@ -18,7 +18,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: Raw Image
-        path: build/FuzzyOS.raw
+        path: build/FuzzyOS_raw.zip
 
     - uses: actions/upload-artifact@v2
       with:

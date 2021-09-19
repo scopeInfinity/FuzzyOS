@@ -28,6 +28,7 @@ jobs:
         utcOffset: "+00:00"
 
     - name: Create Release
+      id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,9 +45,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/FuzzyOS.raw
-        asset_name: FuzzyOS.raw
-        asset_content_type: application/octet-stream
+        asset_path: build/FuzzyOS_raw.zip
+        asset_name: FuzzyOS_raw.zip
+        asset_content_type: application/zip
 
     - name: Upload Virtual Box Image
       uses: actions/upload-release-asset@v1
