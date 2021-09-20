@@ -86,6 +86,7 @@ NASM=nasm -f elf32 -i include/ $(NASM_DEBUG)
 CC=gcc -std=c11 -fno-builtin -Os -nostartfiles -nostdlib -static $(CC_DEBUG)
 CPP=g++ -std=c++11 -fno-builtin -Os -nostartfiles -nostdlib -static -fno-exceptions -fno-rtti $(CC_DEBUG)
 KERNEL_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR) -Iinclude -Isrc/usr/include
+KERNEL_CPP = $(CPP) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR) -Iinclude -Isrc/usr/include
 USER_CC = $(CC) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR) -Isrc/usr/include
 USER_CPP = $(CPP) -m32 -fno-pie -Isrc --sysroot=$(BUILD_DIR) -Isrc/usr/include
 

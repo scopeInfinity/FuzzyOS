@@ -1,21 +1,24 @@
 // Simple C++ program
 
 #include <stdio.h>
+#include <iostream.h>
+
+namespace geometry {
 
 class Shape {
     char name[64];
 protected:
     Shape(char *name) {
         std::snprintf(this->name, sizeof(this->name), name);
-        std::printf("Shape [%s] created\n", this->name);
+        std::cout << "Shape [" << this->name << "] created" << std::endl;
     }
     ~Shape() {
-        std::printf("Shape [%s] destroyed\n", this->name);
+        std::cout << "Shape [" << this->name << "] destroyed" << std::endl;
     }
 public:
     // non-pure virtual function.
     virtual double getArea() {
-        std::printf("I SHOULD NOT BE CALLED\n");
+        std::cout << "I SHOULD NOT BE CALLED" << std::endl;
     }
     char *getName() {
         return this->name;
@@ -26,7 +29,7 @@ class Rectangle : public Shape {
     int length, width;
 public:
     Rectangle(char name[], int length, int width) : Shape(name), length(length), width(width) {
-        std::printf("[%s] is %dx%d rectangle\n", name, length, width);
+        std::cout << "[" << name << "] is " << length << "x" << width <<" rectangle" << std::endl;
     }
     double getArea() {
         return this->length * this->width;
@@ -36,19 +39,21 @@ public:
 class Square : public Rectangle {
 public:
     Square(char name[], int side) : Rectangle(name, side, side) {
-        std::printf("[%s] is %d side square\n", name, side);
+        std::cout << "[" << name << "] is side " << side <<" square" << std::endl;
     }
 };
 
-void printShapeDetails(Shape *shape) {
-    std::printf("Shape Details\n");
-    std::printf(" - Name: %s\n", shape->getName());
-    std::printf(" - Area: %d\n", (int)shape->getArea());
+} // namespace geometry end
+
+void printShapeDetails(geometry::Shape *shape) {
+    std::cout << "Shape Details" << std::endl;
+    std::cout << " - Name: " << shape->getName() << std::endl;
+    std::cout << " - Area: " << (int)shape->getArea() << std::endl;
 }
 
 int main(int argc, char *argv[]) {
-    Rectangle r1("R1", 10, 20);
-    Square s1("S1", 50);
+    geometry::Rectangle r1("R1", 10, 20);
+    geometry::Square s1("S1", 50);
 
     printShapeDetails(&r1);
     printShapeDetails(&s1);
