@@ -2,6 +2,11 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+namespace std {
+#endif
+
 #define FILENAME_LIMIT 100  // same as fuzzy/fs/ffs.h
 
 enum dirent_flag {
@@ -23,3 +28,8 @@ struct DIR {
 // There is only one global directory in FFS.
 void opendir(struct DIR *dirp);
 struct dirent *readdir(struct DIR *dirp);
+
+#ifdef __cplusplus
+}  // namespace std end
+}  // extern C end
+#endif

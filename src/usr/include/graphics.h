@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+namespace std {
+namespace graphics {
+#endif
+
 #define GRAPHICS_MAX_WIDTH   320
 #define GRAPHICS_MAX_HEIGHT  200
 
@@ -57,3 +63,9 @@ int outtextxy(int x, int y, char *str);
 void moveto(int x, int y);
 int getx();
 int gety();
+
+#ifdef __cplusplus
+}  // namespace graphics end
+}  // namespace std end
+}  // extern C end
+#endif

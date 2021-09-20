@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+namespace std {
+#endif
+
+
 #define SYSCALL_PROCESS_SUB_EXIT         0
 #define SYSCALL_PROCESS_SUB_WAIT         1
 #define SYSCALL_PROCESS_SUB_FORK         2
@@ -25,3 +31,8 @@ int getpid();
 int fork();
 void yield();
 int waitpid(unsigned int blocked_on_pid, int *exit_code);
+
+#ifdef __cplusplus
+}  // namespace std end
+}  // extern C end
+#endif

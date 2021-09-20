@@ -9,6 +9,7 @@ $(BUILD_DIR)/external/bin/mbr_builder: external/src/mbr_builder.c
 	$(HOST_CC) -o $@ $<
 
 $(BUILD_DIR)/external/out/fuzzy_mount: $(patsubst $(SRC_APP)/%.c,$(BUILD_APP)/%,$(shell find $(SRC_APP)/ -name '*.c')) \
+		$(patsubst $(SRC_APP)/%.cpp,$(BUILD_APP)/%,$(shell find $(SRC_APP)/ -name '*.cpp')) \
 		README.md \
 		.gdbinit
     # not a mount

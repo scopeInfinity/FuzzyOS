@@ -2,6 +2,11 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+namespace std {
+#endif
+
 #define SYSCALL_CONSOLE_SUB_CLRSCR       0
 #define SYSCALL_CONSOLE_SUB_PUTCHAR      1
 #define SYSCALL_CONSOLE_SUB_PUTS_BUFFER  2
@@ -48,3 +53,8 @@ int fclose(FILE *file);
 
 int ferror(FILE *file);
 void clearerror(FILE *file);
+
+#ifdef __cplusplus
+}  // namespace std end
+}  // extern C end
+#endif

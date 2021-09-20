@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+namespace std {
+#endif
+
 int atoi (const char *s);
 
 // only base 2, 8, 10 and 16 are supported
@@ -11,3 +16,8 @@ int max(int, int);
 int abs(int a);
 
 void exit(int status);
+
+#ifdef __cplusplus
+}  // namespace std end
+}  // extern C end
+#endif
