@@ -60,9 +60,11 @@ int main(int argc, char *argv[]) {
     printShapeDetails(&s1);
 
     // name
-    char name[1024];
+    char *name = new char[1024];
     std::cout << "Enter your name: ";
     std::cin >> name;
     std::cout << "Your name is: " << name << std::endl;
+    delete[] name;
+
     return 0;
 }
