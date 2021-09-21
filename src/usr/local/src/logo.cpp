@@ -1,4 +1,5 @@
 // logo program
+#include <iostream.h>
 #include <stdio.h>
 #include <conio.h>
 #include <graphics.h>
@@ -46,7 +47,7 @@ int main(int argc,char *argv[]) {
     std::graphics::initgraph(&gd, &gm, NULL);
     int gerr = std::graphics::graphresult();
     if (gerr != 0) {
-        std::printf("failed to open graphics mode, err: %d", gerr);
+        std::cout << "failed to open graphics mode, err: " <<  gerr << std::endl;
         return 1;
     }
     logo();

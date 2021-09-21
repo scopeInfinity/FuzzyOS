@@ -13,6 +13,14 @@ public:
     ostream& operator<<(const int num);
 };
 
+class istream {
+public:
+    istream& operator>>(char &c);
+    istream& operator>>(char *str);
+    istream& operator>>(int &num);
+};
+
 extern ostream cout;
+extern istream cin;
 
 }  // namespace std end

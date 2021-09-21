@@ -1,5 +1,4 @@
 // Simple C++ program
-
 #include <stdio.h>
 #include <iostream.h>
 
@@ -50,12 +49,20 @@ void printShapeDetails(geometry::Shape *shape) {
     std::cout << " - Name: " << shape->getName() << std::endl;
     std::cout << " - Area: " << (int)shape->getArea() << std::endl;
 }
-
+#include <string.h>
 int main(int argc, char *argv[]) {
+    // shapes
+
     geometry::Rectangle r1("R1", 10, 20);
     geometry::Square s1("S1", 50);
 
     printShapeDetails(&r1);
     printShapeDetails(&s1);
+
+    // name
+    char name[1024];
+    std::cout << "Enter your name: ";
+    std::cin >> name;
+    std::cout << "Your name is: " << name << std::endl;
     return 0;
 }
