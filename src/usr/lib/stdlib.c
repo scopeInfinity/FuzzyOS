@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stddef.h>
 #include <process.h>
 #include <sys/syscall.h>
 
@@ -61,4 +62,29 @@ void exit(int status) {
     // process yield should be enough complete kill.
     yield();
     while(1);
+}
+
+/*
+non-optimal malloc
+*/
+extern void* get_current_esp();  // defined in stdlib.asm
+extern char _heap_start[];  // defined in linker.ld
+static int heap_head_offset = 0;
+static const int heap_stack_safety_gap = 1024; // keep 1 kb free between stack and heap
+
+void* malloc(size_t size) {
+    void* loc = _heap_start + heap_head_offset;
+    void* max_loc = get_current_esp()-heap_stack_safety_gap-size;
+    if(loc>max_loc) {
+        // not enough memory
+        return NULL;
+    }
+    heap_head_offset += size;
+    return loc;
+}
+
+void free(void* ptr) {
+    if(ptr == NULL) return;
+    // current version of malloc is non-optimal and doesn't
+    // do any free operation.
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 namespace std {
@@ -14,6 +16,9 @@ void itoa(int num, char *s, int base);
 int min(int, int);
 int max(int, int);
 int abs(int a);
+
+void* malloc(size_t size);
+void free(void* ptr);
 
 void exit(int status);
 
