@@ -1,6 +1,7 @@
 // Simple C++ program
 #include <stdio.h>
 #include <iostream.h>
+#include <vector.h>
 
 namespace geometry {
 
@@ -66,5 +67,13 @@ int main(int argc, char *argv[]) {
     std::cout << "Your name is: " << name << std::endl;
     delete[] name;
 
+    // vector
+    std::vector<int> list(4, 100);
+    list[0] = 0;
+    for(std::size_t i = 0; i < list.size(); i++) {
+        std::cout << "list[" << (int)i << "] = " << list[i] << std::endl;
+    }
+
+    std::cout << "Exiting..." << std::endl;
     return 0;
 }
