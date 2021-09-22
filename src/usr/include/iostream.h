@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string.h>
 
 namespace std {
 
@@ -9,8 +10,9 @@ extern const char endl;
 class ostream {
 public:
     ostream& operator<<(const char c);
-    ostream& operator<<(const char* str);
     ostream& operator<<(const int num);
+    ostream& operator<<(const std::string &str);
+    ostream& operator<<(const char* str);
 };
 
 class istream {

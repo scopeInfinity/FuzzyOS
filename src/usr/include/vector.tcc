@@ -45,6 +45,11 @@ void vector<T>::resize_capacity(std::size_t capacity) {
 }
 
 template <typename T>
+T *vector<T>::raw_data() const {
+    return this->_data;
+}
+
+template <typename T>
 bool vector<T>::empty() {
     return this->_size == 0;
 }
@@ -74,6 +79,7 @@ template <typename T>
 T &vector<T>::back() {
     return this->_data[this->_size-1];
 }
+
 template <typename T>
 T &vector<T>::front() {
     return this->_data[0];

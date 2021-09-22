@@ -74,6 +74,10 @@ int main(int argc, char *argv[]) {
         std::cout << "list[" << (int)i << "] = " << list[i] << std::endl;
     }
 
+    // std::string
+    std::string cpp_string("i am c++ string");
+    std::cout << "Out: " << cpp_string << std::endl;
+
     std::cout << "Exiting..." << std::endl;
     return 0;
 }

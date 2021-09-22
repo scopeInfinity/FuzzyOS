@@ -14,6 +14,7 @@ public:
     vector<T>();
     vector<T>(std::size_t size, const T &_default);
 
+    T *raw_data() const;
     bool empty();
     std::size_t size();
     void push_back(const T &val);

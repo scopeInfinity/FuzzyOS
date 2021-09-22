@@ -2,8 +2,8 @@
 #include <stddef.h>
 #include <ctype.h>
 
-int strcmp(char *l, char *r) {
-    int i=0,j=0;
+int strcmp(const char *l, const char *r) {
+    int i=0, j=0;
     while(l[i]!='\0' && r[j]!='\0') {
         if(l[i]!=r[j]) {
             return l[i]-r[j];
@@ -19,8 +19,8 @@ int strcmp(char *l, char *r) {
     return -1;
 }
 
-int strcmpi(char *l, char *r) {
-    int i=0,j=0;
+int strcmpi(const char *l, const char *r) {
+    int i=0, j=0;
     while(l[i]!='\0' && r[j]!='\0') {
         char a = tolower(l[i]);
         char b = tolower(r[j]);
@@ -38,7 +38,7 @@ int strcmpi(char *l, char *r) {
     return -1;
 }
 
-int strlen(char *str) {
+int strlen(const char *str) {
     int n=0;
     while((*str)!='\0') {
         n++;
