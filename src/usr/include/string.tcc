@@ -22,11 +22,30 @@ basic_string<CharT>::basic_string(const CharT* str) : _data(std::strlen(str)+1, 
 }
 
 template <typename CharT>
-basic_string<CharT>::basic_string(const CharT* str, std::size_t n) {
+basic_string<CharT>::basic_string(const CharT* str, std::size_t n) : _data(n+1, '\0') {
     int str_n = std::strlen(str);
-    this->_data(n+1, '\0');
     for (std::size_t i = 0; i < n && i < str_n; i++) {
         this->_data[i] = str[i];
+    }
+}
+
+template <typename CharT>
+typename basic_string<CharT>::iterator basic_string<CharT>::begin() { return this->_data.begin(); }
+
+template <typename CharT>
+typename basic_string<CharT>::iterator basic_string<CharT>::end() { return this->_data.end() - 1; }
+
+template <typename CharT>
+typename basic_string<CharT>::const_iterator basic_string<CharT>::begin() const { return this->_data.begin(); }
+
+template <typename CharT>
+typename basic_string<CharT>::const_iterator basic_string<CharT>::end() const { return this->_data.end() - 1; }
+
+template <typename CharT>
+void basic_string<CharT>::pop_back() {
+    if(this->_data.size()>1) {
+        this->_data.pop_back();
+        this->_data.last() = '\0';
     }
 }
 
@@ -52,7 +71,34 @@ CharT& basic_string<CharT>::operator[](std::size_t pos) {
 
 template <typename CharT>
 const CharT *basic_string<CharT>::c_str() const {
-    return this->_data.raw_data();
+    return this->_data.begin();
+}
+
+template <typename CharT>
+basic_string<CharT>& basic_string<CharT>::operator+=(const CharT c) {
+    this->_data.back() = c;  // replace null character
+    this->_data.push_back('\0');  // add null character
+    return *this;
+}
+
+template <typename CharT>
+basic_string<CharT>& basic_string<CharT>::operator+=(const CharT* o) {
+    this->_data.pop_back();  // remove null character
+    while ((*o))  {
+        this->_data.push_back(*(o++));
+    }
+    this->_data.push_back('\0');  // add null character
+    return *this;
+}
+
+template <typename CharT>
+basic_string<CharT>& basic_string<CharT>::operator+=(const basic_string<CharT> &o) {
+    this->_data.pop_back();  // remove null character
+    for(const CharT &c: o) {
+        this->_data.push_back(c);
+    }
+    this->_data.push_back('\0');  // add null character
+    return *this;
 }
 
 } // namespace std end

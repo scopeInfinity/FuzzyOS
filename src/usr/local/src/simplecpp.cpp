@@ -60,11 +60,15 @@ int main(int argc, char *argv[]) {
     printShapeDetails(&r1);
     printShapeDetails(&s1);
 
-    // name
+    // new, delete and std::string
     char *name = new char[1024];
     std::cout << "Enter your name: ";
     std::cin >> name;
-    std::cout << "Your name is: " << name << std::endl;
+    std::string cool_name;
+    cool_name += '[';
+    cool_name += name;
+    cool_name += ']';
+    std::cout << "Your name is: " << cool_name << std::endl;
     delete[] name;
 
     // vector
@@ -73,10 +77,6 @@ int main(int argc, char *argv[]) {
     for(std::size_t i = 0; i < list.size(); i++) {
         std::cout << "list[" << (int)i << "] = " << list[i] << std::endl;
     }
-
-    // std::string
-    std::string cpp_string("i am c++ string");
-    std::cout << "Out: " << cpp_string << std::endl;
 
     std::cout << "Exiting..." << std::endl;
     return 0;

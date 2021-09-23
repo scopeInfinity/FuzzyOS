@@ -34,16 +34,29 @@ class basic_string {
     std::vector<CharT> _data;
 
 public:
+    typedef CharT* iterator;
+    typedef const CharT* const_iterator;
+
     basic_string();
     basic_string(std::size_t n, CharT c);
     basic_string(const CharT* str);
     basic_string(const CharT* str, std::size_t n);
 
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
+
+    void pop_back();
     CharT& back();
     CharT& front();
     CharT& at(std::size_t pos);
     CharT& operator[](std::size_t pos);
     const CharT *c_str() const;
+
+    basic_string<CharT>& operator+=(const CharT c);
+    basic_string<CharT>& operator+=(const CharT* o);
+    basic_string<CharT>& operator+=(const basic_string<CharT> &o);
 };
 
 using string = basic_string<char>;

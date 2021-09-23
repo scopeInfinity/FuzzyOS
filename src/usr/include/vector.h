@@ -11,8 +11,16 @@ class vector {
     void resize_capacity(std::size_t capacity);
 
 public:
+    typedef T* iterator;
+    typedef const T* const_iterator;
+
     vector<T>();
     vector<T>(std::size_t size, const T &_default);
+
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
 
     T *raw_data() const;
     bool empty();
