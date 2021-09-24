@@ -22,7 +22,7 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 
-    T *raw_data() const;
+    void clear();
     bool empty();
     std::size_t size();
     void push_back(const T &val);

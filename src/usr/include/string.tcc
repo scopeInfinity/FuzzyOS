@@ -42,6 +42,12 @@ template <typename CharT>
 typename basic_string<CharT>::const_iterator basic_string<CharT>::end() const { return this->_data.end() - 1; }
 
 template <typename CharT>
+void basic_string<CharT>::clear() {
+    this->_data.clear();
+    this->_data.push_back('\0');
+}
+
+template <typename CharT>
 void basic_string<CharT>::pop_back() {
     if(this->_data.size()>1) {
         this->_data.pop_back();
@@ -99,6 +105,16 @@ basic_string<CharT>& basic_string<CharT>::operator+=(const basic_string<CharT> &
     }
     this->_data.push_back('\0');  // add null character
     return *this;
+}
+
+std::istream& get_line(std::istream &i, std::string &str) {
+    char ch;
+    str.clear();
+    while (1) {
+        i.get(ch);
+        if (ch == '\n') break;
+        str += ch;
+    }
 }
 
 } // namespace std end

@@ -57,6 +57,12 @@ void vector<T>::resize_capacity(std::size_t capacity) {
 }
 
 template <typename T>
+void vector<T>::clear() {
+    // not reducing capacity for now
+    this->_size = 0;
+}
+
+template <typename T>
 bool vector<T>::empty() {
     return this->_size == 0;
 }
