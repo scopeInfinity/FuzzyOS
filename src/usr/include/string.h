@@ -47,6 +47,7 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 
+    void clear();
     void pop_back();
     CharT& back();
     CharT& front();
@@ -60,6 +61,8 @@ public:
 };
 
 using string = basic_string<char>;
+
+std::istream& get_line(std::istream &i, std::string &str);
 
 }  // namespace std end
 

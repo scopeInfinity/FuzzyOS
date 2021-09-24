@@ -19,7 +19,10 @@ class istream {
 public:
     istream& operator>>(char &c);
     istream& operator>>(char *str);
-    istream& operator>>(int &num);
+    istream& operator>>(std::string &str);
+
+    istream& get(char &c);
+    istream& get_line(char *str, std::size_t n, char delim='\n');
 };
 
 extern ostream cout;
