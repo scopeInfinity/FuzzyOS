@@ -14,8 +14,11 @@ public:
     typedef T* iterator;
     typedef const T* const_iterator;
 
-    vector<T>();
-    vector<T>(std::size_t size, const T &_default);
+    vector();
+    vector(std::size_t size, const T &_default);
+    vector(const vector<T> &o);
+    vector& operator=(const vector<T> &o);
+    ~vector();
 
     iterator begin();
     iterator end();

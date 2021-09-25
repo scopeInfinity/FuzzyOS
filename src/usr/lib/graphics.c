@@ -346,19 +346,19 @@ static void draw_font(char c, int x, int y) {
     }
 }
 
-int textheight(char *str) {
+int textheight(const char *str) {
     return gfont.size;
 }
 
-int textwidth(char *str) {
+int textwidth(const char *str) {
     return gfont.size * strlen(str);
 }
 
-void outtext(char *str) {
+void outtext(const char *str) {
     gstate.x += outtextxy(gstate.x, gstate.y, str);
 }
 
-int outtextxy(int x, int y, char *str) {
+int outtextxy(int x, int y, const char *str) {
     // returns textwidth
     int len = 0;
     while (str!=NULL && (*str)!=NULL) {

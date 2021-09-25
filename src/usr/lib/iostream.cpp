@@ -71,5 +71,16 @@ istream& istream::get_line(char *str, std::size_t n, char delim) {
     return *this;
 }
 
+std::istream& get_line(std::istream &i, std::string &str) {
+    char ch;
+    str.clear();
+    while (1) {
+        i.get(ch);
+        if (ch == '\n') break;
+        str += ch;
+    }
+}
+
 #undef __IS_WHITESPACE
 }  // namespace std end
+

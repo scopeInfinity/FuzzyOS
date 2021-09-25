@@ -30,6 +30,9 @@ basic_string<CharT>::basic_string(const CharT* str, std::size_t n) : _data(n+1, 
 }
 
 template <typename CharT>
+basic_string<CharT>::basic_string(const basic_string<CharT> &o) : _data(o._data) {}
+
+template <typename CharT>
 typename basic_string<CharT>::iterator basic_string<CharT>::begin() { return this->_data.begin(); }
 
 template <typename CharT>
@@ -81,6 +84,12 @@ const CharT *basic_string<CharT>::c_str() const {
 }
 
 template <typename CharT>
+basic_string<CharT>& basic_string<CharT>::operator=(const basic_string<CharT> &o) {
+    this->_data = o._data;
+    return *this;
+}
+
+template <typename CharT>
 basic_string<CharT>& basic_string<CharT>::operator+=(const CharT c) {
     this->_data.back() = c;  // replace null character
     this->_data.push_back('\0');  // add null character
@@ -105,16 +114,6 @@ basic_string<CharT>& basic_string<CharT>::operator+=(const basic_string<CharT> &
     }
     this->_data.push_back('\0');  // add null character
     return *this;
-}
-
-std::istream& get_line(std::istream &i, std::string &str) {
-    char ch;
-    str.clear();
-    while (1) {
-        i.get(ch);
-        if (ch == '\n') break;
-        str += ch;
-    }
 }
 
 } // namespace std end

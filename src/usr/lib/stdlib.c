@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <process.h>
+#include <stdio.h>
 #include <sys/syscall.h>
 
 int min(int a, int b) {
@@ -56,7 +57,30 @@ void itoa(int num, char *s, int base) {
     }
 }
 
+static void (*_at_exit_handler)(void) = NULL;
+void atexit(void (*handler)(void)) {
+    // supports only one handler
+    _at_exit_handler = handler;
+}
+
+static void at_exit_trigger() {
+    // make sure to kill the program even if exit_handler crashes
+    static int at_exit_triggered = 0;
+    if (at_exit_triggered == 0) {
+        // first call of this program
+        at_exit_triggered = 1;
+        if(_at_exit_handler) {
+            _at_exit_handler();
+        }
+    } else {
+        // call sequence
+        // exit -> at_exit_trigger -> _at_exit_handler -> exit (possibly due to crash)
+        // do nothing
+    }
+}
+
 void exit(int status) {
+    at_exit_trigger();
     SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_EXIT, status);
     // process should be marked as ready to kill, wait util it's killed.
     // process yield should be enough complete kill.
@@ -76,7 +100,8 @@ void* malloc(size_t size) {
     void* loc = _heap_start + heap_head_offset;
     void* max_loc = get_current_esp()-heap_stack_safety_gap-size;
     if(loc>max_loc) {
-        // not enough memory
+        printf("failed to allocate more memory\n");
+        exit(-1);
         return NULL;
     }
     heap_head_offset += size;
