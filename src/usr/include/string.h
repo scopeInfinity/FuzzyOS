@@ -41,6 +41,7 @@ public:
     basic_string(std::size_t n, CharT c);
     basic_string(const CharT* str);
     basic_string(const CharT* str, std::size_t n);
+    basic_string(const basic_string<CharT>& o);
 
     iterator begin();
     iterator end();
@@ -55,6 +56,7 @@ public:
     CharT& operator[](std::size_t pos);
     const CharT *c_str() const;
 
+    basic_string<CharT>& operator=(const basic_string<CharT>& o);
     basic_string<CharT>& operator+=(const CharT c);
     basic_string<CharT>& operator+=(const CharT* o);
     basic_string<CharT>& operator+=(const basic_string<CharT> &o);
@@ -62,9 +64,43 @@ public:
 
 using string = basic_string<char>;
 
-std::istream& get_line(std::istream &i, std::string &str);
-
 }  // namespace std end
+
+
+template<typename CharT>
+inline bool operator==(const std::basic_string<CharT> &a, const CharT* b) { return std::strcmp(a.c_str(), b) == 0; }
+template<typename CharT>
+inline bool operator==(const CharT* a, const std::basic_string<CharT> &b) { return std::strcmp(a, b.c_str()) == 0; }
+template<typename CharT>
+inline bool operator==(const std::basic_string<CharT> &a, const std::basic_string<CharT> &b) { return std::strcmp(a.c_str(), b.c_str()) == 0; }
+
+template<typename CharT>
+inline bool operator<(const std::basic_string<CharT> &a, const CharT* b) { return std::strcmp(a.c_str(), b) < 0; }
+template<typename CharT>
+inline bool operator<(const CharT* a, const std::basic_string<CharT> &b) { return std::strcmp(a, b.c_str()) < 0; }
+template<typename CharT>
+inline bool operator<(const std::basic_string<CharT> &a, const std::basic_string<CharT> &b) { return std::strcmp(a.c_str(), b.c_str()) < 0; }
+
+template<typename CharT>
+inline bool operator>(const std::basic_string<CharT> &a, const CharT* b) { return std::strcmp(a.c_str(), b) > 0; }
+template<typename CharT>
+inline bool operator>(const CharT* a, const std::basic_string<CharT> &b) { return std::strcmp(a, b.c_str()) > 0; }
+template<typename CharT>
+inline bool operator>(const std::basic_string<CharT> &a, const std::basic_string<CharT> &b) { return std::strcmp(a.c_str(), b.c_str()) > 0; }
+
+template<typename CharT>
+inline bool operator<=(const std::basic_string<CharT> &a, const CharT* b) { return !operator>(a,b); }
+template<typename CharT>
+inline bool operator<=(const CharT* a, const std::basic_string<CharT> &b) { return !operator>(a,b); }
+template<typename CharT>
+inline bool operator<=(const std::basic_string<CharT> &a, const std::basic_string<CharT> &b) { return !operator>(a,b); }
+
+template<typename CharT>
+inline bool operator>=(const std::basic_string<CharT> &a, const CharT* b) { return !operator<(a,b); }
+template<typename CharT>
+inline bool operator>=(const CharT* a, const std::basic_string<CharT> &b) { return !operator<(a,b); }
+template<typename CharT>
+inline bool operator>=(const std::basic_string<CharT> &a, const std::basic_string<CharT> &b) { return !operator<(a,b); }
 
 #include <string.tcc>
 

@@ -10,7 +10,7 @@ $(BUILD_APP)/%_cpp.o: $(SRC_APP)/%.cpp $(BUILD_USR_INCLUDE_ALL)
 $(BUILD_APP)/%.elf: $(BUILD_LIB_APP_ENTRY) $(BUILD_APP)/%_c.o  $(BUILD_USR_LIB)/libfuzzyc
 	$(USER_LD) -o $@ $^
 
-$(BUILD_APP)/%.elf: $(BUILD_LIB_APP_ENTRY) $(BUILD_APP)/%_cpp.o $(BUILD_USR_LIB)/libfuzzyc $(BUILD_USR_LIB)/libfuzzycpp
+$(BUILD_APP)/%.elf: $(BUILD_LIB_APP_ENTRY) $(BUILD_APP)/%_cpp.o $(BUILD_USR_LIB)/libfuzzycpp $(BUILD_USR_LIB)/libfuzzyc
 	$(USER_LD) -o $@ $^
 
 $(BUILD_APP)/%: $(BUILD_APP)/%.elf

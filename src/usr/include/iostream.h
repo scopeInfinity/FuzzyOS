@@ -28,4 +28,6 @@ public:
 extern ostream cout;
 extern istream cin;
 
+std::istream& get_line(std::istream &i, std::string &str);
+
 }  // namespace std end

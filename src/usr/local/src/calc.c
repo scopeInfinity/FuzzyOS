@@ -91,7 +91,6 @@ int main(int argc, char *argv[]) {
     puts("Simple Calculator\n");
     puts("-----------------\n");
     puts("\n");
-
     show_usage();
     while(1) {
         err = 0;

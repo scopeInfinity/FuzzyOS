@@ -20,6 +20,7 @@ int abs(int a);
 void* malloc(size_t size);
 void free(void* ptr);
 
+void atexit(void (*)(void));
 void exit(int status);
 
 #ifdef __cplusplus
