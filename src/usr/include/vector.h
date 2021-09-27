@@ -26,8 +26,8 @@ public:
     const_iterator end() const;
 
     void clear();
-    bool empty();
-    std::size_t size();
+    bool empty() const;
+    std::size_t size() const;
     void push_back(const T &val);
     void pop_back();
 
@@ -35,6 +35,7 @@ public:
     T& front();
     T& at(std::size_t pos);
     T& operator[](std::size_t pos);
+    const T& operator[](std::size_t pos) const;
 };
 
 }  // namespace std end

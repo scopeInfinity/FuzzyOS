@@ -34,6 +34,8 @@ class basic_string {
     std::vector<CharT> _data;
 
 public:
+    const static std::size_t npos = -1;
+
     typedef CharT* iterator;
     typedef const CharT* const_iterator;
 
@@ -55,6 +57,10 @@ public:
     CharT& at(std::size_t pos);
     CharT& operator[](std::size_t pos);
     const CharT *c_str() const;
+    std::size_t length() const;
+
+    std::size_t find(char c, std::size_t pos = 0) const;
+    basic_string<CharT> substr(int start, std::size_t len = npos);
 
     basic_string<CharT>& operator=(const basic_string<CharT>& o);
     basic_string<CharT>& operator+=(const CharT c);

@@ -3,6 +3,7 @@
 #include <process.h>
 #include <stdio.h>
 #include <sys/syscall.h>
+#include <math.h>
 
 int min(int a, int b) {
     return (a<b)?a:b;
@@ -27,6 +28,7 @@ int atoi(const char *s) {
         num=num*10+(*s)-'0';
         s++;
     }
+    if(neg) num = -num;
     return num;
 }
 
@@ -54,6 +56,56 @@ void itoa(int num, char *s, int base) {
         int c = num%base;
         num /= base;
         *(s+digit_count) = (c<10)?'0'+c:'A'-10+c;
+    }
+}
+
+void ftoa(double num, char *s) {
+    // not a good implementation
+    if (isnan(num)) {
+        *(s++) = 'n';
+        *(s++) = 'a';
+        *(s++) = 'n';
+        *(s++) = '\0';
+        return;
+    }
+    if (num < 0) {
+        *(s++) = '-';
+        num = - num;
+    }
+    if(num==0) {
+        *(s++)='0';
+        *(s++)='\0';
+        return;
+    }
+    int exp = 0;
+    while(num>=1) {
+        num /= 10;
+        exp++;
+    }
+    while(num<0.1) {
+        num *= 10;
+        exp--;
+    }
+
+    *(s++)='0';
+    *(s++)='.';
+
+    for(int i=0;i<8;i++) {
+        num *= 10;
+        int msb = num;
+        *(s++)='0'+msb;
+        num -= msb;
+        if (num < 1e-16) {
+            break;
+        }
+    }
+
+    if(exp!=0) {
+        *(s++) = 'e';
+        if(exp>0) *(s++) = '+';
+        itoa(exp, s, 10);
+    } else {
+        *(s++) = '\0';
     }
 }
 

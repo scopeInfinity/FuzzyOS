@@ -11,7 +11,12 @@ static struct GraphicsState {
     int x, y;
 } gstate = {0};
 
-static uint8_t BUFFER[GRAPHICS_MAX_HEIGHT][GRAPHICS_MAX_WIDTH]={0};
+static uint8_t __BUFFER[GRAPHICS_MAX_HEIGHT][GRAPHICS_MAX_WIDTH]={0};
+static inline write_buffer(int x, int y, uint8_t color) {
+    if(x>=0 && x<GRAPHICS_MAX_WIDTH && y>=0 && y<GRAPHICS_MAX_HEIGHT) {
+        __BUFFER[y][x] = color;
+    }  // otherwise just ignore
+}
 
 void initgraph(int *graphdetect, int *graphmode, char *not_used) {
     if (*graphdetect == DETECT) {
@@ -50,12 +55,12 @@ static void _autoflushnow() {
 }
 
 int graphflush() {
-    gstate.last_err = SYSCALL_A2(SYSCALL_GRAPHICS, SYSCALL_GRAPHICS_COPYBUFFER, BUFFER);
+    gstate.last_err = SYSCALL_A2(SYSCALL_GRAPHICS, SYSCALL_GRAPHICS_COPYBUFFER, __BUFFER);
     return gstate.last_err;
 }
 
 void cleardevice() {
-    memset(BUFFER, gstate.bkcolor, sizeof(BUFFER));
+    memset(__BUFFER, gstate.bkcolor, sizeof(__BUFFER));
     moveto(0, 0);
     _autoflushnow();
 }
@@ -89,12 +94,31 @@ int getbkcolor() {
 }
 
 void putpixel(int x, int y, int color) {
-    BUFFER[y][x]=color;
+    write_buffer(x, y, color);
     _autoflushnow();
 }
 
 void line(int x1, int y1, int x2, int y2) {
     const int color = getcolor();
+    if(x1==x2) {
+        if(y1>y2) {
+            int t = y1; y1 = y2; y2 = t;
+        }
+        for(int y=y1; y<=y2; y++) {
+            write_buffer(x1, y, color);
+        }
+        return;
+    }
+    if(y1==y2) {
+        if(x1>x2) {
+            int t = x1; x1 = x2; x2 = t;
+        }
+        for(int x=x1; x<=x2; x++) {
+            write_buffer(x, y1, color);
+        }
+        return;
+    }
+
     if(abs(x1-x2)>=abs(y1-y2)) {
         // horizontal length is longer
         if(x1>x2) {
@@ -106,8 +130,8 @@ void line(int x1, int y1, int x2, int y2) {
         const int xdiff = x2-x1;
         const int ydiff = y2-y1;
         for (int x = x1; x <= x2; x++) {
-            int y = ydiff*(x-x1)/xdiff;
-            BUFFER[y][x]=color;
+            int y = ydiff*(x-x1)/xdiff + y1;
+            write_buffer(x, y, color);
         }
     } else  {
         // vertical length is longer
@@ -120,8 +144,8 @@ void line(int x1, int y1, int x2, int y2) {
         const int xdiff = x2-x1;
         const int ydiff = y2-y1;
         for (int y = y1; y <= y2; y++) {
-            int x = y*xdiff/ydiff+x1;
-            BUFFER[y][x]=color;
+            int x = (y-y1)*xdiff/ydiff+x1;
+            write_buffer(x, y, color);
         }
     }
     _autoflushnow();
@@ -139,12 +163,12 @@ void rectangle(int left, int top, int right, int bottom) {
     const int color = getcolor();
 
     for(int x=left;x<=right;x++) {
-        BUFFER[top][x]=color;
-        BUFFER[bottom][x]=color;
+        write_buffer(x, top, color);
+        write_buffer(x, bottom, color);
     }
     for(int y=top+1;y<bottom;y++) {
-        BUFFER[y][left]=color;
-        BUFFER[y][right]=color;
+        write_buffer(left, y, color);
+        write_buffer(right, y, color);
     }
     _autoflushnow();
 }
@@ -154,7 +178,7 @@ void bar(int left, int top, int right, int bottom) {
 
     for(int y=top;y<=bottom;y++) {
         for(int x=left;x<=right;x++) {
-            BUFFER[y][x]=color;
+            write_buffer(x, y, color);
         }
     }
     _autoflushnow();
@@ -181,7 +205,7 @@ void fillellipse(int xcenter, int ycenter, int x_radius, int y_radius) {
                 int fx = xcenter + x;
                 int fy = ycenter + y;
                 if(fx>=0 && fy>=0 && fx<GRAPHICS_MAX_WIDTH && fy<GRAPHICS_MAX_HEIGHT) {
-                    BUFFER[fy][fx]=color;
+                    write_buffer(fx, fy, color);
                 }
             }
         }
@@ -339,7 +363,7 @@ static void draw_font(char c, int x, int y) {
         uint8_t frow = font[c][j];
         for(int i=0; i < 8; i++) if(x+i>=0 && x+i<GRAPHICS_MAX_WIDTH) {
             if((frow&mask)) {
-                BUFFER[y+j][x+i] = color;
+                write_buffer(x+i, y+j, color);
             }
             mask<<=1;
         }

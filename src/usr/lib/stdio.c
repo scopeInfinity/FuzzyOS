@@ -57,6 +57,13 @@ static int vsnprintf(char *s, size_t n, const char *fmt, va_list args) {
                     s[len++]=*(innerstr++);
                 }
                 break;
+            case 'f':
+                ftoa(va_arg(args, double), sbuffer);
+                innerstr = sbuffer;
+                while (len<n && (*innerstr)!='\0') {
+                    s[len++]=*(innerstr++);
+                }
+                break;
             case 'X':
             case 'x':  // not an priority for now :)
                 itoa(va_arg(args, int), sbuffer, 16);

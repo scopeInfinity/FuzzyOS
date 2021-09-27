@@ -12,6 +12,7 @@ istream cin;
 
 ostream& ostream::operator<<(const char c) { putchar(c); return *this; }
 ostream& ostream::operator<<(const int num) { printf("%d", num); return *this; }
+ostream& ostream::operator<<(const double num) { printf("%f", num); return *this; }
 ostream& ostream::operator<<(const char *str) { puts(str); return *this; }
 ostream& ostream::operator<<(const std::string &str) { puts(str.c_str()); return *this; }
 
@@ -55,6 +56,13 @@ istream& istream::operator>>(std::string &str) {
         }
         str += c;
     };
+    return *this;
+}
+
+istream& istream::operator>>(int &x) {
+    std::string s;
+    (*this)>>s;
+    x = std::atoi(s.c_str());
     return *this;
 }
 
