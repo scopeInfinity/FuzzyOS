@@ -11,6 +11,7 @@ class ostream {
 public:
     ostream& operator<<(const char c);
     ostream& operator<<(const int num);
+    ostream& operator<<(const double num);
     ostream& operator<<(const std::string &str);
     ostream& operator<<(const char* str);
 };
@@ -20,6 +21,7 @@ public:
     istream& operator>>(char &c);
     istream& operator>>(char *str);
     istream& operator>>(std::string &str);
+    istream& operator>>(int &x);
 
     istream& get(char &c);
     istream& get_line(char *str, std::size_t n, char delim='\n');

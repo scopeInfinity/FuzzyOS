@@ -84,6 +84,38 @@ const CharT *basic_string<CharT>::c_str() const {
 }
 
 template <typename CharT>
+std::size_t basic_string<CharT>::length() const {
+    std::size_t sz = this->_data.size();
+    if(sz == 0) {
+        return 0;  // should not happen
+    }
+    return sz - 1;
+}
+
+template <typename CharT>
+std::size_t basic_string<CharT>::find(char c, std::size_t pos) const {
+    std::size_t len = length();
+    while (pos < len) {
+        if (this->_data[pos] == c) {
+            return pos;
+        }
+        pos++;
+    }
+    return npos;
+}
+
+template <typename CharT>
+basic_string<CharT> basic_string<CharT>::substr(int start, std::size_t len) {
+    std::string sub;
+    int index = start;
+    int str_length = length();
+    for(std::size_t i = 0; i < len && index < str_length; i++, index++) {
+        sub += this->at(index);
+    }
+    return sub;
+}
+
+template <typename CharT>
 basic_string<CharT>& basic_string<CharT>::operator=(const basic_string<CharT> &o) {
     this->_data = o._data;
     return *this;

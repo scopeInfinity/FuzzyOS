@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <iostream.h>
 #include <vector.h>
+#include <math.h>
 
 namespace geometry {
 
@@ -77,6 +78,19 @@ int main(int argc, char *argv[]) {
     for(std::size_t i = 0; i < list.size(); i++) {
         std::cout << "list[" << (int)i << "] = " << list[i] << std::endl;
     }
+
+    // trigonometry
+    int angle;
+    std::cout << "Enter angle in degree: ";
+    std::cin >> angle;
+    std::cout << "sin(" << angle << "): " << std::sin(angle * M_PI/180) << std::endl;
+    std::cout << "cos(" << angle << "): " << std::cos(angle * M_PI/180) << std::endl;
+    std::cout << "floor(17.6): " << std::floor(17.6) << std::endl;
+    std::cout << "round(17.6): " <<  std::round(17.6) << std::endl;
+    std::cout << "fmod(17.6, 5.0): " <<  std::fmod(17.6, 5.0) << std::endl;
+    std::cout << "fmod(-17.6, 5.0): " <<  std::fmod(-17.6, 5.0) << std::endl;
+    std::cout << "fmod(17.6, -5.0): " <<  std::fmod(17.6, -5.0) << std::endl;
+    std::cout << "fmod(-17.6, -5.0): " <<  std::fmod(-17.6, -5.0) << std::endl;
 
     std::cout << "Exiting..." << std::endl;
     return 0;

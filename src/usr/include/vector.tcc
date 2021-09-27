@@ -82,12 +82,12 @@ void vector<T>::clear() {
 }
 
 template <typename T>
-bool vector<T>::empty() {
+bool vector<T>::empty() const {
     return this->_size == 0;
 }
 
 template <typename T>
-std::size_t vector<T>::size() {
+std::size_t vector<T>::size() const {
     return this->_size;
 }
 
@@ -124,6 +124,11 @@ T &vector<T>::at(std::size_t pos) {
 
 template <typename T>
 T &vector<T>::operator[](std::size_t pos) {
+    return this->_data[pos];
+}
+
+template <typename T>
+const T &vector<T>::operator[](std::size_t pos) const {
     return this->_data[pos];
 }
 
