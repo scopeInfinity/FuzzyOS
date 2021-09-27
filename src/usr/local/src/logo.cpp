@@ -41,7 +41,7 @@ std::vector<std::string> split(std::string &str) {
 
 class Display {
     int height;
-    typedef std::pair<int,int> Point;  // x, y
+    typedef std::pair<double, double> Point;  // x, y
     #define _x first
     #define _y second
     std::vector<std::pair<Point, Point> > lines;
@@ -76,8 +76,8 @@ public:
 
     void action_forward(int len) {
         Point next = current;
-        next._x += std::round(len*std::cos(angle));
-        next._y -= std::round(len*std::sin(angle));  // graphics and maths y coordinates are flipped
+        next._x += len*std::cos(angle);
+        next._y -= len*std::sin(angle);  // graphics and maths y coordinates are flipped
         action_move(next);
     }
 
@@ -236,8 +236,10 @@ public:
         std::graphics::setcolor(BLACK);
 
         for(const auto &line: lines) {
-            std::graphics::line(line.first.first, line.first.second,
-                                line.second.first, line.second.second);
+            std::graphics::line(std::round(line.first.first),
+                                std::round(line.first.second),
+                                std::round(line.second.first),
+                                std::round(line.second.second));
         }
 
         if (turtle_visiblity) {
@@ -250,10 +252,26 @@ public:
             Point e2 = at_distance(current, turtle_len, angle + M_PI*7/6);
             Point eb = at_distance(current, turtle_len/2, angle + M_PI);
 
-            std::graphics::line(e1._x, e1._y, current._x, current._y);
-            std::graphics::line(e1._x, e1._y, eb._x, eb._y);
-            std::graphics::line(e2._x, e2._y, current._x, current._y);
-            std::graphics::line(e2._x, e2._y, eb._x, eb._y);
+            std::graphics::line(
+                std::round(e1._x),
+                std::round(e1._y),
+                std::round(current._x),
+                std::round(current._y));
+            std::graphics::line(
+                std::round(e1._x),
+                std::round(e1._y),
+                std::round(eb._x),
+                std::round(eb._y));
+            std::graphics::line(
+                std::round(e2._x),
+                std::round(e2._y),
+                std::round(current._x),
+                std::round(current._y));
+            std::graphics::line(
+                std::round(e2._x),
+                std::round(e2._y),
+                std::round(eb._x),
+                std::round(eb._y));
         }
 
         std::graphics::graphflush();
@@ -341,7 +359,7 @@ public:
         }
         const int char_per_line = (WINDOW_WIDTH-2*border)/text_width;
         for (std::size_t i = 0; i < line_count; i++) {
-            int _y = y_offset+(i+1)*text_height;
+            int _y = y_offset+(i+1)*text_height ;
             int _x = border;
             int str_start = char_per_line*i;
             int str_end = char_per_line*(i+1);  // excluding
