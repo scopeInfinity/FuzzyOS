@@ -11,7 +11,6 @@ const int BUSY_WAIT_FRAMECOUNTER = 2e7;
 
 const int WINDOW_HEIGHT = GRAPHICS_MAX_HEIGHT;
 const int WINDOW_WIDTH  = GRAPHICS_MAX_WIDTH;
-const int INTERPRETER_HEIGHT = 16*4;
 
 char message_buffer[320];
 
@@ -52,6 +51,9 @@ class Display {
     double angle;  // in radians
     bool pen_active;  // true implies draw when pen moves
     bool turtle_visiblity;
+
+    // repeat command internals
+    std::vector<std::pair<std::size_t, int> > repeat_stack;  // (start, count)
 public:
     Display(int height) : height(height),
             current(WINDOW_WIDTH / 2, height / 2),
@@ -107,6 +109,35 @@ public:
     }
 
     int command_handler(std::string &cmd, std::string &input, std::size_t &start) {
+        if (cmd.empty()) {
+            // no more command left
+            return 0;
+        }
+
+        if (cmd == "repeat") {
+            std::string arg0=parse_next_token(input, start);
+            std::string arg1=parse_next_token(input, start);
+            if (arg0.empty()) return 2;
+            if (arg1 != "[" ) return 3;
+            int count = std::atoi(arg0.c_str());
+            if (count > 0) {
+                repeat_stack.push_back(std::make_pair(start, count-1));
+            }
+            return 0;
+        }
+        if (cmd == "]") {
+            if (repeat_stack.empty()) return 2;
+            if (repeat_stack.back().second == 0) {
+                // repeat over
+                repeat_stack.pop_back();
+                return 0;
+            }
+            repeat_stack.back().second--;
+            start = repeat_stack.back().first;  // repeat again
+            return 0;
+        }
+
+
         if (cmd == "fd" || cmd == "forward") {
             std::string arg=parse_next_token(input, start);
             if (arg.empty()) return 2;
@@ -163,7 +194,7 @@ public:
         if (cmd == "exit") {
             std::exit(0);
         }
-        return 0;
+        return 10;
     }
 
     std::string parse_next_token(std::string &input, std::size_t &start) {
@@ -184,6 +215,7 @@ public:
 
     int parse(std::string input) {
         std::size_t start = 0;
+        repeat_stack.clear();
         while (1) {
             std::string cmd = parse_next_token(input, start);
             if (cmd.empty()) break;
@@ -191,6 +223,9 @@ public:
             if (err) {
                 return err;
             }
+        }
+        if (!repeat_stack.empty()) {
+            return 1;  // all repeat must be completed
         }
         return 0;
     }
@@ -228,15 +263,20 @@ public:
 };
 
 class Console {
-    const int line_count = 4;
-    std::vector<std::string> data;
+    const int line_count = 3;
+    const int LINE_STATUS = 0;
+    std::string status_err;
+    std::string status_loc;
+    std::string input_line;
     int y_offset;
     int text_height;
+    int text_width;
     const int border = 5;
 
 public:
-    Console(): data(line_count, "") {
+    Console(): input_line("") {
         text_height = std::graphics::textheight(".");
+        text_width = std::graphics::textwidth(".");
         y_offset = WINDOW_HEIGHT-text_height*line_count-2*border;
     }
 
@@ -246,58 +286,75 @@ public:
 
     std::string read() {
         int index = 0;
-        std::string &input = data[index];
         char ch;
         while(1) {
             ch = std::getch();
             if(ch=='\n') {
-                std::string out = input;  // copy
-                input.clear();
+                std::string out = input_line;  // copy
+                input_line.clear();
                 draw();
                 return out;
             }
-            input+=ch;
+            input_line+=ch;
             draw();
         }
     }
 
     void set_err(int err) {
-        int index = 1; // error line
         if(err==0) {
-            data[index].clear();
+            status_err.clear();
         } else {
-            data[index] = "error!";
+            status_err = "error!";
         }
         draw();
     }
 
-    void update_log(Display &display) {
+    void update_status(Display &display) {
         int current_x = display.get_x();
         int current_y = display.get_y();
         int angle_deg = std::round(display.get_angle()*180/M_PI);
 
-        int index = 2; // current location
-        auto &log = data[index];
-        log = "loc: ";
+        status_loc = "loc: ";
         char buffer[16];
         std::itoa(current_x, buffer, 10);
-        log += buffer;
-        log += ',';
+        status_loc += buffer;
+        status_loc += ',';
         std::itoa(current_y, buffer, 10);
-        log += buffer;
+        status_loc += buffer;
 
         std::itoa(angle_deg, buffer, 10);
-        log += "  dir: ";
-        log += buffer;
-        log += " deg";
+        status_loc += "  dir: ";
+        status_loc += buffer;
+        status_loc += " deg ";
     }
 
     void draw() {
         std::graphics::setcolor(YELLOW);
         std::graphics::bar(0, y_offset, WINDOW_WIDTH-1, WINDOW_HEIGHT-1);
         std::graphics::setcolor(BLACK);
+        {
+            int line_number = 0; // loc, angle, err
+            int _x = border;
+            int _y = y_offset+line_number*text_height;
+            _x += std::graphics::outtextxy(_x, _y, status_loc.c_str());
+            std::graphics::outtextxy(_x, _y, status_err.c_str());
+        }
+        const int char_per_line = (WINDOW_WIDTH-2*border)/text_width;
         for (std::size_t i = 0; i < line_count; i++) {
-            std::graphics::outtextxy(border, y_offset+i*text_height+border, data[i].c_str());
+            int _y = y_offset+(i+1)*text_height;
+            int _x = border;
+            int str_start = char_per_line*i;
+            int str_end = char_per_line*(i+1);  // excluding
+            if (str_start >= input_line.length()) break;
+            char shelve_end = '\0';
+            if (str_end < input_line.length()) {
+                shelve_end = input_line[str_end];
+                input_line[str_end] = '\0';
+            }
+            std::graphics::outtextxy(_x, _y, input_line.c_str()+str_start);
+            if (shelve_end != '\0') {
+                input_line[str_end] = shelve_end;  // rollback
+            }
         }
         std::graphics::graphflush();
     }
@@ -311,7 +368,7 @@ public:
     }
     void execute() {
         while(1) {
-            console.update_log(display);
+            console.update_status(display);
             display.draw();
             console.draw();
             std::string input = console.read();
@@ -331,7 +388,7 @@ void start_logo() {
 
 void cleanup_graphics() {
     std::graphics::closegraph();
-    std::cout << "graphics closed" << std::endl;
+    std::cout << "logo graphics closed" << std::endl;
 }
 
 int main(int argc,char *argv[]) {
