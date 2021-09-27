@@ -47,10 +47,18 @@ class Display {
     #define _y second
     std::vector<std::pair<Point, Point> > lines;
     // logo
+    Point home;
     Point current;
     double angle;  // in radians
+    bool pen_active;  // true implies draw when pen moves
+    bool turtle_visiblity;
 public:
-    Display() : current(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), angle(M_PI/2) {
+    Display(int height) : height(height),
+            current(WINDOW_WIDTH / 2, height / 2),
+            angle(M_PI / 2),
+            pen_active(true),
+            turtle_visiblity(true) {
+        home = current;
     }
 
     static Point at_distance(Point src, double dis, double angle) {
@@ -64,56 +72,127 @@ public:
     int get_y() { return current._y; }
     double get_angle() { return angle; }
 
-    void set_height(int height) {
-        this->height = height;
-        this->current._y = this->height/2;
-    }
-
     void action_forward(int len) {
         Point next = current;
         next._x += std::round(len*std::cos(angle));
         next._y -= std::round(len*std::sin(angle));  // graphics and maths y coordinates are flipped
-        lines.push_back(std::make_pair(current, next));
-        current = next;
+        action_move(next);
+    }
+
+    void action_move(Point dst) {
+        if (pen_active) {
+            lines.push_back(std::make_pair(current, dst));
+        }
+        current = dst;
     }
 
     void action_rotate(int degree) {
         angle = std::fmod(angle + degree*M_PI/180, 2*M_PI);
     }
 
-    int parse(std::string input) {
-        if (input=="exit") {
-            std::exit(0);
-        }
-        auto tokens = split(input);
-        std::cout<<"input: "<<input<< std::endl;
-        for(auto a:tokens) {
-            std::cout<<a<<std::endl;
-        }
-        if (tokens.size() == 0) {
-            return 1;
-        }
-        if ((tokens[0] == "fd" || tokens[0] == "forward") && tokens.size()==2) {
-            int len = std::atoi(tokens[1].c_str());
+    void action_rotate_abs(int degree) {
+        angle = std::fmod(degree*M_PI/180, 2*M_PI);
+    }
+
+    void action_pen_active(bool is_active) {
+        pen_active = is_active;
+    }
+
+    void action_turtle_visibility(bool visible) {
+        turtle_visiblity = visible;
+    }
+
+    void action_clear() {
+        lines.clear();
+    }
+
+    int command_handler(std::string &cmd, std::string &input, std::size_t &start) {
+        if (cmd == "fd" || cmd == "forward") {
+            std::string arg=parse_next_token(input, start);
+            if (arg.empty()) return 2;
+            int len = std::atoi(arg.c_str());
             action_forward(len);
             return 0;
         }
-        if ((tokens[0] == "bk" || tokens[0] == "back") && tokens.size()==2) {
-            int len = std::atoi(tokens[1].c_str());
+        if (cmd == "bk" || cmd == "back") {
+            std::string arg=parse_next_token(input, start);
+            if (arg.empty()) return 2;
+            int len = std::atoi(arg.c_str());
             action_forward(-len);
             return 0;
         }
-        if ((tokens[0] == "lt" || tokens[0] == "left") && tokens.size()==2) {
-            double angle_deg = std::atoi(tokens[1].c_str());
+        if (cmd == "lt" || cmd == "left") {
+            std::string arg=parse_next_token(input, start);
+            if (arg.empty()) return 2;
+            int angle_deg = std::atoi(arg.c_str());
             action_rotate(angle_deg);
             return 0;
         }
-        if ((tokens[0] == "rt" || tokens[0] == "right") && tokens.size()==2) {
-            double angle_deg = std::atoi(tokens[1].c_str());
+        if (cmd == "rt" || cmd == "right") {
+            std::string arg=parse_next_token(input, start);
+            if (arg.empty()) return 2;
+            int angle_deg = std::atoi(arg.c_str());
             action_rotate(-angle_deg);
             return 0;
         }
-        return 2;
+        if (cmd == "pu" || cmd == "penup") {
+            action_pen_active(false);
+            return 0;
+        }
+        if (cmd == "pd" || cmd == "pendown") {
+            action_pen_active(true);
+            return 0;
+        }
+        if (cmd == "home") {
+            action_move(home);
+            action_rotate_abs(90);
+            return 0;
+        }
+        if (cmd == "ht" || cmd == "hideturtle") {
+            action_turtle_visibility(false);
+            return 0;
+        }
+        if (cmd == "st" || cmd == "showturtle") {
+            action_turtle_visibility(true);
+            return 0;
+        }
+        if (cmd == "ct" || cmd == "clear") {
+            action_clear();
+            return 0;
+        }
+        if (cmd == "exit") {
+            std::exit(0);
+        }
+        return 0;
+    }
+
+    std::string parse_next_token(std::string &input, std::size_t &start) {
+        while(start<input.length()) {
+            std::size_t next = input.find(' ', start);
+            if(next == std::string::npos) {
+                next = input.length();
+            }
+            std::size_t copy_size = next-start;
+            std::size_t last = start;
+            start = next+1;
+            if(copy_size>0) {
+                return input.substr(last, copy_size);
+            }
+        }
+        return "";  // no more token
+    }
+
+    int parse(std::string input) {
+        std::size_t start = 0;
+        while (1) {
+            std::string cmd = parse_next_token(input, start);
+            if (cmd.empty()) break;
+            int err = command_handler(cmd, input, start);
+            if (err) {
+                return err;
+            }
+        }
+        return 0;
     }
 
     void draw() {
@@ -126,8 +205,8 @@ public:
                                 line.second.first, line.second.second);
         }
 
-        std::graphics::setcolor(GREEN);
-        {
+        if (turtle_visiblity) {
+            std::graphics::setcolor(GREEN);
             // draw turtle
             //  - turtle image is > at angle = 0
             double turtle_len = 10;
@@ -225,11 +304,10 @@ public:
 };
 
 class Interpreter {
-    Display display;
     Console console;
+    Display display;
 public:
-    Interpreter() {
-        display.set_height(console.get_y_offset());
+    Interpreter() : display(console.get_y_offset()) {
     }
     void execute() {
         while(1) {

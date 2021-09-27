@@ -57,6 +57,7 @@ public:
     CharT& at(std::size_t pos);
     CharT& operator[](std::size_t pos);
     const CharT *c_str() const;
+    bool empty() const;
     std::size_t length() const;
 
     std::size_t find(char c, std::size_t pos = 0) const;
