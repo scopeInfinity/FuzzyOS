@@ -82,6 +82,13 @@ template<typename CharT>
 inline bool operator==(const std::basic_string<CharT> &a, const std::basic_string<CharT> &b) { return std::strcmp(a.c_str(), b.c_str()) == 0; }
 
 template<typename CharT>
+inline bool operator!=(const std::basic_string<CharT> &a, const CharT* b) { return !operator==(a,b); }
+template<typename CharT>
+inline bool operator!=(const CharT* a, const std::basic_string<CharT> &b) { return !operator==(a,b); }
+template<typename CharT>
+inline bool operator!=(const std::basic_string<CharT> &a, const std::basic_string<CharT> &b) { return !operator==(a,b); }
+
+template<typename CharT>
 inline bool operator<(const std::basic_string<CharT> &a, const CharT* b) { return std::strcmp(a.c_str(), b) < 0; }
 template<typename CharT>
 inline bool operator<(const CharT* a, const std::basic_string<CharT> &b) { return std::strcmp(a, b.c_str()) < 0; }
