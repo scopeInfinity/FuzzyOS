@@ -22,13 +22,13 @@ The screenshots can be located as `Artifacts` under completed run on [Actions/CI
 --------------| ------
 ![image](https://user-images.githubusercontent.com/9819066/132931063-21868d2e-4e55-4a25-843d-9a6a9d1830f6.png) |  ![image](https://user-images.githubusercontent.com/9819066/132112873-f47c8588-1e23-4c4e-9237-a9783c70defb.png)
 
-fork()          | TicTacToe game
+fork()          | TicTacToe Game
 ----------------|---------------
 ![image](https://user-images.githubusercontent.com/9819066/132112808-72ba7691-5f18-4631-b95d-fa52a63d2f38.png) | ![image](https://user-images.githubusercontent.com/9819066/129463802-d9a0bc77-74eb-4438-b553-e1439ada95a1.png)
 
-| pingpong game |
-| ------------- |
-| ![gif](https://user-images.githubusercontent.com/9819066/132988756-de1b7770-430d-40df-a7c9-593cd752b20a.gif) |
+| PingPong Game |  Logo Programming |
+| ------------- | ------------- |
+| ![gif](https://user-images.githubusercontent.com/9819066/132988756-de1b7770-430d-40df-a7c9-593cd752b20a.gif) | ![gif](https://user-images.githubusercontent.com/9819066/134997094-c44f70cb-dca9-4260-89fb-2676fad38631.gif) |
 
 
 ### Boot OS
