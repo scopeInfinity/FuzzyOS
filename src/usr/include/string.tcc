@@ -93,6 +93,11 @@ std::size_t basic_string<CharT>::length() const {
 }
 
 template <typename CharT>
+bool basic_string<CharT>::empty() const {
+    return (this->_data.size() <= 1);
+}
+
+template <typename CharT>
 std::size_t basic_string<CharT>::find(char c, std::size_t pos) const {
     std::size_t len = length();
     while (pos < len) {
