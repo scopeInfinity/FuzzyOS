@@ -409,7 +409,33 @@ void cleanup_graphics() {
     std::cout << "logo graphics closed" << std::endl;
 }
 
+int show_usage() {
+    std::cout << "syntax:" << std::endl;
+    std::cout << " forward <len> | fd <len>" << std::endl;
+    std::cout << " back    <len> | bk <len>" << std::endl;
+    std::cout << " right <angle> | rt <angle>" << std::endl;
+    std::cout << " left  <angle> | lt <angle>" << std::endl;
+    std::cout << " penup         | pu" << std::endl;
+    std::cout << " pendown       | pd" << std::endl;
+    std::cout << " hideturtle    | ht" << std::endl;
+    std::cout << " showturtle    | st" << std::endl;
+    std::cout << " clear         | ct" << std::endl;
+    std::cout << " repeat <count> [ <cmds> ]" << std::endl;
+    std::cout << " home" << std::endl;
+    std::cout << " exit" << std::endl;
+    std::cout << "   where <count> : non-negative integer" << std::endl;
+    std::cout << "         <cmds>  : chain of valid commands" << std::endl;
+    std::cout << "         <len>   : integer" << std::endl;
+    std::cout << "         <angle> : integer in degrees" << std::endl;
+    return 0;
+}
+
 int main(int argc,char *argv[]) {
+    if (argc != 1) {
+        // assumes user wants logo --help
+        return show_usage();
+    }
+
     int gd = DETECT, gm;
     std::graphics::initgraph(&gd, &gm, NULL);
     int gerr = std::graphics::graphresult();
