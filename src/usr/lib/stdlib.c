@@ -156,6 +156,9 @@ int benchmark_get_heap_usage() {
 }
 
 void* malloc(size_t size) {
+    size = ((size + 3) >> 2 ) << 2;
+    size += 4;  // 4 bytes to store size
+
     void* loc = _heap_start + heap_head_offset;
     void* max_loc = get_current_esp()-heap_stack_safety_gap-size;
     if(loc>max_loc) {
@@ -165,11 +168,15 @@ void* malloc(size_t size) {
     }
     heap_head_offset += size;
     benchmark_heap_inuse += size;
-    return loc;
+
+    *((uint32_t*)loc) = size;
+    return (loc+4);
 }
 
 void free(void* ptr) {
     if(ptr == NULL) return;
     // current version of malloc is non-optimal and doesn't
     // do any free operation.
+    size_t size = *((uint32_t*)(ptr-4));
+    benchmark_heap_inuse -= size;
 }

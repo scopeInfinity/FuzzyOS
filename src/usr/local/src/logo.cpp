@@ -20,6 +20,8 @@ void frame_wait() {
     while (counter--);
 }
 
+bool graceful_exit = false;
+
 std::vector<std::string> split(std::string &str) {
     std::vector<std::string> rv;
     std::size_t len = str.length();
@@ -192,7 +194,8 @@ public:
             return 0;
         }
         if (cmd == "exit") {
-            std::exit(0);
+            graceful_exit = true;
+            return 0;
         }
         return 10;
     }
@@ -385,7 +388,7 @@ public:
     Interpreter() : display(console.get_y_offset()) {
     }
     void execute() {
-        while(1) {
+        while(!graceful_exit) {
             console.update_status(display);
             display.draw();
             console.draw();
@@ -408,7 +411,7 @@ void cleanup_graphics() {
     std::graphics::closegraph();
     std::cout << "logo graphics closed" << std::endl;
     std::cout << "heap memory at exit " <<
-        (std::benchmark_get_heap_usage()/1024) << "KB" << std::endl;
+        (std::benchmark_get_heap_usage()) << " bytes" << std::endl;
 }
 
 int show_usage() {
@@ -448,5 +451,6 @@ int main(int argc,char *argv[]) {
     // graphics started
     std::atexit(cleanup_graphics);
     start_logo();
+    std::cout<<" all over \n";
     return 0;
 }
