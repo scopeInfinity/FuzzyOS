@@ -148,6 +148,13 @@ extern char _heap_start[];  // defined in linker.ld
 static int heap_head_offset = 0;
 static const int heap_stack_safety_gap = 1024; // keep 1 kb free between stack and heap
 
+// benchmarking
+static int benchmark_heap_inuse = 0;
+
+int benchmark_get_heap_usage() {
+    return benchmark_heap_inuse;
+}
+
 void* malloc(size_t size) {
     void* loc = _heap_start + heap_head_offset;
     void* max_loc = get_current_esp()-heap_stack_safety_gap-size;
@@ -157,6 +164,7 @@ void* malloc(size_t size) {
         return NULL;
     }
     heap_head_offset += size;
+    benchmark_heap_inuse += size;
     return loc;
 }
 

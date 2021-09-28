@@ -407,6 +407,8 @@ void start_logo() {
 void cleanup_graphics() {
     std::graphics::closegraph();
     std::cout << "logo graphics closed" << std::endl;
+    std::cout << "heap memory at exit " <<
+        (std::benchmark_get_heap_usage()/1024) << "KB" << std::endl;
 }
 
 int show_usage() {
