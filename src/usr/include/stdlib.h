@@ -18,6 +18,7 @@ int min(int, int);
 int max(int, int);
 int abs(int a);
 
+int benchmark_get_heap_usage();
 void* malloc(size_t size);
 void free(void* ptr);
 
