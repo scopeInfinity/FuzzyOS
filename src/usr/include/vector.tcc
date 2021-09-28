@@ -17,13 +17,18 @@ static std::size_t next_power2(std::size_t size) {
 }
 
 template <typename T>
-vector<T>::vector() : _data(NULL), _size(0) {
+vector<T>::vector() :
+        _data(NULL),
+        _capacity(0),
+        _size(0) {
     resize_capacity(1);
 }
 
 template <typename T>
-vector<T>::vector(std::size_t size, const T &_default): _size(size)  {
-    this->_data = NULL;
+vector<T>::vector(std::size_t size, const T &_default):
+        _data(NULL),
+        _capacity(0),
+        _size(size) {
     resize_capacity(size);
     for(std::size_t i = 0; i < size; i++) {
         this->_data[i] = _default;
@@ -31,7 +36,10 @@ vector<T>::vector(std::size_t size, const T &_default): _size(size)  {
 }
 
 template <typename T>
-vector<T>::vector(const vector<T> &o) : _size(o._size) {
+vector<T>::vector(const vector<T> &o) :
+        _data(NULL),
+        _capacity(0),
+        _size(o._size) {
     resize_capacity(o._capacity);
     std::memcpy(_data, o._data, _capacity*sizeof(T));
 }
@@ -62,14 +70,15 @@ template <typename T>
 typename vector<T>::const_iterator vector<T>::end() const { return this->_data + this->_size; }
 
 template <typename T>
-void vector<T>::resize_capacity(std::size_t capacity) {
+void vector<T>::resize_capacity(volatile std::size_t capacity) {
     // internal; assumes capacity to be power of 2
     // and will also make a copy of array and move _data pointer.
     // assumes size<=current_capacity and size<=new_capacity
-    const std::size_t data_size = capacity*sizeof(T);
+    const std::size_t data_size = std::min(capacity, this->_capacity)*sizeof(T);
     T *_new_data = new T[capacity];
     if (!_new_data) return;  // malloc failed
     std::memcpy(_new_data, this->_data, data_size);
+
     delete[] this->_data;  // should be no-op if _data == NULL
     this->_data = _new_data;
     this->_capacity = capacity;
