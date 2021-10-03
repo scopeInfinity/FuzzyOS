@@ -205,29 +205,24 @@ static union heap_entry *malloc_allocate_new_block(union heap_entry *block, size
     block->content.size = size;
     block->content.is_free = 1;  // new block is free at init.
     heap_entry_count++;
-    printf("[log] malloc_allocate_new_block: %x, %d\n", block, size);
     return block;
 }
 
 static union heap_entry *malloc_split_block(union heap_entry *block, size_t size) {
-
     // returns the first one of the two splitted blocks
 
     // [ --------- old-free-block-------------- ]
     // [ allocating-block]  [new-left-over-block]
-    const int TODO_NEVER_SPLIT = 1;
     size_t left_over_size = block->content.size - size;
-    if (TODO_NEVER_SPLIT || left_over_size < sizeof(union heap_entry)+8) {
+    if (left_over_size < sizeof(union heap_entry)+8) {
         // do not split block if left-over block for less than 8 bytes allocation.
         // i.e. do not split block
-        // printf("[log] malloc_split_block: %x, %d out of %d [no-split]\n", block, size, block->content.size);
         return block;
     }
     // allocate new-left-over-block
     union heap_entry *block_second = malloc_allocate_new_block((union heap_entry *)(((void*)block)+size), left_over_size);
     // resize first block
     block->content.size = size;
-    printf("[log] malloc_split_block: %x, %d [split]\n", block, size);
     return block;
 }
 
@@ -237,25 +232,21 @@ static void malloc_merge_onfree(union heap_entry *block) {
     // block.
     if (!block->content.is_free) return;
 
-    // TODO(scopeinfinity): implement
+    // TODO(scopeinfinity): implementation pending.
 }
 
 static union heap_entry *malloc_find_freeblock(size_t size) {
-    if(size>200)
-    printf("[log] malloc_find_freeblock: %d, block_count: %d\n", size, heap_entry_count);
     // size includes header size
-    void* loc = _heap_start; // start
+    void* loc = (void*)_heap_start; // start
     int block_id = 0;
     while(1) {
-        // printf("[log] searching %d at %x\n", block_id, loc);
 
         union heap_entry *block = loc;
         if (block_id==heap_entry_count) {
             // create new node
             return malloc_allocate_new_block(block, size);
         }
-        const int TODO_ALWAYS_ALLOCATE_LAST = 1;
-        if (TODO_ALWAYS_ALLOCATE_LAST || (!block->content.is_free) || block->content.size < size) {
+        if ((!block->content.is_free) || block->content.size < size) {
             // block is not free
             // not sufficient memory in this block
             loc += block->content.size;
@@ -276,14 +267,9 @@ void* malloc(size_t size) {
     union heap_entry *header = malloc_find_freeblock(size);
 
     benchmark_heap_inuse += size;
-    header->content.size = size;
     header->content.is_free = 0;  // false
     return (((void*)header)+sizeof(union heap_entry));
 }
-
-// TODO(scopeinfinity): Cleanup before submit
-//  - LOGO empty : 372 bytes
-//  - Now: 188 bytes
 
 void free(void* ptr) {
     if(ptr == NULL) return;
@@ -292,7 +278,6 @@ void free(void* ptr) {
     union heap_entry *header = ptr-sizeof(union heap_entry);
     if (header->content.is_free!=0) {
         // trying to free unallocated memory
-        printf("[log] trying to free unallocated memory: %x", ptr);
         return;
     }
     header->content.is_free = 1;  // true
