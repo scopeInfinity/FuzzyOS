@@ -450,6 +450,5 @@ int main(int argc,char *argv[]) {
     // graphics started
     std::atexit(cleanup_graphics);
     start_logo();
-    std::cout<<" all over \n";
     return 0;
 }
