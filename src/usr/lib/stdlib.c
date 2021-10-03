@@ -1,9 +1,23 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <process.h>
+#include <limits.h>
 #include <stdio.h>
 #include <sys/syscall.h>
 #include <math.h>
+
+// heap memory parameter
+
+// Full search on heap allocated memory can be a bit slow.
+// #define HEAP_MALLOC_SEARCH_MOST_APPROPRIATE_BLOCK
+
+// During reallocating a block should extra space be created
+// as a new heap block.
+#define HEAP_MALLOC_SPLIT_ON_REALLOCATING_BLOCK
+
+// During free operating should a block merge with free neighbours.
+#define HEAP_MALLOC_FREE_MERGE_NEIGHBOURS
+
 
 int min(int a, int b) {
     return (a<b)?a:b;
@@ -156,19 +170,40 @@ cons
 memory_layout
 -------------
 _heap_start:  # static marker defined at link time
-heap_entry{is_free, size}
-heap_entry{is_free, size}
-heap_entry{is_free, size}
+heap_entry{HEAP_BLOCK_FIRST,     size=0}
+heap_entry{HEAP_BLOCK_ALLOCATED, size}
+heap_entry{HEAP_BLOCK_FREE,      size}
+heap_entry{HEAP_BLOCK_ALLOCATED, size}
 ...
-... heap_entry_count times
+heap_entry{HEAP_BLOCK_LAST,      size=0}
 ... unused memory
 _heap_end:  # dynamic marker based on current esp
 
 */
+
+static union heap_entry {
+    // header of each allocated or unallocated block
+    struct {
+        // including the header size
+        uint32_t size;  // size of current block
+        uint32_t prev_size;  // size of prev block for doubly linked list
+        uint8_t state;
+    } content;
+    uint32_t __padding[3];  // force heap_entry size to be 12 bytes.
+};
+
+#define HEAP_HEADER_SIZE     (sizeof(union heap_entry))
+
+#define HEAP_BLOCK_FREE      0
+#define HEAP_BLOCK_ALLOCATED 1
+#define HEAP_BLOCK_FIRST     2
+#define HEAP_BLOCK_LAST      3
+
 extern void* get_current_esp();  // defined in stdlib.asm
-extern char _heap_start[];  // defined in linker.ld
-static int heap_entry_count = 0;
+// symbol name is defined in linker.ld
+extern char _heap_start[];
 static const int heap_stack_safety_gap = 1024; // keep 1 kb free between stack and heap
+static int heap_initialized = 0;  // false
 
 // benchmarking
 static int benchmark_heap_inuse = 0;
@@ -184,104 +219,179 @@ int benchmark_get_heap_area() {
     return benchmark_heap_area;
 }
 
-static union heap_entry {
-    // header of each allocated or unallocated block
-    struct {
-        uint32_t size;  // including the header size
-        uint8_t is_free;
-    } content;
-    uint32_t __padding[2];  // force heap_entry size to be 8 bytes.
-};
+static inline void heap_panic(const char *msg) {
+    printf("heap memory err: %s\n", msg);
+    exit(-1);
+}
 
-static union heap_entry *malloc_allocate_new_block(union heap_entry *block, size_t size) {
-    void* max_loc = get_current_esp()-heap_stack_safety_gap-size;
-    if ((void*)block>max_loc) {
-        // panic if no memory to allocate
-        printf("failed to allocate more memory\n");
-        exit(-1);
+static inline void heap_assert(int is_not_panic, const char *msg) {
+    if (!is_not_panic) {
+        heap_panic(msg);
     }
-    benchmark_heap_area = max(benchmark_heap_area, (int)(((void*)block) + size - (void*)_heap_start));
-
-    block->content.size = size;
-    block->content.is_free = 1;  // new block is free at init.
-    heap_entry_count++;
-    return block;
+    return;
 }
 
-static union heap_entry *malloc_split_block(union heap_entry *block, size_t size) {
-    // returns the first one of the two splitted blocks
-
-    // [ --------- old-free-block-------------- ]
-    // [ allocating-block]  [new-left-over-block]
-    size_t left_over_size = block->content.size - size;
-    if (left_over_size < sizeof(union heap_entry)+8) {
-        // do not split block if left-over block for less than 8 bytes allocation.
-        // i.e. do not split block
-        return block;
+static inline void heap_may_init() {
+    if (!heap_initialized) {
+        union heap_entry* first = &(((union heap_entry*)_heap_start)[0]);
+        union heap_entry* last = &(((union heap_entry*)_heap_start)[1]);
+        first->content.state = HEAP_BLOCK_FIRST;
+        last->content.state = HEAP_BLOCK_LAST;
+        first->content.prev_size = 0;
+        last->content.size = HEAP_HEADER_SIZE;
+        first->content.size = last->content.prev_size = HEAP_HEADER_SIZE;
+        heap_initialized = 1;
     }
-    // allocate new-left-over-block
-    union heap_entry *block_second = malloc_allocate_new_block((union heap_entry *)(((void*)block)+size), left_over_size);
-    // resize first block
-    block->content.size = size;
-    return block;
 }
 
-static void malloc_merge_onfree(union heap_entry *block) {
-    // merge recently free block to neighboring block
-    // if they are free are also free to form large free
-    // block.
-    if (!block->content.is_free) return;
-
-    // TODO(scopeinfinity): implementation pending.
+static inline union heap_entry *heap_next_block(union heap_entry *current) {
+    return (((void*)current)+current->content.size);
 }
 
-static union heap_entry *malloc_find_freeblock(size_t size) {
-    // size includes header size
-    void* loc = (void*)_heap_start; // start
-    int block_id = 0;
+static inline union heap_entry *heap_prev_block(union heap_entry *current) {
+    return (((void*)current)-current->content.prev_size);
+}
+
+static inline union heap_entry *heap_push_back(union heap_entry *olast, size_t new_size) {
+    heap_assert(olast->content.state == HEAP_BLOCK_LAST,
+        "heap_push_back not called on last");
+    void* _heap_end = get_current_esp()-heap_stack_safety_gap;
+
+    olast->content.state = HEAP_BLOCK_FREE;
+    olast->content.size = new_size;
+    union heap_entry *nlast = heap_next_block(olast);
+
+    benchmark_heap_area = max(benchmark_heap_area, (int)nlast-(int)_heap_start);
+
+    // panic if no memory to allocate
+    // using nlast instead of heap_next_block(nlast) as diff
+    // should be negligible compared to heap_stack_safety_gap.
+    heap_assert(_heap_end>(void*)nlast, "failed to allocate more memory");
+
+    // new last block
+    nlast->content.state = HEAP_BLOCK_LAST;
+    nlast->content.size = HEAP_HEADER_SIZE;
+    nlast->content.prev_size = new_size;
+    return olast;
+}
+
+static inline union heap_entry *heap_freeblock_split(union heap_entry *node, size_t first_size) {
+    heap_assert(node->content.state == HEAP_BLOCK_FREE,
+        "heap_freeblock_split not called on free block");
+
+    // before: [ -------- old-free-block--------- ] [out-block]
+    // after : [ new-first-block][new-second-block] [out-block]
+
+    size_t old_size = node->content.size;
+    size_t second_block_size = old_size-first_size;
+
+    heap_assert(first_size<=old_size,
+        "heap_freeblock_split !(first_size<=old_size)");
+
+    if (second_block_size < HEAP_HEADER_SIZE + 4) {
+        // do not split block if second_block_data_size  < 4
+        return node;
+    }
+
+    union heap_entry *out_block = heap_next_block(node);
+    node->content.size = first_size;
+    union heap_entry *second = heap_next_block(node);
+    second->content.state = second->content.state;
+    second->content.size = second_block_size;
+    second->content.prev_size = node->content.size;
+
+    out_block->content.prev_size = second->content.size;
+    return node;
+}
+
+static inline union heap_entry *heap_freeblocks_merge(union heap_entry *node) {
+    heap_assert(node->content.state == HEAP_BLOCK_FREE,
+        "heap_freeblocks_merge not called on free block");
+
+    // before: [prev] [ node ] [next]
+    // after : [prev] [ node ] [next] OR
+    // after : [prev +  node ] [next] OR
+    // after : [prev] [ node +  next] OR
+    // after : [prev +  node +  next]
+
+    union heap_entry *prev = heap_prev_block(node);
+    union heap_entry *next = heap_prev_block(node);
+    if (prev == HEAP_BLOCK_FREE) {
+        // merge
+        prev->content.size += node->content.size;
+        next->content.prev_size = prev->content.size;
+        node = prev;
+    }
+    if (next == HEAP_BLOCK_FREE) {
+        // merge
+        union heap_entry *next_2 = heap_prev_block(next);
+        node->content.size += next->content.size;
+        next_2->content.prev_size = node->content.size;
+    }
+    return node;
+}
+
+static inline union heap_entry *heap_get_free_block(size_t new_size) {
+    union heap_entry* block = (union heap_entry *)_heap_start; // start
+    uint32_t most_appropriate_value = UINT_MAX;
+    union heap_entry* most_appropriate_block = NULL;
     while(1) {
-
-        union heap_entry *block = loc;
-        if (block_id==heap_entry_count) {
-            // create new node
-            return malloc_allocate_new_block(block, size);
+        if (block->content.state == HEAP_BLOCK_LAST) {
+            break;
         }
-        if ((!block->content.is_free) || block->content.size < size) {
-            // block is not free
-            // not sufficient memory in this block
-            loc += block->content.size;
-            block_id++;
-            continue;
+        if (block->content.state == HEAP_BLOCK_FREE && block->content.size >= new_size) {
+            // block is free and have sufficient memory in this block
+            uint32_t my_value = (block->content.size - new_size);
+            if (my_value<most_appropriate_value) {
+                most_appropriate_value = my_value;
+                most_appropriate_block = block;
+                #ifndef HEAP_MALLOC_SEARCH_MOST_APPROPRIATE_BLOCK
+                break;
+                #endif
+            }
         }
-        // returns the block after split or no-split
-        return malloc_split_block(block, size);
+        block = heap_next_block(block);
+    }
+    if (most_appropriate_block == NULL) {
+        return heap_push_back(block, new_size);
+    } else {
+        #ifdef HEAP_MALLOC_SPLIT_ON_REALLOCATING_BLOCK
+        return heap_freeblock_split(most_appropriate_block, new_size);
+        #else
+        return most_appropriate_block;
+        #endif
     }
 }
 
 void* malloc(size_t size) {
+    heap_may_init();
     // allocates in chunk of 4
     size = ((size + 3) >> 2 ) << 2;
     // allocate header
-    size += sizeof(union heap_entry);
+    size += HEAP_HEADER_SIZE;
 
-    union heap_entry *header = malloc_find_freeblock(size);
+    union heap_entry *header = heap_get_free_block(size);
 
     benchmark_heap_inuse += size;
-    header->content.is_free = 0;  // false
-    return (((void*)header)+sizeof(union heap_entry));
+    header->content.state = HEAP_BLOCK_ALLOCATED;
+    return (((void*)header)+HEAP_HEADER_SIZE);
 }
 
 void free(void* ptr) {
     if(ptr == NULL) return;
+    heap_may_init();
+
     // current version of malloc is non-optimal and doesn't
     // do any free operation.
-    union heap_entry *header = ptr-sizeof(union heap_entry);
-    if (header->content.is_free!=0) {
+    union heap_entry *header = ptr-HEAP_HEADER_SIZE;
+    if (header->content.state != HEAP_BLOCK_ALLOCATED) {
         // trying to free unallocated memory
         return;
     }
-    header->content.is_free = 1;  // true
-    size_t size = header->content.size;
-    benchmark_heap_inuse -= size;
-    malloc_merge_onfree(header);
+    header->content.state = HEAP_BLOCK_FREE;
+    benchmark_heap_inuse -= header->content.size;
+
+    #ifdef HEAP_MALLOC_FREE_MERGE_NEIGHBOURS
+    heap_freeblocks_merge(header);
+    #endif
 }
