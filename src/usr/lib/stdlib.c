@@ -141,42 +141,162 @@ void exit(int status) {
 }
 
 /*
-non-optimal malloc
+malloc implementation
+ - linear allocation based on first come first served
+ - allocate first free block >= requested size
+
+pros
+ - easy to implement as the initial implementation
+cons
+ - malloc is slow
+   - as we are not using virtual addressing the physical
+     allocated memory is limited slowly ness shouldn't be
+     noticeable.
+
+memory_layout
+-------------
+_heap_start:  # static marker defined at link time
+heap_entry{is_free, size}
+heap_entry{is_free, size}
+heap_entry{is_free, size}
+...
+... heap_entry_count times
+... unused memory
+_heap_end:  # dynamic marker based on current esp
+
 */
 extern void* get_current_esp();  // defined in stdlib.asm
 extern char _heap_start[];  // defined in linker.ld
-static int heap_head_offset = 0;
+static int heap_entry_count = 0;
 static const int heap_stack_safety_gap = 1024; // keep 1 kb free between stack and heap
 
 // benchmarking
 static int benchmark_heap_inuse = 0;
+static int benchmark_heap_area = 0;
 
 int benchmark_get_heap_usage() {
+    // heap memory in use
     return benchmark_heap_inuse;
 }
 
-void* malloc(size_t size) {
-    size = ((size + 3) >> 2 ) << 2;
-    size += 4;  // 4 bytes to store size
+int benchmark_get_heap_area() {
+    // overall memory area ever occupied by heap area
+    return benchmark_heap_area;
+}
 
-    void* loc = _heap_start + heap_head_offset;
+static union heap_entry {
+    // header of each allocated or unallocated block
+    struct {
+        uint32_t size;  // including the header size
+        uint8_t is_free;
+    } content;
+    uint32_t __padding[2];  // force heap_entry size to be 8 bytes.
+};
+
+static union heap_entry *malloc_allocate_new_block(union heap_entry *block, size_t size) {
     void* max_loc = get_current_esp()-heap_stack_safety_gap-size;
-    if(loc>max_loc) {
+    if ((void*)block>max_loc) {
+        // panic if no memory to allocate
         printf("failed to allocate more memory\n");
         exit(-1);
-        return NULL;
     }
-    heap_head_offset += size;
-    benchmark_heap_inuse += size;
+    benchmark_heap_area = max(benchmark_heap_area, (int)(((void*)block) + size - (void*)_heap_start));
 
-    *((uint32_t*)loc) = size;
-    return (loc+4);
+    block->content.size = size;
+    block->content.is_free = 1;  // new block is free at init.
+    heap_entry_count++;
+    printf("[log] malloc_allocate_new_block: %x, %d\n", block, size);
+    return block;
 }
+
+static union heap_entry *malloc_split_block(union heap_entry *block, size_t size) {
+
+    // returns the first one of the two splitted blocks
+
+    // [ --------- old-free-block-------------- ]
+    // [ allocating-block]  [new-left-over-block]
+    const int TODO_NEVER_SPLIT = 1;
+    size_t left_over_size = block->content.size - size;
+    if (TODO_NEVER_SPLIT || left_over_size < sizeof(union heap_entry)+8) {
+        // do not split block if left-over block for less than 8 bytes allocation.
+        // i.e. do not split block
+        // printf("[log] malloc_split_block: %x, %d out of %d [no-split]\n", block, size, block->content.size);
+        return block;
+    }
+    // allocate new-left-over-block
+    union heap_entry *block_second = malloc_allocate_new_block((union heap_entry *)(((void*)block)+size), left_over_size);
+    // resize first block
+    block->content.size = size;
+    printf("[log] malloc_split_block: %x, %d [split]\n", block, size);
+    return block;
+}
+
+static void malloc_merge_onfree(union heap_entry *block) {
+    // merge recently free block to neighboring block
+    // if they are free are also free to form large free
+    // block.
+    if (!block->content.is_free) return;
+
+    // TODO(scopeinfinity): implement
+}
+
+static union heap_entry *malloc_find_freeblock(size_t size) {
+    if(size>200)
+    printf("[log] malloc_find_freeblock: %d, block_count: %d\n", size, heap_entry_count);
+    // size includes header size
+    void* loc = _heap_start; // start
+    int block_id = 0;
+    while(1) {
+        // printf("[log] searching %d at %x\n", block_id, loc);
+
+        union heap_entry *block = loc;
+        if (block_id==heap_entry_count) {
+            // create new node
+            return malloc_allocate_new_block(block, size);
+        }
+        const int TODO_ALWAYS_ALLOCATE_LAST = 1;
+        if (TODO_ALWAYS_ALLOCATE_LAST || (!block->content.is_free) || block->content.size < size) {
+            // block is not free
+            // not sufficient memory in this block
+            loc += block->content.size;
+            block_id++;
+            continue;
+        }
+        // returns the block after split or no-split
+        return malloc_split_block(block, size);
+    }
+}
+
+void* malloc(size_t size) {
+    // allocates in chunk of 4
+    size = ((size + 3) >> 2 ) << 2;
+    // allocate header
+    size += sizeof(union heap_entry);
+
+    union heap_entry *header = malloc_find_freeblock(size);
+
+    benchmark_heap_inuse += size;
+    header->content.size = size;
+    header->content.is_free = 0;  // false
+    return (((void*)header)+sizeof(union heap_entry));
+}
+
+// TODO(scopeinfinity): Cleanup before submit
+//  - LOGO empty : 372 bytes
+//  - Now: 188 bytes
 
 void free(void* ptr) {
     if(ptr == NULL) return;
     // current version of malloc is non-optimal and doesn't
     // do any free operation.
-    size_t size = *((uint32_t*)(ptr-4));
+    union heap_entry *header = ptr-sizeof(union heap_entry);
+    if (header->content.is_free!=0) {
+        // trying to free unallocated memory
+        printf("[log] trying to free unallocated memory: %x", ptr);
+        return;
+    }
+    header->content.is_free = 1;  // true
+    size_t size = header->content.size;
     benchmark_heap_inuse -= size;
+    malloc_merge_onfree(header);
 }
