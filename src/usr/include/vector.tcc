@@ -70,7 +70,7 @@ template <typename T>
 typename vector<T>::const_iterator vector<T>::end() const { return this->_data + this->_size; }
 
 template <typename T>
-void vector<T>::resize_capacity(volatile std::size_t capacity) {
+void vector<T>::resize_capacity(std::size_t capacity) {
     // internal; assumes capacity to be power of 2
     // and will also make a copy of array and move _data pointer.
     // assumes size<=current_capacity and size<=new_capacity
