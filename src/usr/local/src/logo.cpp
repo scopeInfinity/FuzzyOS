@@ -7,18 +7,8 @@
 #include <math.h>
 #include <graphics.h>
 
-const int BUSY_WAIT_FRAMECOUNTER = 2e7;
-
 const int WINDOW_HEIGHT = GRAPHICS_MAX_HEIGHT;
 const int WINDOW_WIDTH  = GRAPHICS_MAX_WIDTH;
-
-char message_buffer[320];
-
-void frame_wait() {
-    // busy wait
-    volatile int counter = BUSY_WAIT_FRAMECOUNTER;
-    while (counter--);
-}
 
 std::vector<std::string> split(std::string &str) {
     std::vector<std::string> rv;
