@@ -3,33 +3,33 @@
 #include <string.h>
 
 // assumption
-#define SCREEN_WIDTH  0x50
+#define SCREEN_WIDTH 0x50
 #define SCREEN_HEIGHT 0x19
 
 void process(char filename[]) {
     FILE *handler = fopen(filename, "r");
-    if(handler==NULL) {
+    if (handler == NULL) {
         printf("failed to open '%s' file.\n", filename);
         return;
     }
-    char buffer[SCREEN_WIDTH+1];
-    int count_before_buffer = SCREEN_HEIGHT-2;
-    while(1) {
+    char buffer[SCREEN_WIDTH + 1];
+    int count_before_buffer = SCREEN_HEIGHT - 2;
+    while (1) {
         if (!fgets(buffer, sizeof(buffer), handler)) {
             int err = ferror(handler);
-            if(err) {
+            if (err) {
                 printf("Error: failed to read next chunk, code %d\n", err);
                 exit(err);
             }
             break;
         }
         puts(buffer);
-        if(count_before_buffer>0) {
+        if (count_before_buffer > 0) {
             count_before_buffer--;
         } else {
             // buffer
             char c = getch();
-            if(c=='q' || c=='Q') {
+            if (c == 'q' || c == 'Q') {
                 exit(0);
             }
             // continue

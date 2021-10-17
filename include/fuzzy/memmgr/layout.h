@@ -1,12 +1,12 @@
 #pragma once
 
 // START_ENSURE_SAME_layout_asm
-#define MEMORY_APP_SIZE         0x200000
-#define STACKINIT_APP           (MEMORY_APP_SIZE-4)
-#define MEMORY_REALLIBRARY_DATA_ADDRESS  0x70000
-#define MEMORY_REALLIBRARY_DATA_SIZE     0x10000
-#define MEMORY_VGA_GRAPHICS_ADDRESS      0xA0000
-#define MEMORY_VGA_GRAPHICS_SIZE         0x10000
+#define MEMORY_APP_SIZE 0x200000
+#define STACKINIT_APP (MEMORY_APP_SIZE - 4)
+#define MEMORY_REALLIBRARY_DATA_ADDRESS 0x70000
+#define MEMORY_REALLIBRARY_DATA_SIZE 0x10000
+#define MEMORY_VGA_GRAPHICS_ADDRESS 0xA0000
+#define MEMORY_VGA_GRAPHICS_SIZE 0x10000
 
 // END_ENSURE_SAME_layout_asm
 
@@ -29,8 +29,10 @@
 #define MEMORY_APPBASE_LOCATION 0x100000
 
 // Keep in sync with memory_layout.md
-#define memmgr_app_abs_location(pid) ((pid==PID_KERNEL)?0x0C000:(MEMORY_APPBASE_LOCATION + (pid)*MEMORY_APP_SIZE))
-#define memmgr_app_size(pid) ((pid==PID_KERNEL)?0x64000:MEMORY_APP_SIZE)
+#define memmgr_app_abs_location(pid)                                           \
+    ((pid == PID_KERNEL) ? 0x0C000                                             \
+                         : (MEMORY_APPBASE_LOCATION + (pid)*MEMORY_APP_SIZE))
+#define memmgr_app_size(pid) ((pid == PID_KERNEL) ? 0x64000 : MEMORY_APP_SIZE)
 
 #define MEMORY_KERNEL_LOCATION (memmgr_app_abs_location(PID_KERNEL))
 #define MEMORY_KERNEL_SIZE (memmgr_app_size(PID_KERNEL))

@@ -16,6 +16,6 @@ double sin(double x);
 double cos(double x);
 
 #ifdef __cplusplus
-}  // namespace std end
-}  // extern C end
+} // namespace std end
+} // extern C end
 #endif

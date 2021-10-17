@@ -1,14 +1,15 @@
 // Simple C++ program
-#include <stdio.h>
 #include <iostream.h>
-#include <vector.h>
 #include <math.h>
+#include <stdio.h>
+#include <vector.h>
 
 namespace geometry {
 
 class Shape {
     char name[64];
-protected:
+
+  protected:
     Shape(char *name) {
         std::snprintf(this->name, sizeof(this->name), name);
         std::cout << "Shape [" << this->name << "] created" << std::endl;
@@ -16,35 +17,36 @@ protected:
     ~Shape() {
         std::cout << "Shape [" << this->name << "] destroyed" << std::endl;
     }
-public:
+
+  public:
     // non-pure virtual function.
     virtual double getArea() {
         std::cout << "I SHOULD NOT BE CALLED" << std::endl;
     }
-    char *getName() {
-        return this->name;
-    }
+    char *getName() { return this->name; }
 };
 
 class Rectangle : public Shape {
     int length, width;
-public:
-    Rectangle(char name[], int length, int width) : Shape(name), length(length), width(width) {
-        std::cout << "[" << name << "] is " << length << "x" << width <<" rectangle" << std::endl;
+
+  public:
+    Rectangle(char name[], int length, int width)
+        : Shape(name), length(length), width(width) {
+        std::cout << "[" << name << "] is " << length << "x" << width
+                  << " rectangle" << std::endl;
     }
-    double getArea() {
-        return this->length * this->width;
-    }
+    double getArea() { return this->length * this->width; }
 };
 
 class Square : public Rectangle {
-public:
+  public:
     Square(char name[], int side) : Rectangle(name, side, side) {
-        std::cout << "[" << name << "] is side " << side <<" square" << std::endl;
+        std::cout << "[" << name << "] is side " << side << " square"
+                  << std::endl;
     }
 };
 
-} // namespace geometry end
+} // namespace geometry
 
 void printShapeDetails(geometry::Shape *shape) {
     std::cout << "Shape Details" << std::endl;
@@ -75,7 +77,7 @@ int main(int argc, char *argv[]) {
     // vector
     std::vector<int> list(4, 100);
     list[0] = 0;
-    for(std::size_t i = 0; i < list.size(); i++) {
+    for (std::size_t i = 0; i < list.size(); i++) {
         std::cout << "list[" << (int)i << "] = " << list[i] << std::endl;
     }
 
@@ -83,14 +85,16 @@ int main(int argc, char *argv[]) {
     int angle;
     std::cout << "Enter angle in degree: ";
     std::cin >> angle;
-    std::cout << "sin(" << angle << "): " << std::sin(angle * M_PI/180) << std::endl;
-    std::cout << "cos(" << angle << "): " << std::cos(angle * M_PI/180) << std::endl;
+    std::cout << "sin(" << angle << "): " << std::sin(angle * M_PI / 180)
+              << std::endl;
+    std::cout << "cos(" << angle << "): " << std::cos(angle * M_PI / 180)
+              << std::endl;
     std::cout << "floor(17.6): " << std::floor(17.6) << std::endl;
-    std::cout << "round(17.6): " <<  std::round(17.6) << std::endl;
-    std::cout << "fmod(17.6, 5.0): " <<  std::fmod(17.6, 5.0) << std::endl;
-    std::cout << "fmod(-17.6, 5.0): " <<  std::fmod(-17.6, 5.0) << std::endl;
-    std::cout << "fmod(17.6, -5.0): " <<  std::fmod(17.6, -5.0) << std::endl;
-    std::cout << "fmod(-17.6, -5.0): " <<  std::fmod(-17.6, -5.0) << std::endl;
+    std::cout << "round(17.6): " << std::round(17.6) << std::endl;
+    std::cout << "fmod(17.6, 5.0): " << std::fmod(17.6, 5.0) << std::endl;
+    std::cout << "fmod(-17.6, 5.0): " << std::fmod(-17.6, 5.0) << std::endl;
+    std::cout << "fmod(17.6, -5.0): " << std::fmod(17.6, -5.0) << std::endl;
+    std::cout << "fmod(-17.6, -5.0): " << std::fmod(-17.6, -5.0) << std::endl;
 
     std::cout << "Exiting..." << std::endl;
     return 0;

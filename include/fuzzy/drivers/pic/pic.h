@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#define PIC_PIT_FREQ        1193182  // hz
+#define PIC_PIT_FREQ 1193182 // hz
 #define PIC_PIT_MAX_COUNTER 0xFFFF
 
 #define PIC_IRQ_PIT 0

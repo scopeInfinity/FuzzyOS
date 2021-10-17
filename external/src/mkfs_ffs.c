@@ -2,25 +2,26 @@
 mkfs.ffs binary implementation for Linux.
 */
 
+#include <dirent.h>
 #include <fuzzy/fs/ffs.h>
 #include <stdio.h>
 #include <string.h>
-#include <dirent.h>
 #include <sys/stat.h>
 
-#define FILEENTRY_LOCATION(file_id) (FS_FFS_FIRST_BLOCK_SIZE+FS_FFS_FILEENTRY_SIZE*(file_id))
+#define FILEENTRY_LOCATION(file_id)                                            \
+    (FS_FFS_FIRST_BLOCK_SIZE + FS_FFS_FILEENTRY_SIZE * (file_id))
 
 void write_first_block(FILE *out) {
     union FFSMetaData block;
-    strncpy(block.content.signature, FS_FFS_SIGNATURE, sizeof(block.content.signature));
+    strncpy(block.content.signature, FS_FFS_SIGNATURE,
+            sizeof(block.content.signature));
 
     rewind(out);
     fwrite(block.bytes, 1, sizeof(block.bytes), out);
 }
 
 void write_file(int file_id, FILE *outfile, int *outfile_nextdata_block,
-        const char *filename, FILE *srcfile,
-        int is_executable) {
+                const char *filename, FILE *srcfile, int is_executable) {
     fseek(srcfile, 0L, SEEK_END);
     int file_size = ftell(srcfile);
     rewind(srcfile);
@@ -42,9 +43,9 @@ void write_file(int file_id, FILE *outfile, int *outfile_nextdata_block,
     char buffer[512];
     size_t bytes_read;
     printf("Writting context at %d\n", ((*outfile_nextdata_block)));
-    fseek(outfile, (*outfile_nextdata_block)*FS_BLOCK_SIZE, SEEK_SET);
-    (*outfile_nextdata_block) += (file_size+FS_BLOCK_SIZE-1)/FS_BLOCK_SIZE;
-
+    fseek(outfile, (*outfile_nextdata_block) * FS_BLOCK_SIZE, SEEK_SET);
+    (*outfile_nextdata_block) +=
+        (file_size + FS_BLOCK_SIZE - 1) / FS_BLOCK_SIZE;
 
     while ((bytes_read = fread(buffer, 1, sizeof(buffer), srcfile)) > 0) {
         fwrite(buffer, 1, bytes_read, outfile);
@@ -59,7 +60,6 @@ void write_nofile(int file_id, FILE *out) {
     fseek(out, FILEENTRY_LOCATION(file_id), SEEK_SET);
     fwrite(entry.bytes, 1, sizeof(entry.bytes), out);
 }
-
 
 int create_partition(char *src_dir, char *out_filepath) {
     printf("dir:%s partition: %s\n", src_dir, out_filepath);
@@ -85,19 +85,22 @@ int create_partition(char *src_dir, char *out_filepath) {
         strncat(buffer_filename, "/", sizeof(buffer_filename));
         strncat(buffer_filename, de->d_name, sizeof(buffer_filename));
         if (file_id >= FS_FFS_FILEENTRY_COUNT) {
-            fprintf("reached max supported files, ignoring file '%s'", buffer_filename);
+            fprintf("reached max supported files, ignoring file '%s'",
+                    buffer_filename);
             continue;
         }
         struct stat file_stat;
         stat(buffer_filename, &file_stat);
         if (!S_ISREG(file_stat.st_mode)) {
-            fprintf("skipping non-regular file '%s': %d", buffer_filename, file_stat.st_mode);
+            fprintf("skipping non-regular file '%s': %d", buffer_filename,
+                    file_stat.st_mode);
             continue;
         }
         int is_executable = file_stat.st_mode & S_IXUSR;
 
         FILE *file_src = fopen(buffer_filename, "rb");
-        write_file(file_id++, out, &outfile_nextdata_block, de->d_name, file_src, is_executable);
+        write_file(file_id++, out, &outfile_nextdata_block, de->d_name,
+                   file_src, is_executable);
         fclose(file_src);
     }
     while (file_id < FS_FFS_FILEENTRY_COUNT) {

@@ -8,6 +8,6 @@ namespace std {
 typedef int int32_t;
 
 #ifdef __cplusplus
-}  // namespace std end
-}  // extern C end
+} // namespace std end
+} // extern C end
 #endif

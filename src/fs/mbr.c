@@ -10,8 +10,8 @@ char _cache_mbrblock[FS_BLOCK_SIZE];
 int _cache_mbrblock_ready = 0;
 
 char *get_mbrblock() {
-    if(!_cache_mbrblock_ready) {
-        int memory_location = ((int)_cache_mbrblock)+MEMORY_KERNEL_LOCATION;
+    if (!_cache_mbrblock_ready) {
+        int memory_location = ((int)_cache_mbrblock) + MEMORY_KERNEL_LOCATION;
         int lba = 0;
         int err = load_sectors(memory_location, 0x80, lba, 1);
         if (err) {
@@ -22,14 +22,13 @@ char *get_mbrblock() {
     return _cache_mbrblock;
 }
 
-
 void read_partition_entry(int id, struct PartitionEntry *entry) {
     // TODO: Handle all partition id.
     char *mbr_block = get_mbrblock();
-    char *entry_str=(char*)entry;
+    char *entry_str = (char *)entry;
 
-    memcpy(entry_str, mbr_block+MBR_PARTITION_BEGIN, sizeof(struct PartitionEntry));
-    print_info("[mbr][p%d] lba: %d, sector_count: %d",
-        id, entry->lba, entry->sector_count);
+    memcpy(entry_str, mbr_block + MBR_PARTITION_BEGIN,
+           sizeof(struct PartitionEntry));
+    print_info("[mbr][p%d] lba: %d, sector_count: %d", id, entry->lba,
+               entry->sector_count);
 }
-

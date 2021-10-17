@@ -1,6 +1,6 @@
 #include <process.h>
-#include <stddef.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <sys/syscall.h>
 
 int spawnl(char *file_path, char *arg0, ...) {
@@ -12,9 +12,10 @@ int spawnl(char *file_path, char *arg0, ...) {
     {
         argv[0] = arg0;
         int i = 1;
-        while(i<PROCESS_MAX_ARGC-2) {
+        while (i < PROCESS_MAX_ARGC - 2) {
             char *arg = va_arg(args, char *);
-            if(arg==NULL) break;
+            if (arg == NULL)
+                break;
             argv[i] = arg;
             i++;
         }
@@ -29,28 +30,28 @@ int spawnv(char *file_path, char *argv[]) {
     // kernel expects argv size must be PROCESS_MAX_ARGC
     char *argv_resized[PROCESS_MAX_ARGC] = {NULL};
     for (int i = 0; i < PROCESS_MAX_ARGC - 1; i++) {
-        if (argv[i] == NULL) break;
+        if (argv[i] == NULL)
+            break;
         argv_resized[i] = argv[i];
     }
 
     return _spawnv_syscall(file_path, argv_resized);
 }
 
-
 int _spawnv_syscall(char *file_path, char *argv[]) {
     // kernel expects argv size must be PROCESS_MAX_ARGC
-    int pid = SYSCALL_A3(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_FNAME, file_path, argv);
+    int pid = SYSCALL_A3(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_FNAME,
+                         file_path, argv);
     return pid;
 }
 
-void yield() {
-    __asm__("int $0x20");
-}
+void yield() { __asm__("int $0x20"); }
 
 int waitpid(unsigned int blocked_on_pid, int *exit_code) {
-    while(1) {
-        int status = SYSCALL_A3(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_WAIT, blocked_on_pid, exit_code);
-        if(status < 0) {
+    while (1) {
+        int status = SYSCALL_A3(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_WAIT,
+                                blocked_on_pid, exit_code);
+        if (status < 0) {
             // err
             return status;
         }
@@ -64,12 +65,14 @@ int waitpid(unsigned int blocked_on_pid, int *exit_code) {
 }
 
 int getpid() {
-    return SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_GET, SYSCALL_PROCESS_SUB_GET_PID);
+    return SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_GET,
+                      SYSCALL_PROCESS_SUB_GET_PID);
 }
 
 int fork() {
-    int mark_it = SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_FORK, SYSCALL_PROCESS_SUB_FORK_MARK_READY);
-    if(mark_it != 0) {
+    int mark_it = SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_FORK,
+                             SYSCALL_PROCESS_SUB_FORK_MARK_READY);
+    if (mark_it != 0) {
         // failed to mark process as fork ready, maybe it's already marked.
         return mark_it;
     }
@@ -78,16 +81,18 @@ int fork() {
     yield();
 
     // fork request should be complete by now.
-    int status = SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_FORK, SYSCALL_PROCESS_SUB_FORK_CHECK_READY);
-    if(status < 0) {
+    int status = SYSCALL_A2(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_FORK,
+                            SYSCALL_PROCESS_SUB_FORK_CHECK_READY);
+    if (status < 0) {
         // request either failed
-        // or still waiting: it's a bad state, but we are going to let that slide.
+        // or still waiting: it's a bad state, but we are going to let that
+        // slide.
         return status;
     }
     // fork successful.
     int child_pid = status;
     int my_pid = getpid();
-    if(my_pid==child_pid) {
+    if (my_pid == child_pid) {
         // child process
         return 0;
     }

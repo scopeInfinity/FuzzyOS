@@ -12,4 +12,3 @@ void ps2_controller_wait_for_full_output();
 void interrupt_register_0x21_0x2C_irq1_ir12_keyboard_mouse();
 void irq1_handler();
 void irq12_handler();
-

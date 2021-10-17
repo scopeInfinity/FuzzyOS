@@ -5,22 +5,21 @@
 #include <fuzzy/kernel/process/process.h>
 #include <fuzzy/memmgr/stackguard/stackguard.h>
 
-#include <string.h>
+#include <conio.h>
 #include <process.h>
 #include <stddef.h>
+#include <string.h>
 #include <sys/syscall.h>
-#include <conio.h>
 
 #include <drivers/disk/disk.h>
 #include <drivers/display/text_mode.h>
-#include <fuzzy/drivers/ps2/ps2.h>
 #include <fuzzy/drivers/ps2/keyboard.h>
+#include <fuzzy/drivers/ps2/ps2.h>
 
-
+#include <fuzzy/kernel/panic.h>
 #include <lib/utils/input.h>
 #include <lib/utils/logging.h>
 #include <lib/utils/output.h>
-#include <fuzzy/kernel/panic.h>
 #include <lib/utils/time.h>
 
 extern void kernel_enable_interrupts();
@@ -35,10 +34,9 @@ extern void enable_timer_interrupt();
 void kernel_core_entry() {
     set_color_bg(C_BLUE);
     set_color_fg(C_WHITE);
-    print_rectangle(0, 0, TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
+    print_rectangle(0, 0, TEXT_WINDOW_WIDTH - 1, TEXT_WINDOW_HEIGHT - 1);
     move_xy(0, 0);
     print_log("Initializing Kernel");
-
 
     populate_and_load_idt_table();
 
@@ -59,5 +57,6 @@ void kernel_core_entry() {
 
     kernel_enable_interrupts();
     interrupt_pit_enable();
-    while (1);
+    while (1)
+        ;
 }

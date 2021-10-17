@@ -1,10 +1,10 @@
-#include <fuzzy/memmgr/tables/gdt.h>
 #include <fuzzy/memmgr/layout.h>
+#include <fuzzy/memmgr/tables/gdt.h>
 
-#include <lib/utils/color.h>
 #include <drivers/disk/disk.h>
-#include <lib/utils/output.h>
+#include <lib/utils/color.h>
 #include <lib/utils/logging.h>
+#include <lib/utils/output.h>
 #include <lib/utils/time.h>
 
 #include "memmgr/tables/gdt.c"
@@ -27,7 +27,7 @@ void enable_a20() {
     }
 
     ax = call_int_0x15(0x2402);
-    if (ax==1) {
+    if (ax == 1) {
         print_log("BIOS A20-gate already enabled");
         return;
     }
@@ -43,11 +43,11 @@ void enable_a20() {
 
 char *get_memdump_8byte(void *address) {
     static char shared_memdump[17];
-    for(int i=0;i<8;i++) {
-        unsigned char byte = *(char*)address;
+    for (int i = 0; i < 8; i++) {
+        unsigned char byte = *(char *)address;
         address++;
-        shared_memdump[i<<1]     = DIGIT_TO_HEX[byte/16];
-        shared_memdump[(i<<1)|1] = DIGIT_TO_HEX[byte%16];
+        shared_memdump[i << 1] = DIGIT_TO_HEX[byte / 16];
+        shared_memdump[(i << 1) | 1] = DIGIT_TO_HEX[byte % 16];
     }
     shared_memdump[16] = '\0';
     return shared_memdump;
@@ -55,23 +55,28 @@ char *get_memdump_8byte(void *address) {
 
 void load_kernel() {
     print_log("Loading Kernel");
-    int err = load_sectors(MEMORY_KERNEL_LOCATION, 0x80, SECTOR_START_KERNEL, SECTOR_COUNT_KERNEL);
-    if(err) {
+    int err = load_sectors(MEMORY_KERNEL_LOCATION, 0x80, SECTOR_START_KERNEL,
+                           SECTOR_COUNT_KERNEL);
+    if (err) {
         print_log("Failed to load kernel in memory: %d", err);
         label_exit();
     } else {
-        print_log("Kernel loaded at 0x%x: %s...", MEMORY_KERNEL_LOCATION, get_memdump_8byte(MEMORY_KERNEL_LOCATION));
+        print_log("Kernel loaded at 0x%x: %s...", MEMORY_KERNEL_LOCATION,
+                  get_memdump_8byte(MEMORY_KERNEL_LOCATION));
     }
 }
 
 void load_static_library() {
     print_log("Loading Static Library");
-    int err = load_sectors(MEMORY_STATIC_LIBRARY, 0x80, SECTOR_START_SHARED_LIBRARY, SECTOR_COUNT_SHARED_LIBRARY);
-    if(err) {
+    int err =
+        load_sectors(MEMORY_STATIC_LIBRARY, 0x80, SECTOR_START_SHARED_LIBRARY,
+                     SECTOR_COUNT_SHARED_LIBRARY);
+    if (err) {
         print_log("Failed to load static library in memory: %d", err);
         label_exit();
     } else {
-        print_log("Static library loaded at 0x%x: %s...", MEMORY_STATIC_LIBRARY, get_memdump_8byte(MEMORY_STATIC_LIBRARY));
+        print_log("Static library loaded at 0x%x: %s...", MEMORY_STATIC_LIBRARY,
+                  get_memdump_8byte(MEMORY_STATIC_LIBRARY));
     }
 }
 
@@ -93,7 +98,7 @@ void entry_stage() {
     print_log("Loading GDT Table and entering protected mode");
 
     // move cursor to end of screen to not bother protected mode.
-    set_display_text_xy(TEXT_WINDOW_WIDTH-1, TEXT_WINDOW_HEIGHT-1);
+    set_display_text_xy(TEXT_WINDOW_WIDTH - 1, TEXT_WINDOW_HEIGHT - 1);
     enter_protected_mode();
     // And thus PC should never reach here :)
 }
