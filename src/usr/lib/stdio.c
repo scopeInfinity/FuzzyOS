@@ -42,7 +42,7 @@ static int vsnprintf(char *s, size_t n, const char *fmt, va_list args) {
                 s[len++]='%';
                 break;
             case 'c':
-                s[len++]=va_arg(args, char);
+                s[len++]=(char)va_arg(args, int);
                 break;
             case 's':
                 innerstr = va_arg(args, const char*);
