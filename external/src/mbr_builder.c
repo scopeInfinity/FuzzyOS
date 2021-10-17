@@ -1,12 +1,12 @@
 // Classical generic MBR
 // https://en.wikipedia.org/wiki/Master_boot_record#PTE
 #include <fuzzy/fs/mbr.h>
-#include<stdio.h>
+#include <stdio.h>
 
 char DRIVE = 0x80;
 char DRIVE_INACTIVE = 0x00;
 // https://en.wikipedia.org/wiki/Partition_type
-char PARTITION_TYPE = 0x07;  // Stealing exFAT
+char PARTITION_TYPE = 0x07; // Stealing exFAT
 
 // https://en.wikipedia.org/wiki/Cylinder-head-sector
 void lba_to_chs(int lba, char chs[3]) {
@@ -26,28 +26,30 @@ void lba_to_chs(int lba, char chs[3]) {
 
 void write_boot_signature(FILE *out) {
     fseek(out, 510, SEEK_SET);
-    char boot_signature[2]={0x55, 0xAA};
+    char boot_signature[2] = {0x55, 0xAA};
     fwrite(boot_signature, 1, sizeof(boot_signature), out);
 }
 
-void write_partition_entry(FILE *out, int id, char drive, int lba, int sector_count) {
+void write_partition_entry(FILE *out, int id, char drive, int lba,
+                           int sector_count) {
     struct PartitionEntry entry;
     entry.drive = drive;
     entry.partition_type = PARTITION_TYPE;
     entry.lba = lba;
     entry.sector_count = sector_count;
     // TODO: write lba using lba_to_chs too
-    fseek(out, MBR_PARTITION_BEGIN+id*sizeof(struct PartitionEntry), SEEK_SET);
+    fseek(out, MBR_PARTITION_BEGIN + id * sizeof(struct PartitionEntry),
+          SEEK_SET);
     fwrite(&entry, 1, sizeof(entry), out);
-    printf("Added partition entry %d at lba: %d sector_count: %d\n",
-        id, lba, sector_count);
+    printf("Added partition entry %d at lba: %d sector_count: %d\n", id, lba,
+           sector_count);
 }
 
 void write_partition(FILE *out, FILE *in, int lba) {
     int count;
     char buffer[1024];
     rewind(in);
-    fseek(out, lba*512, SEEK_SET);
+    fseek(out, lba * 512, SEEK_SET);
     while ((count = fread(buffer, sizeof(char), sizeof(buffer), in)) > 0) {
         fwrite(buffer, sizeof(char), count, out);
     }
@@ -75,17 +77,17 @@ int main(int argc, char *argv[]) {
 
     populate_outfile_using_image_prefix(out, image_prefix);
 
-    int lba, sector_count;   // 4 bytes
+    int lba, sector_count; // 4 bytes
     {
         fseek(out, 0L, SEEK_END);
         int file_size = ftell(out);
         rewind(out);
-        lba=(file_size+511)/512;
+        lba = (file_size + 511) / 512;
     }
     {
         fseek(part1, 0L, SEEK_END);
         int file_size = ftell(part1);
-        sector_count=(file_size+511)/512;
+        sector_count = (file_size + 511) / 512;
     }
 
     write_boot_signature(out);

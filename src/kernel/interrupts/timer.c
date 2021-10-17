@@ -17,7 +17,7 @@ static unsigned int boot_ticks_1 = 0;
 void timer_add_ticks(unsigned int inc) {
     int l0 = boot_ticks_0;
     boot_ticks_0 += inc;
-    if(boot_ticks_0 < l0) {
+    if (boot_ticks_0 < l0) {
         boot_ticks_1++;
     }
 }
@@ -26,15 +26,15 @@ void timer_add_ticks(unsigned int inc) {
 int get_time_since_boot_ms() {
     // This isn't accurate.
     // TODO: use boot_ticks_1
-    int cycle_per_ms = PIC_PIT_FREQ/1000;
-    int ms = boot_ticks_0/cycle_per_ms;
+    int cycle_per_ms = PIC_PIT_FREQ / 1000;
+    int ms = boot_ticks_0 / cycle_per_ms;
     return ms;
 }
 
 void irq0_pit_handler(int *e_ip, int *e_cs, int *e_sp, int *e_ss) {
     // called every X milli seconds.
     // time period is defined by pic_pit_set_counter.
-    unsigned short ticks_jumped =  pit_get_counter();
+    unsigned short ticks_jumped = pit_get_counter();
 
     int oldtime_ms = get_time_since_boot_ms();
     timer_add_ticks(ticks_jumped);
@@ -46,11 +46,12 @@ void irq0_pit_handler(int *e_ip, int *e_cs, int *e_sp, int *e_ss) {
 }
 
 void interrupt_pit_enable() {
-    pit_set_counter(PIC_PIT_FREQ/100);  // 10ms
+    pit_set_counter(PIC_PIT_FREQ / 100); // 10ms
     pic_irq_enable(PIC_IRQ_PIT);
 }
 
 void interrupt_register_0x20_irq0_pit() {
-    populate_idt_entry_32bit(IDT_IRQ0_PIC, (unsigned int)irq0_pit_handler_low, 0, 0);
+    populate_idt_entry_32bit(IDT_IRQ0_PIC, (unsigned int)irq0_pit_handler_low,
+                             0, 0);
     pic_init();
 }

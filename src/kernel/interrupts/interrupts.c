@@ -1,7 +1,7 @@
-#include <fuzzy/kernel/syscall/syscall.h>
 #include <fuzzy/drivers/ps2/ps2.h>
 #include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/kernel/interrupts/timer.h>
+#include <fuzzy/kernel/syscall/syscall.h>
 #include <fuzzy/memmgr/layout.h>
 #include <fuzzy/memmgr/tables/gdt.h>
 
@@ -14,8 +14,8 @@ extern void load_idt_table_low(unsigned int idtr_address);
 struct IDTEntry {
     unsigned short offset_0;
     unsigned short selector;
-    unsigned char  unused;
-    unsigned char  type_attr;
+    unsigned char unused;
+    unsigned char type_attr;
     unsigned short offset_1;
 };
 
@@ -28,36 +28,26 @@ struct IDTReference {
 struct IDTReference idtr;
 struct IDTEntry idt_table[IDT_SIZE];
 
-void populate_idt_entry(int id,
-    unsigned short selector,
-    unsigned int address,
-    unsigned char present,  // 1-bit
-    unsigned char dpl, // 2-bit
-    unsigned char  storage_segment, // 1-bit
-    unsigned char gate_type // 4-bit
-    ) {
+void populate_idt_entry(int id, unsigned short selector, unsigned int address,
+                        unsigned char present,         // 1-bit
+                        unsigned char dpl,             // 2-bit
+                        unsigned char storage_segment, // 1-bit
+                        unsigned char gate_type        // 4-bit
+) {
     struct IDTEntry *entry = &idt_table[id];
-    entry->offset_0 = address&0xFFFF;
-    entry->offset_1 = (address>>16)&0xFFFF;
+    entry->offset_0 = address & 0xFFFF;
+    entry->offset_1 = (address >> 16) & 0xFFFF;
     entry->selector = selector;
     entry->unused = 0;
-    entry->type_attr = (present<<7) | (dpl<<5) | (storage_segment<<4) | gate_type;
+    entry->type_attr =
+        (present << 7) | (dpl << 5) | (storage_segment << 4) | gate_type;
 }
 
-void populate_idt_entry_32bit(int id,
-    unsigned int address,
-    unsigned char dpl, // 2-bit
-    int is_trap
-    ) {
-    populate_idt_entry(
-        id,
-        GDT_KERNEL_CS,
-        address,
-        1,
-        dpl,
-        0,
-        is_trap?0b1111:0b1110
-        );
+void populate_idt_entry_32bit(int id, unsigned int address,
+                              unsigned char dpl, // 2-bit
+                              int is_trap) {
+    populate_idt_entry(id, GDT_KERNEL_CS, address, 1, dpl, 0,
+                       is_trap ? 0b1111 : 0b1110);
 }
 
 void populate_and_load_idt_table() {
@@ -74,10 +64,10 @@ void populate_and_load_idt_table() {
     interrupt_register_0x21_0x2C_irq1_ir12_keyboard_mouse();
     interrupt_register_0x32_syscall();
 
-    idtr.size = sizeof(struct IDTEntry)*IDT_SIZE;
+    idtr.size = sizeof(struct IDTEntry) * IDT_SIZE;
     idtr.base_address = ((int)idt_table + MEMORY_KERNEL_LOCATION);
-    print_log("IDTR: 0x%x; base address: 0x%x, size: %d",
-        (int)&idtr, idtr.base_address, idtr.size);
+    print_log("IDTR: 0x%x; base address: 0x%x, size: %d", (int)&idtr,
+              idtr.base_address, idtr.size);
     reload_idt_table();
 }
 

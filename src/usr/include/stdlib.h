@@ -7,7 +7,7 @@ extern "C" {
 namespace std {
 #endif
 
-int atoi (const char *s);
+int atoi(const char *s);
 
 // only base 2, 8, 10 and 16 are supported
 // for others the result can be undefined.
@@ -20,13 +20,13 @@ int abs(int a);
 
 int benchmark_get_heap_usage();
 int benchmark_get_heap_area();
-void* malloc(size_t size);
-void free(void* ptr);
+void *malloc(size_t size);
+void free(void *ptr);
 
 void atexit(void (*)(void));
 void exit(int status);
 
 #ifdef __cplusplus
-}  // namespace std end
-}  // extern C end
+} // namespace std end
+} // extern C end
 #endif

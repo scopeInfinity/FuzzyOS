@@ -1,46 +1,48 @@
-#include <string.h>
-#include <stddef.h>
 #include <ctype.h>
+#include <stddef.h>
+#include <string.h>
 
 int strcmp(const char *l, const char *r) {
-    int i=0, j=0;
-    while(l[i]!='\0' && r[j]!='\0') {
-        if(l[i]!=r[j]) {
-            return l[i]-r[j];
+    int i = 0, j = 0;
+    while (l[i] != '\0' && r[j] != '\0') {
+        if (l[i] != r[j]) {
+            return l[i] - r[j];
         }
-        i++;j++;
+        i++;
+        j++;
     }
-    if(l[i]=='\0' && r[j]=='\0') {
+    if (l[i] == '\0' && r[j] == '\0') {
         return 0;
     }
-    if(l[i]=='\0') {
+    if (l[i] == '\0') {
         return 1;
     }
     return -1;
 }
 
 int strcmpi(const char *l, const char *r) {
-    int i=0, j=0;
-    while(l[i]!='\0' && r[j]!='\0') {
+    int i = 0, j = 0;
+    while (l[i] != '\0' && r[j] != '\0') {
         char a = tolower(l[i]);
         char b = tolower(r[j]);
-        if(a!=b) {
-            return a-b;
+        if (a != b) {
+            return a - b;
         }
-        i++;j++;
+        i++;
+        j++;
     }
-    if(l[i]=='\0' && r[j]=='\0') {
+    if (l[i] == '\0' && r[j] == '\0') {
         return 0;
     }
-    if(l[i]=='\0') {
+    if (l[i] == '\0') {
         return 1;
     }
     return -1;
 }
 
 int strlen(const char *str) {
-    int n=0;
-    while((*str)!='\0') {
+    int n = 0;
+    while ((*str) != '\0') {
         n++;
         str++;
     }
@@ -58,7 +60,7 @@ char *strcpy(char *dst, const char *src) {
 
 char *strncpy(char *dst, const char *src, size_t n) {
     void *og_dst = dst;
-    while ((*src) != NULL && n>0) {
+    while ((*src) != NULL && n > 0) {
         *(dst++) = *(src++);
         n--;
     }
@@ -68,7 +70,7 @@ char *strncpy(char *dst, const char *src, size_t n) {
 void *memcpy(void *dst, const void *src, unsigned int n) {
     void *og_dst = dst;
     while (n--) {
-        *(char*)(dst++) = *(char*)(src++);
+        *(char *)(dst++) = *(char *)(src++);
     }
     return og_dst;
 }
@@ -76,7 +78,7 @@ void *memcpy(void *dst, const void *src, unsigned int n) {
 void *memset(void *dst, const unsigned char c, size_t n) {
     void *og_dst = dst;
     while (n--) {
-        *(char*)(dst++) = c;
+        *(char *)(dst++) = c;
     }
     return og_dst;
 }

@@ -7,9 +7,9 @@ extern "C" {
 namespace std {
 #endif
 
-#define SYSCALL_CONSOLE_SUB_CLRSCR       0
-#define SYSCALL_CONSOLE_SUB_PUTCHAR      1
-#define SYSCALL_CONSOLE_SUB_PUTS_BUFFER  2
+#define SYSCALL_CONSOLE_SUB_CLRSCR 0
+#define SYSCALL_CONSOLE_SUB_PUTCHAR 1
+#define SYSCALL_CONSOLE_SUB_PUTS_BUFFER 2
 
 int putchar(int c);
 int puts(const char *s);
@@ -17,7 +17,7 @@ int puts(const char *s);
 int snprintf(char *s, size_t n, const char *fmt, ...);
 int printf(const char *strfmt, ...);
 
-char* gets (char *s);
+char *gets(char *s);
 
 typedef struct FILE {
     // in user space.
@@ -55,6 +55,6 @@ int ferror(FILE *file);
 void clearerror(FILE *file);
 
 #ifdef __cplusplus
-}  // namespace std end
-}  // extern C end
+} // namespace std end
+} // extern C end
 #endif

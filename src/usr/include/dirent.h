@@ -7,11 +7,9 @@ extern "C" {
 namespace std {
 #endif
 
-#define FILENAME_LIMIT 100  // same as fuzzy/fs/ffs.h
+#define FILENAME_LIMIT 100 // same as fuzzy/fs/ffs.h
 
-enum dirent_flag {
-    DIRENT_EXECUTABLE = 1 << 0
-};
+enum dirent_flag { DIRENT_EXECUTABLE = 1 << 0 };
 
 struct dirent {
     // In FFS the only file types are only normal file.
@@ -22,7 +20,7 @@ struct dirent {
 
 struct DIR {
     struct dirent entry;
-    int kernel_file_id;  // iterator
+    int kernel_file_id; // iterator
 };
 
 // There is only one global directory in FFS.
@@ -30,6 +28,6 @@ void opendir(struct DIR *dirp);
 struct dirent *readdir(struct DIR *dirp);
 
 #ifdef __cplusplus
-}  // namespace std end
-}  // extern C end
+} // namespace std end
+} // extern C end
 #endif

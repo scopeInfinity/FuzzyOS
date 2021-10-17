@@ -6,32 +6,32 @@ namespace std {
 namespace graphics {
 #endif
 
-#define GRAPHICS_MAX_WIDTH   320
-#define GRAPHICS_MAX_HEIGHT  200
+#define GRAPHICS_MAX_WIDTH 320
+#define GRAPHICS_MAX_HEIGHT 200
 
-#define DETECT                  0
-#define GRAPHIC_DRIVER_VGA      1
+#define DETECT 0
+#define GRAPHIC_DRIVER_VGA 1
 
 #define GRAPHIC_MODE_320x200x256 0x13
 
-#define  BLACK               0x0
-#define  BLUE                0x1
-#define  GREEN               0x2
-#define  CYAN                0x3
-#define  RED                 0x4
-#define  MAGENTA             0x5
-#define  BROWN               0x6
-#define  LIGHT_GRAY          0x7
-#define  DARK_GRAY           0x8
-#define  LIGHT_BLUE          0x9
-#define  LIGHT_GREEN         0xA
-#define  LIGHT_CYAN          0xB
-#define  LIGHT_RED           0xC
-#define  LIGHT_MAGENTA       0xD
-#define  YELLOW              0xE
-#define  WHITE               0xF
+#define BLACK 0x0
+#define BLUE 0x1
+#define GREEN 0x2
+#define CYAN 0x3
+#define RED 0x4
+#define MAGENTA 0x5
+#define BROWN 0x6
+#define LIGHT_GRAY 0x7
+#define DARK_GRAY 0x8
+#define LIGHT_BLUE 0x9
+#define LIGHT_GREEN 0xA
+#define LIGHT_CYAN 0xB
+#define LIGHT_RED 0xC
+#define LIGHT_MAGENTA 0xD
+#define YELLOW 0xE
+#define WHITE 0xF
 
-#define SYSCALL_GRAPHICS_INITGRAPH  0
+#define SYSCALL_GRAPHICS_INITGRAPH 0
 #define SYSCALL_GRAPHICS_CLOSEGRAPH 1
 #define SYSCALL_GRAPHICS_COPYBUFFER 2
 
@@ -65,7 +65,7 @@ int getx();
 int gety();
 
 #ifdef __cplusplus
-}  // namespace graphics end
-}  // namespace std end
-}  // extern C end
+} // namespace graphics end
+} // namespace std end
+} // extern C end
 #endif

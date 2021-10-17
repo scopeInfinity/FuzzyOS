@@ -1,6 +1,6 @@
 // simple shell
-#include <stdio.h>
 #include <process.h>
+#include <stdio.h>
 #include <string.h>
 
 const int COMMAND_SIZE = 64;
@@ -25,7 +25,7 @@ int cmd_help() {
 static char *copy_arg(char *dst, char *src) {
     int slen = strlen(src);
     if (slen >= PROCESS_MAX_ARG_LEN) {
-        slen = PROCESS_MAX_ARG_LEN-1;
+        slen = PROCESS_MAX_ARG_LEN - 1;
     }
     memcpy(dst, src, slen);
     dst[slen] = NULL;
@@ -33,7 +33,7 @@ static char *copy_arg(char *dst, char *src) {
 }
 
 int cmd_run(char *cmd) {
-    if(cmd == NULL) {
+    if (cmd == NULL) {
         // no command entered
         last_status_code = 0;
         return 0;
@@ -43,9 +43,10 @@ int cmd_run(char *cmd) {
 
     char *token;
     int argc = 0;
-    argv[argc] = copy_arg(argv_data[argc], cmd);  // executable filename
+    argv[argc] = copy_arg(argv_data[argc], cmd); // executable filename
     argc++;
-    while ((token = strtok(NULL, COMMAND_DELIM)) != NULL && argc < PROCESS_MAX_ARGC-1) {
+    while ((token = strtok(NULL, COMMAND_DELIM)) != NULL &&
+           argc < PROCESS_MAX_ARGC - 1) {
         argv[argc] = copy_arg(argv_data[argc], token);
         argc++;
     }
@@ -73,9 +74,9 @@ void handle_command(char *full_cmd) {
 
     char *cmd = strtok(full_cmd, COMMAND_DELIM);
 
-    if (strcmp(cmd, "help")==0) {
+    if (strcmp(cmd, "help") == 0) {
         cmd_help();
-    } else if (strcmp(cmd, "exit")==0) {
+    } else if (strcmp(cmd, "exit") == 0) {
         cmd_exit();
     } else {
         if (cmd_run(cmd) < 0) {

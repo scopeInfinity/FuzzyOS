@@ -1,7 +1,7 @@
-#include <fuzzy/drivers/ps2/ps2.h>
-#include <fuzzy/kernel/panic.h>
-#include <fuzzy/kernel/interrupts/interrupts.h>
 #include <fuzzy/drivers/port.h>
+#include <fuzzy/drivers/ps2/ps2.h>
+#include <fuzzy/kernel/interrupts/interrupts.h>
+#include <fuzzy/kernel/panic.h>
 
 #include <lib/utils/logging.h>
 
@@ -9,48 +9,51 @@
 
 #define LOG_PREFIX "[drivers][ps2] "
 
-
 #define STATUS_OUTPUT_BUFFER_INDEX 0
-#define STATUS_INPUT_BUFFER_INDEX  1
-#define STATUS_SYSTEM_FLAG_INDEX   2
+#define STATUS_INPUT_BUFFER_INDEX 1
+#define STATUS_SYSTEM_FLAG_INDEX 2
 
 #define FULL 1
 #define EMPTY 0
 
-#define CMD_PORT1_DISABLE            0xAD
-#define CMD_PORT1_ENABLE             0xAE
-#define CMD_PORT2_DISABLE            0xA7
-#define CMD_PORT2_ENABLE             0xA8
-#define CMD_TEST_PS2_CONTROLLER      0xAA
-#define CMD_TEST_PORT1               0xAB
-#define CMD_TEST_PORT2               0xA9
-#define CMD_CONTROLLER_CONFIG_READ   0x20
-#define CMD_CONTROLLER_CONFIG_WRITE  0x60
+#define CMD_PORT1_DISABLE 0xAD
+#define CMD_PORT1_ENABLE 0xAE
+#define CMD_PORT2_DISABLE 0xA7
+#define CMD_PORT2_ENABLE 0xA8
+#define CMD_TEST_PS2_CONTROLLER 0xAA
+#define CMD_TEST_PORT1 0xAB
+#define CMD_TEST_PORT2 0xA9
+#define CMD_CONTROLLER_CONFIG_READ 0x20
+#define CMD_CONTROLLER_CONFIG_WRITE 0x60
 
-#define DATA_DEVICE_RESET            0xFF
-#define DATA_DEVICE_DISABLE_SCAN     0xF5
-#define DATA_DEVICE_IDENTIFY         0xF2
+#define DATA_DEVICE_RESET 0xFF
+#define DATA_DEVICE_DISABLE_SCAN 0xF5
+#define DATA_DEVICE_IDENTIFY 0xF2
 
 // Potential improvements: retry or timeout
 
 void ps2_controller_wait_for_empty_input() {
-    while(((inputb(PORT_PS2_STATUS)>>STATUS_INPUT_BUFFER_INDEX) & 1 ) == FULL) {
+    while (((inputb(PORT_PS2_STATUS) >> STATUS_INPUT_BUFFER_INDEX) & 1) ==
+           FULL) {
         // waiting
     }
     // input buffer should be empty now.
 }
 
 void ps2_controller_wait_for_full_output() {
-    while(((inputb(PORT_PS2_STATUS)>>STATUS_OUTPUT_BUFFER_INDEX) & 1 ) == EMPTY) {
+    while (((inputb(PORT_PS2_STATUS) >> STATUS_OUTPUT_BUFFER_INDEX) & 1) ==
+           EMPTY) {
         // waiting
     }
     // output buffer should not be empty now.
 }
 
 int ps2_controller_wait_for_full_output_optional() {
-    int try = 5;
-    while(try--) {
-        if(((inputb(PORT_PS2_STATUS)>>STATUS_OUTPUT_BUFFER_INDEX) & 1 ) == EMPTY) {
+    int try
+        = 5;
+    while (try --) {
+        if (((inputb(PORT_PS2_STATUS) >> STATUS_OUTPUT_BUFFER_INDEX) & 1) ==
+            EMPTY) {
             // waiting
         } else {
             // wait over
@@ -86,7 +89,7 @@ uint8_t ps2_read_data() {
 
 uint8_t ps2_read_data_optional() {
     int found = ps2_controller_wait_for_full_output_optional();
-    if(found) {
+    if (found) {
         return inputb(PORT_PS2_DATA);
     }
     return 0;
@@ -110,7 +113,7 @@ void ps2_init() {
     // disable first port interrupt
     // disable second port interrupt
     // disable first port translation
-    controller_config = controller_config&(~0b01000011);
+    controller_config = controller_config & (~0b01000011);
     ps2_cmd2(CMD_CONTROLLER_CONFIG_WRITE, controller_config);
 
     print_log(LOG_PREFIX "ps/2 controller self test");
@@ -127,8 +130,8 @@ void ps2_init() {
     int is_port2_supported = 0;
     {
         // we have already marked port 2 as disabled above
-        int is_port2_disabled = (controller_config&(1<<5))>0?1:0;
-        if(!is_port2_disabled) {
+        int is_port2_disabled = (controller_config & (1 << 5)) > 0 ? 1 : 0;
+        if (!is_port2_disabled) {
             // port should be disabled but it doesn't look like that
             // so assuming as single channel.
         } else {
@@ -136,8 +139,8 @@ void ps2_init() {
             ps2_cmd(CMD_PORT2_ENABLE);
             ps2_cmd(CMD_CONTROLLER_CONFIG_READ);
             uint8_t _controller_config = ps2_read_data();
-            is_port2_disabled = (_controller_config&(1<<5))>0?1:0;
-            if(is_port2_disabled) {
+            is_port2_disabled = (_controller_config & (1 << 5)) > 0 ? 1 : 0;
+            if (is_port2_disabled) {
                 // port should be enabled but it doesn't look like that
                 // so assuming as single channel.
             } else {
@@ -146,7 +149,8 @@ void ps2_init() {
             }
         }
     }
-    print_log(LOG_PREFIX "does ps/2 has dual channel? %s", is_port2_supported?"Yes":"No");
+    print_log(LOG_PREFIX "does ps/2 has dual channel? %s",
+              is_port2_supported ? "Yes" : "No");
 
     print_log(LOG_PREFIX "test ps/2 port 1");
     ps2_cmd(CMD_TEST_PORT1);
@@ -156,7 +160,7 @@ void ps2_init() {
         PANIC(out, "PS/2 controller port 1 test failed.");
     }
 
-    if(is_port2_supported) {
+    if (is_port2_supported) {
         print_log(LOG_PREFIX "test ps/2 port 2");
         ps2_cmd(CMD_TEST_PORT2);
         out = ps2_read_data();
@@ -168,7 +172,7 @@ void ps2_init() {
 
     print_log(LOG_PREFIX "enable ports");
     ps2_cmd(CMD_PORT1_ENABLE);
-    if(is_port2_supported) {
+    if (is_port2_supported) {
         ps2_cmd(CMD_PORT2_ENABLE);
     }
 
@@ -185,25 +189,25 @@ void ps2_init() {
     print_log(LOG_PREFIX "device reset");
     ps2_write_port1(DATA_DEVICE_RESET);
     out = ps2_read_data();
-    if (out!=0xFA) {
+    if (out != 0xFA) {
         PANIC(out, LOG_PREFIX "device reset failed");
     }
     out = ps2_read_data();
-    if (out!=0xAA) {
+    if (out != 0xAA) {
         PANIC(out, LOG_PREFIX "device reset; port 1 self test failed");
     }
 
     print_log(LOG_PREFIX "[port1] disable device scanning");
     ps2_write_port1(DATA_DEVICE_DISABLE_SCAN);
     out = ps2_read_data();
-    if (out!=0xFA) {
+    if (out != 0xFA) {
         PANIC(out, LOG_PREFIX "[port1] disable device scanning failed");
     }
 
     print_log(LOG_PREFIX "[port1] identify device");
     ps2_write_port1(DATA_DEVICE_IDENTIFY);
     out = ps2_read_data();
-    if (out!=0xFA) {
+    if (out != 0xFA) {
         PANIC(out, LOG_PREFIX "[port1] identify device failed");
     }
     // device type
@@ -211,11 +215,12 @@ void ps2_init() {
     int dev_type1 = ps2_read_data_optional();
     int dev_type2 = ps2_read_data_optional();
     // ignoring second byte data, it should get cleared soon.
-    if(dev_type0 != 0xAB) {
+    if (dev_type0 != 0xAB) {
         PANIC(out, "[port1] expected device keyboard not found.");
     }
 
-    print_log(LOG_PREFIX "[port1] keyboard found %x, %x, %x", dev_type0, dev_type1, dev_type2);
+    print_log(LOG_PREFIX "[port1] keyboard found %x, %x, %x", dev_type0,
+              dev_type1, dev_type2);
     return;
 }
 
@@ -223,8 +228,10 @@ extern irq1_handler_low();
 extern irq12_handler_low();
 
 void interrupt_register_0x21_0x2C_irq1_ir12_keyboard_mouse() {
-    populate_idt_entry_32bit(IDT_IRQ1_KEYBOARD, (unsigned int)irq1_handler_low, 0, 0);
-    populate_idt_entry_32bit(IDT_IRQ12_MOUSE, (unsigned int)irq12_handler_low, 0, 0);
+    populate_idt_entry_32bit(IDT_IRQ1_KEYBOARD, (unsigned int)irq1_handler_low,
+                             0, 0);
+    populate_idt_entry_32bit(IDT_IRQ12_MOUSE, (unsigned int)irq12_handler_low,
+                             0, 0);
 }
 
 void irq1_handler() {

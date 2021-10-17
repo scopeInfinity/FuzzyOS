@@ -4,15 +4,15 @@
 
 void process(char filename[]) {
     FILE *handler = fopen(filename, "r");
-    if(handler==NULL) {
+    if (handler == NULL) {
         printf("failed to open '%s' file.\n", filename);
         return;
     }
     char buffer[80];
-    while(1) {
+    while (1) {
         if (!fgets(buffer, sizeof(buffer), handler)) {
             int err = ferror(handler);
-            if(err) {
+            if (err) {
                 printf("Error: failed to read next chunk, code %d\n", err);
                 exit(err);
             }

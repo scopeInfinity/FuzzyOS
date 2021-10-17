@@ -1,8 +1,8 @@
-#include<ctype.h>
+#include <ctype.h>
 
 int tolower(int x) {
-    if(x>='A' && x<='Z') {
-        return x-'A'+'a';
+    if (x >= 'A' && x <= 'Z') {
+        return x - 'A' + 'a';
     }
     return x;
 }
