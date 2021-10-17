@@ -1,0 +1,23 @@
+name: Code Style CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install clang-format
+      run: |
+        sudo apt-get update
+        sudo apt install clang-format
+    - name: C/CPP code style check
+      run: |
+          find . -iname *.h -o -iname *.c -o -iname *.cpp -o -iname *.hpp -o -iname *.tcc | \
+            xargs clang-format --style="{BasedOnStyle: llvm, IndentWidth: 4}" --dry-run --Werror
