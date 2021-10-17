@@ -15,9 +15,9 @@ int strcmp(const char *l, const char *r) {
         return 0;
     }
     if (l[i] == '\0') {
-        return 1;
+        return -1;
     }
-    return -1;
+    return 1;
 }
 
 int strcmpi(const char *l, const char *r) {
@@ -35,9 +35,9 @@ int strcmpi(const char *l, const char *r) {
         return 0;
     }
     if (l[i] == '\0') {
-        return 1;
+        return -1;
     }
-    return -1;
+    return 1;
 }
 
 int strlen(const char *str) {
