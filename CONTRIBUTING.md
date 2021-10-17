@@ -10,6 +10,12 @@
 
 #### Did you write a patch that fixes a bug?
 
+* Please ensure code is formatted as per clang-format `{BasedOnStyle: llvm, IndentWidth: 4}` style.
+
+    ```
+    find . -iname *.h -o -iname *.c -o -iname *.cpp -o -iname *.hpp -o -iname *.tcc | xargs clang-format --style="{BasedOnStyle: llvm, IndentWidth: 4}" -i 
+    ```
+
 * Open a new GitHub pull request with the patch.
 
 * Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
