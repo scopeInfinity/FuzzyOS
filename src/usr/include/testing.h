@@ -44,8 +44,10 @@ static int test_count_failure;
     } while (0)
 #define TEST_SUMMARY()                                                         \
     do {                                                                       \
-        std::printf("TEST_SUCCESS_COUNT: %d\n", test_count_success);           \
-        std::printf("TEST_FAILURE_COUNT: %d\n", test_count_failure);           \
+        std::printf("[%s] TEST_SUCCESS_COUNT: %d\n", __FILE__,                 \
+                    test_count_success);                                       \
+        std::printf("[%s] TEST_FAILURE_COUNT: %d\n", __FILE__,                 \
+                    test_count_failure);                                       \
     } while (0)
 
 #ifdef __cplusplus
