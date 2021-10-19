@@ -9,4 +9,4 @@ source tests/app/ls_test.sh
 source tests/app/tictactoe_test.sh
 source tests/app/cat_test.sh
 source tests/app/multiprocessing_test.sh
-source tests/app/libraries/usr_lib_string_test.sh
+source tests/app/libraries/usr_lib_test.sh
