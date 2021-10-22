@@ -61,7 +61,7 @@ static int vsnprintf(char *s, size_t n, const char *fmt, va_list args) {
             }
             break;
         case 'f':
-            ftoa(va_arg(args, double), sbuffer);
+            ftoa(va_arg(args, double), sbuffer, 8);
             innerstr = sbuffer;
             while (len < n && (*innerstr) != '\0') {
                 s[len++] = *(innerstr++);

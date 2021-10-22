@@ -67,7 +67,7 @@ void itoa(int num, char *s, int base) {
     }
 }
 
-void ftoa(double num, char *s) {
+void ftoa(double num, char *s, int afterpoint) {
     // not a good implementation
     if (isnan(num)) {
         *(s++) = 'n';
@@ -98,7 +98,7 @@ void ftoa(double num, char *s) {
     *(s++) = '0';
     *(s++) = '.';
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < afterpoint; i++) {
         num *= 10;
         int msb = num;
         *(s++) = '0' + msb;

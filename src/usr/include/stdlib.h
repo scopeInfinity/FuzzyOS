@@ -13,7 +13,7 @@ int atoi(const char *s);
 // for others the result can be undefined.
 // And only base 10 is considered as signed int.
 void itoa(int num, char *s, int base);
-void ftoa(double num, char *s);
+void ftoa(double num, char *s, int afterpoint);
 int min(int, int);
 int max(int, int);
 int abs(int a);
