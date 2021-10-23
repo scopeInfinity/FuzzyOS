@@ -315,16 +315,16 @@ static inline union heap_entry *heap_freeblocks_merge(union heap_entry *node) {
     // after : [prev +  node +  next]
 
     union heap_entry *prev = heap_prev_block(node);
-    union heap_entry *next = heap_prev_block(node);
-    if (prev == HEAP_BLOCK_FREE) {
+    union heap_entry *next = heap_next_block(node);
+    if (prev->content.state == HEAP_BLOCK_FREE) {
         // merge
         prev->content.size += node->content.size;
         next->content.prev_size = prev->content.size;
         node = prev;
     }
-    if (next == HEAP_BLOCK_FREE) {
+    if (next->content.state == HEAP_BLOCK_FREE) {
         // merge
-        union heap_entry *next_2 = heap_prev_block(next);
+        union heap_entry *next_2 = heap_next_block(next);
         node->content.size += next->content.size;
         next_2->content.prev_size = node->content.size;
     }
