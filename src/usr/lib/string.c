@@ -67,7 +67,7 @@ char *strncpy(char *dst, const char *src, size_t n) {
     return og_dst;
 }
 
-void *memcpy(void *dst, const void *src, unsigned int n) {
+void *memcpy(void *dst, const void *src, size_t n) {
     void *og_dst = dst;
     while (n--) {
         *(char *)(dst++) = *(char *)(src++);
