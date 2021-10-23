@@ -265,6 +265,16 @@ static inline union heap_entry *heap_prev_block(union heap_entry *current,
     return block;
 }
 
+static inline union heap_entry *
+heap_block_from_usermemory(void *ptr, int verify_signature) {
+    union heap_entry *block = ptr - HEAP_HEADER_SIZE;
+    if (verify_signature) {
+        heap_assert(block->content.signature == HEAP_ENTRY_SIGNATURE,
+                    "heap_block_from_usermemory, invalid signature");
+    }
+    return block;
+}
+
 static inline union heap_entry *heap_push_back(union heap_entry *olast,
                                                size_t new_size) {
     heap_assert(olast->content.state == HEAP_BLOCK_LAST,
@@ -389,6 +399,10 @@ static inline union heap_entry *heap_get_free_block(size_t new_size) {
 
 void *malloc(size_t size) {
     heap_may_init();
+    if (size == 0) {
+        // do nothing
+        return NULL;
+    }
     // allocates in chunk of 4
     size = ((size + 3) >> 2) << 2;
     // allocate header
@@ -402,13 +416,13 @@ void *malloc(size_t size) {
 }
 
 void free(void *ptr) {
-    if (ptr == NULL)
-        return;
     heap_may_init();
+    if (ptr == NULL) {
+        // do nothing
+        return;
+    }
 
-    // current version of malloc is non-optimal and doesn't
-    // do any free operation.
-    union heap_entry *header = ptr - HEAP_HEADER_SIZE;
+    union heap_entry *header = heap_block_from_usermemory(ptr, 1);
     if (header->content.state != HEAP_BLOCK_ALLOCATED) {
         // trying to free unallocated memory
         return;
@@ -419,4 +433,29 @@ void free(void *ptr) {
 #ifdef HEAP_MALLOC_FREE_MERGE_NEIGHBOURS
     heap_freeblocks_merge(header);
 #endif
+}
+
+void *realloc(void *ptr, size_t size) {
+    heap_may_init();
+    if (ptr == NULL) {
+        return malloc(size);
+    }
+
+    union heap_entry *header = heap_block_from_usermemory(ptr, 1);
+    size_t old_size = header->content.size - HEAP_HEADER_SIZE;
+
+    if (old_size == size) {
+        // no need to allocate or free memory
+        return ptr;
+    }
+
+    // allocate memory for new data size
+    void *newdata = malloc(size);
+    // copy data
+    size_t copy_size = min(size, old_size);
+    memcpy(newdata, ptr, copy_size);
+    // free old data
+    free(ptr);
+
+    return newdata;
 }

@@ -95,6 +95,34 @@ void test_malloc_free() {
     }
 }
 
+void test_realloc() {
+    // allocate memory
+    std::uint8_t *data =
+        (std::uint8_t *)std::realloc(NULL, sizeof(std::uint8_t) * 2);
+    ASSERT_TRUE(data);
+    data[0] = 100;
+    data[1] = 101;
+
+    // upsize memory
+    data = (std::uint8_t *)std::realloc(data, sizeof(std::uint8_t) * 4);
+    ASSERT_TRUE(data);
+    ASSERT_EQ(data[0], 100);
+    ASSERT_EQ(data[1], 101);
+    data[2] = 102;
+    data[3] = 103;
+
+    // downsize memory
+    data = (std::uint8_t *)std::realloc(data, sizeof(std::uint8_t) * 3);
+    ASSERT_TRUE(data);
+    ASSERT_EQ(data[0], 100);
+    ASSERT_EQ(data[1], 101);
+    ASSERT_EQ(data[2], 102);
+
+    // free memory
+    data = (std::uint8_t *)std::realloc(data, 0);
+    ASSERT_FALSE(data);
+}
+
 int main(int argc, char *argv[]) {
     TEST_INIT();
 
@@ -105,6 +133,7 @@ int main(int argc, char *argv[]) {
     RUN_TEST(test_itoa);
     RUN_TEST(test_ftoa);
     RUN_TEST(test_malloc_free);
+    RUN_TEST(test_realloc);
 
     TEST_SUMMARY();
     return 0;
