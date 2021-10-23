@@ -177,6 +177,7 @@ _heap_end:  # dynamic marker based on current esp
 
 */
 
+#define HEAP_ENTRY_SIGNATURE 0x89B26F78
 static union heap_entry {
     // header of each allocated or unallocated block
     struct {
@@ -184,8 +185,9 @@ static union heap_entry {
         uint32_t size;      // size of current block
         uint32_t prev_size; // size of prev block for doubly linked list
         uint8_t state;
+        uint32_t signature;
     } content;
-    uint32_t __padding[3]; // force heap_entry size to be 12 bytes.
+    uint32_t __padding[4]; // force heap_entry size to be 16 bytes.
 };
 
 #define HEAP_HEADER_SIZE (sizeof(union heap_entry))
@@ -237,16 +239,30 @@ static inline void heap_may_init() {
         first->content.prev_size = 0;
         last->content.size = HEAP_HEADER_SIZE;
         first->content.size = last->content.prev_size = HEAP_HEADER_SIZE;
+        first->content.signature = last->content.signature =
+            HEAP_ENTRY_SIGNATURE;
         heap_initialized = 1;
     }
 }
 
-static inline union heap_entry *heap_next_block(union heap_entry *current) {
-    return (((void *)current) + current->content.size);
+static inline union heap_entry *heap_next_block(union heap_entry *current,
+                                                int verify_signature) {
+    union heap_entry *block = (((void *)current) + current->content.size);
+    if (verify_signature) {
+        heap_assert(block->content.signature == HEAP_ENTRY_SIGNATURE,
+                    "heap_next_block, invalid signature");
+    }
+    return block;
 }
 
-static inline union heap_entry *heap_prev_block(union heap_entry *current) {
-    return (((void *)current) - current->content.prev_size);
+static inline union heap_entry *heap_prev_block(union heap_entry *current,
+                                                int verify_signature) {
+    union heap_entry *block = (((void *)current) - current->content.prev_size);
+    if (verify_signature) {
+        heap_assert(block->content.signature == HEAP_ENTRY_SIGNATURE,
+                    "heap_prev_block, invalid signature");
+    }
+    return block;
 }
 
 static inline union heap_entry *heap_push_back(union heap_entry *olast,
@@ -257,7 +273,8 @@ static inline union heap_entry *heap_push_back(union heap_entry *olast,
 
     olast->content.state = HEAP_BLOCK_FREE;
     olast->content.size = new_size;
-    union heap_entry *nlast = heap_next_block(olast);
+
+    union heap_entry *nlast = heap_next_block(olast, 0);
 
     benchmark_heap_area =
         max(benchmark_heap_area, (int)nlast - (int)_heap_start);
@@ -271,6 +288,7 @@ static inline union heap_entry *heap_push_back(union heap_entry *olast,
     nlast->content.state = HEAP_BLOCK_LAST;
     nlast->content.size = HEAP_HEADER_SIZE;
     nlast->content.prev_size = new_size;
+    nlast->content.signature = HEAP_ENTRY_SIGNATURE;
     return olast;
 }
 
@@ -293,12 +311,14 @@ static inline union heap_entry *heap_freeblock_split(union heap_entry *node,
         return node;
     }
 
-    union heap_entry *out_block = heap_next_block(node);
+    union heap_entry *out_block = heap_next_block(node, 1);
     node->content.size = first_size;
-    union heap_entry *second = heap_next_block(node);
+
+    union heap_entry *second = heap_next_block(node, 0);
     second->content.state = second->content.state;
     second->content.size = second_block_size;
     second->content.prev_size = node->content.size;
+    second->content.signature = HEAP_ENTRY_SIGNATURE;
 
     out_block->content.prev_size = second->content.size;
     return node;
@@ -314,8 +334,9 @@ static inline union heap_entry *heap_freeblocks_merge(union heap_entry *node) {
     // after : [prev] [ node +  next] OR
     // after : [prev +  node +  next]
 
-    union heap_entry *prev = heap_prev_block(node);
-    union heap_entry *next = heap_next_block(node);
+    union heap_entry *prev = heap_prev_block(node, 1);
+
+    union heap_entry *next = heap_next_block(node, 1);
     if (prev->content.state == HEAP_BLOCK_FREE) {
         // merge
         prev->content.size += node->content.size;
@@ -324,7 +345,8 @@ static inline union heap_entry *heap_freeblocks_merge(union heap_entry *node) {
     }
     if (next->content.state == HEAP_BLOCK_FREE) {
         // merge
-        union heap_entry *next_2 = heap_next_block(next);
+
+        union heap_entry *next_2 = heap_next_block(next, 1);
         node->content.size += next->content.size;
         next_2->content.prev_size = node->content.size;
     }
@@ -351,7 +373,8 @@ static inline union heap_entry *heap_get_free_block(size_t new_size) {
 #endif
             }
         }
-        block = heap_next_block(block);
+
+        block = heap_next_block(block, 1);
     }
     if (most_appropriate_block == NULL) {
         return heap_push_back(block, new_size);
