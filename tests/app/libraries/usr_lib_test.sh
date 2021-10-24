@@ -14,3 +14,4 @@ function add_library_unit_test {
 add_library_unit_test "test-string"
 add_library_unit_test "test-stdlib"
 add_library_unit_test "test-vector"
+add_library_unit_test "test-math"

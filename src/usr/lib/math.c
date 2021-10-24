@@ -24,6 +24,8 @@ double round(double x) { return floor(x + 0.5); }
 
 double fmod(double x, double y) { return x - floor(x / y) * y; }
 
+double fabs(double x) { return (x >= 0) ? x : -x; }
+
 double sin(double x) {
     const int terms = 32;
     const double x2 = x * x;
