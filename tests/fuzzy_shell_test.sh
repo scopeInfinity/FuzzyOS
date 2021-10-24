@@ -7,7 +7,6 @@ TEST_MAGIC_WANT="${MAGIC_WORD_SLEEP:?}"
 
 os_test_up "${TEST_MAGIC_WANT:?}" "${TEST_INJECT_WORD:?}" || exit -1
 
-# Assumes Fuzzy OS starts with Shell
 source tests/app/shell_test.sh
 
 python -m tests.qemu.monitor --quit
