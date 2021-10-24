@@ -11,6 +11,7 @@ int isnan(double x);
 double floor(double x);
 double round(double x);
 double fmod(double x, double y);
+double fabs(double x);
 
 double sin(double x);
 double cos(double x);
