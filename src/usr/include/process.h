@@ -22,8 +22,8 @@ namespace std {
 // if non-negative value is returned
 //   then it's the pid of the new process
 //   otherwise it's some error code
-int spawnl(char *path, char *arg0, ...);
-int spawnv(char *path, char *argv[]);
+int spawnl(const char *path, const char *arg0, ...);
+int spawnv(const char *path, const char *argv[]);
 
 int getpid();
 

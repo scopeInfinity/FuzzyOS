@@ -3,10 +3,10 @@
 #include <stddef.h>
 #include <sys/syscall.h>
 
-int spawnl(char *file_path, char *arg0, ...) {
+int spawnl(const char *file_path, const char *arg0, ...) {
     va_list args;
     va_start(args, arg0);
-    char *argv[PROCESS_MAX_ARGC] = {NULL};
+    const char *argv[PROCESS_MAX_ARGC] = {NULL};
 
     // prepare argv
     {
@@ -26,9 +26,9 @@ int spawnl(char *file_path, char *arg0, ...) {
     return rv;
 }
 
-int spawnv(char *file_path, char *argv[]) {
+int spawnv(const char *file_path, const char *argv[]) {
     // kernel expects argv size must be PROCESS_MAX_ARGC
-    char *argv_resized[PROCESS_MAX_ARGC] = {NULL};
+    const char *argv_resized[PROCESS_MAX_ARGC] = {NULL};
     for (int i = 0; i < PROCESS_MAX_ARGC - 1; i++) {
         if (argv[i] == NULL)
             break;
@@ -38,7 +38,7 @@ int spawnv(char *file_path, char *argv[]) {
     return _spawnv_syscall(file_path, argv_resized);
 }
 
-int _spawnv_syscall(char *file_path, char *argv[]) {
+int _spawnv_syscall(const char *file_path, const char *argv[]) {
     // kernel expects argv size must be PROCESS_MAX_ARGC
     int pid = SYSCALL_A3(SYSCALL_PROCESS, SYSCALL_PROCESS_SUB_SPAWN_FNAME,
                          file_path, argv);

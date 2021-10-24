@@ -1,11 +1,12 @@
 # Program to auto start when kernel is ready.
 # List of program can be found at build/usr/bin/
 # Some of them are
-#  sh.out
-#  ls.out
-#  tictactoe.out
-#  calc.out
-INIT_APPNAME ?= sh
+#  sh
+#  ls
+#  tictactoe
+#  calc
+#  desktop
+INIT_APPNAME ?= desktop
 
 ROOT_DIR = .
 BUILD_DIR = build
