@@ -199,7 +199,7 @@ static union heap_entry {
 
 extern void *get_current_esp(); // defined in stdlib.asm
 // symbol name is defined in linker.ld
-extern char _heap_start[];
+extern char _heap_start;
 static const int heap_stack_safety_gap =
     1024;                        // keep 1 kb free between stack and heap
 static int heap_initialized = 0; // false
@@ -218,22 +218,26 @@ int benchmark_get_heap_area() {
     return benchmark_heap_area;
 }
 
-static inline void heap_panic(const char *msg) {
+static inline void heap_panic(const char *msg, const char *context) {
     printf("heap memory err: %s\n", msg);
+    if (context) {
+        printf("context: %s\n", context);
+    }
     exit(-1);
 }
 
-static inline void heap_assert(int is_not_panic, const char *msg) {
+static inline void heap_assert(int is_not_panic, const char *msg,
+                               const char *context) {
     if (!is_not_panic) {
-        heap_panic(msg);
+        heap_panic(msg, context);
     }
     return;
 }
 
 static inline void heap_may_init() {
     if (!heap_initialized) {
-        union heap_entry *first = &(((union heap_entry *)_heap_start)[0]);
-        union heap_entry *last = &(((union heap_entry *)_heap_start)[1]);
+        union heap_entry *first = &(((union heap_entry *)&_heap_start)[0]);
+        union heap_entry *last = &(((union heap_entry *)&_heap_start)[1]);
         first->content.state = HEAP_BLOCK_FIRST;
         last->content.state = HEAP_BLOCK_LAST;
         first->content.prev_size = 0;
@@ -246,21 +250,23 @@ static inline void heap_may_init() {
 }
 
 static inline union heap_entry *heap_next_block(union heap_entry *current,
-                                                int verify_signature) {
+                                                int verify_signature,
+                                                const char *err_context) {
     union heap_entry *block = (((void *)current) + current->content.size);
     if (verify_signature) {
         heap_assert(block->content.signature == HEAP_ENTRY_SIGNATURE,
-                    "heap_next_block, invalid signature");
+                    "heap_next_block, invalid signature", err_context);
     }
     return block;
 }
 
 static inline union heap_entry *heap_prev_block(union heap_entry *current,
-                                                int verify_signature) {
+                                                int verify_signature,
+                                                const char *err_context) {
     union heap_entry *block = (((void *)current) - current->content.prev_size);
     if (verify_signature) {
         heap_assert(block->content.signature == HEAP_ENTRY_SIGNATURE,
-                    "heap_prev_block, invalid signature");
+                    "heap_prev_block, invalid signature", err_context);
     }
     return block;
 }
@@ -270,7 +276,7 @@ heap_block_from_usermemory(void *ptr, int verify_signature) {
     union heap_entry *block = ptr - HEAP_HEADER_SIZE;
     if (verify_signature) {
         heap_assert(block->content.signature == HEAP_ENTRY_SIGNATURE,
-                    "heap_block_from_usermemory, invalid signature");
+                    "heap_block_from_usermemory, invalid signature", NULL);
     }
     return block;
 }
@@ -278,21 +284,22 @@ heap_block_from_usermemory(void *ptr, int verify_signature) {
 static inline union heap_entry *heap_push_back(union heap_entry *olast,
                                                size_t new_size) {
     heap_assert(olast->content.state == HEAP_BLOCK_LAST,
-                "heap_push_back not called on last");
+                "heap_push_back not called on last", NULL);
     void *_heap_end = get_current_esp() - heap_stack_safety_gap;
 
     olast->content.state = HEAP_BLOCK_FREE;
     olast->content.size = new_size;
 
-    union heap_entry *nlast = heap_next_block(olast, 0);
+    union heap_entry *nlast = heap_next_block(olast, 0, NULL);
 
     benchmark_heap_area =
-        max(benchmark_heap_area, (int)nlast - (int)_heap_start);
+        max(benchmark_heap_area, (int)nlast - (int)&_heap_start);
 
     // panic if no memory to allocate
     // using nlast instead of heap_next_block(nlast) as diff
     // should be negligible compared to heap_stack_safety_gap.
-    heap_assert(_heap_end > (void *)nlast, "failed to allocate more memory");
+    heap_assert(_heap_end > (void *)nlast, "failed to allocate more memory",
+                NULL);
 
     // new last block
     nlast->content.state = HEAP_BLOCK_LAST;
@@ -305,7 +312,7 @@ static inline union heap_entry *heap_push_back(union heap_entry *olast,
 static inline union heap_entry *heap_freeblock_split(union heap_entry *node,
                                                      size_t first_size) {
     heap_assert(node->content.state == HEAP_BLOCK_FREE,
-                "heap_freeblock_split not called on free block");
+                "heap_freeblock_split not called on free block", NULL);
 
     // before: [ -------- old-free-block--------- ] [out-block]
     // after : [ new-first-block][new-second-block] [out-block]
@@ -314,17 +321,18 @@ static inline union heap_entry *heap_freeblock_split(union heap_entry *node,
     size_t second_block_size = old_size - first_size;
 
     heap_assert(first_size <= old_size,
-                "heap_freeblock_split !(first_size<=old_size)");
+                "heap_freeblock_split !(first_size<=old_size)", NULL);
 
     if (second_block_size < HEAP_HEADER_SIZE + 4) {
         // do not split block if second_block_data_size  < 4
         return node;
     }
 
-    union heap_entry *out_block = heap_next_block(node, 1);
+    union heap_entry *out_block =
+        heap_next_block(node, 1, "heap_freeblock_split/out_block");
     node->content.size = first_size;
 
-    union heap_entry *second = heap_next_block(node, 0);
+    union heap_entry *second = heap_next_block(node, 0, NULL);
     second->content.state = second->content.state;
     second->content.size = second_block_size;
     second->content.prev_size = node->content.size;
@@ -336,7 +344,7 @@ static inline union heap_entry *heap_freeblock_split(union heap_entry *node,
 
 static inline union heap_entry *heap_freeblocks_merge(union heap_entry *node) {
     heap_assert(node->content.state == HEAP_BLOCK_FREE,
-                "heap_freeblocks_merge not called on free block");
+                "heap_freeblocks_merge not called on free block", NULL);
 
     // before: [prev] [ node ] [next]
     // after : [prev] [ node ] [next] OR
@@ -344,9 +352,11 @@ static inline union heap_entry *heap_freeblocks_merge(union heap_entry *node) {
     // after : [prev] [ node +  next] OR
     // after : [prev +  node +  next]
 
-    union heap_entry *prev = heap_prev_block(node, 1);
+    union heap_entry *prev =
+        heap_prev_block(node, 1, "heap_freeblocks_merge/prev");
 
-    union heap_entry *next = heap_next_block(node, 1);
+    union heap_entry *next =
+        heap_next_block(node, 1, "heap_freeblocks_merge/next");
     if (prev->content.state == HEAP_BLOCK_FREE) {
         // merge
         prev->content.size += node->content.size;
@@ -356,7 +366,8 @@ static inline union heap_entry *heap_freeblocks_merge(union heap_entry *node) {
     if (next->content.state == HEAP_BLOCK_FREE) {
         // merge
 
-        union heap_entry *next_2 = heap_next_block(next, 1);
+        union heap_entry *next_2 =
+            heap_next_block(next, 1, "heap_freeblocks_merge/next_2");
         node->content.size += next->content.size;
         next_2->content.prev_size = node->content.size;
     }
@@ -364,7 +375,7 @@ static inline union heap_entry *heap_freeblocks_merge(union heap_entry *node) {
 }
 
 static inline union heap_entry *heap_get_free_block(size_t new_size) {
-    union heap_entry *block = (union heap_entry *)_heap_start; // start
+    union heap_entry *block = (union heap_entry *)&_heap_start; // start
     uint32_t most_appropriate_value = UINT_MAX;
     union heap_entry *most_appropriate_block = NULL;
     while (1) {
@@ -383,8 +394,7 @@ static inline union heap_entry *heap_get_free_block(size_t new_size) {
 #endif
             }
         }
-
-        block = heap_next_block(block, 1);
+        block = heap_next_block(block, 1, "heap_get_free_block");
     }
     if (most_appropriate_block == NULL) {
         return heap_push_back(block, new_size);
