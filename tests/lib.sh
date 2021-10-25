@@ -149,9 +149,10 @@ function os_test_up() {
     sync_to_src_test "${test_inject_keyword:?}"
 
     # Turn up QEMU in background
+    # Start OS with terminal
     make clean BUILD_DIR="${BUILD_TEST_DIR:?}" \
         && make qemu \
-        INIT_APPNAME=sh \  # start OS with terminal
+        INIT_APPNAME=sh \
         SRC_DIR="${SRC_TEST_DIR:?}" \
         BUILD_DIR="${BUILD_TEST_DIR:?}" \
         QEMU_SHUT_FLAGS="" \
