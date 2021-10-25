@@ -52,6 +52,60 @@ fork()          | TicTacToe Game
   - Use `dd` or `scripts/burn.sh` to burn image into the disk (potentially destructive).
   - `bash scripts/burn.sh build/FuzzyOS.raw /path/to/devicefile`
 
+
+### Features
+
+| Feature                                                     | Exists             |
+|-------------------------------------------------------------|--------------------|
+| Boot: Legacy BIOS                                           | :heavy_check_mark: |
+| Boot: UEFI                                                  | :x:                |
+| Disk partitioning style: MBR                                | :heavy_check_mark: |
+| Disk partitioning style: GPT                                | :x:                |
+| Exported disk image: vmdk                                   | :heavy_check_mark: |
+| Exported disk image: vdi                                    | :heavy_check_mark: |
+| Exported disk image: raw                                    | :heavy_check_mark: |
+| kernel <-> app and app <-> app isolation                    | :heavy_check_mark: |
+| opearating-mode: real mode (boot-loader + realmode-library) | :heavy_check_mark: |
+| opearating-mode: protected mode (kernel + user application) | :heavy_check_mark: |
+| driver: disk IO                                             | :heavy_check_mark: |
+| driver: PIC                                                 | :heavy_check_mark: |
+| driver: PIT                                                 | :heavy_check_mark: |
+| driver: Keyboard                                            | :heavy_check_mark: |
+| file-system: FFS (in-house) (read-only)                     | :heavy_check_mark: |
+| interrupt handler                                           | :heavy_check_mark: |
+| syscall: text console IO                                    | :heavy_check_mark: |
+| syscall: graphics                                           | :heavy_check_mark: |
+| syscall: keyboard                                           | :heavy_check_mark: |
+| syscall: file handlers                                      | :heavy_check_mark: |
+| process-scheduler: Round Robin                              | :heavy_check_mark: |
+| file-system: FFS (custom) (read-only)                       | :heavy_check_mark: |
+| display: text-mode                                          | :heavy_check_mark: |
+| display: graphics-vga 320x200 256 colors                    | :heavy_check_mark: |
+| concurrency: Multiprocessing                                | :heavy_check_mark: |
+| concurrency: Multithreading                                 | :x:                |
+| parallelism                                                 | :x:                |
+| security in scope                                           | :x:                |
+| networking                                                  | :x:                |
+| app-build: Support C                                        | :heavy_check_mark: |
+| app-build: Support C++                                      | :heavy_check_mark: |
+| app-build: C/C++ Standard Libraries (as needed)             | :heavy_check_mark: |
+| app-runtime: Heap memory allocation                         | :heavy_check_mark: |
+| application: calculator                                     | :heavy_check_mark: |
+| application: cat                                            | :heavy_check_mark: |
+| application: desktop                                        | :heavy_check_mark: |
+| application: echo                                           | :heavy_check_mark: |
+| application: forkbomb                                       | :heavy_check_mark: |
+| application: logo                                           | :heavy_check_mark: |
+| application: ls                                             | :heavy_check_mark: |
+| application: ping-pong                                      | :heavy_check_mark: |
+| application: sh (terminal)                                  | :heavy_check_mark: |
+| application: simplecpp (example)                            | :heavy_check_mark: |
+| application: more                                           | :heavy_check_mark: |
+| application: multiprocessing (example)                      | :heavy_check_mark: |
+| application: tictactoe                                      | :heavy_check_mark: |
+| application: `Your's? Yes, raise a PR`                      | :heavy_check_mark: |
+
+
 ### Development
 
 #### Prerequisite
@@ -98,4 +152,10 @@ And then connect to GDB Server.
 ```
 make qemu_debug_connect
 ```
+
+
+### Want to Contribute?
+
+[CONTRIBUTING.md](CONTRIBUTING.md)
+
 
